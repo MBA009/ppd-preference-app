@@ -7,6 +7,8 @@ It implements the nine phone screens from the design canvas (1a Scan, 1b/1c Prev
 3a My home, 3b Device library, 3c Device detail, 3d Household rules). The backend does not exist yet, so every call is answered
 from static JSON in `public/mock/`.
 
+Frontend deployed on: https://ppd-preference-app.vercel.app/
+
 ## Run it
 
 ```bash
