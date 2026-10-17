@@ -1,0 +1,21 @@
+{
+ "devices": [
+  {
+   "device_id": "reolink-e1-zoom",
+   "added_at": "2026-10-14T09:15:00Z"
+  },
+  {
+   "device_id": "aqara-w200",
+   "added_at": "2026-10-14T09:15:00Z"
+  },
+  {
+   "device_id": "level-lock",
+   "added_at": "2026-10-14T09:15:00Z"
+  },
+  {
+   "device_id": "lg-oled65c6pua-c6",
+   "added_at": "2026-10-14T09:15:00Z"
+  }
+ ],
+ "decisions": {}
+}

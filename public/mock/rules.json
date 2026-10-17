@@ -1,0 +1,32 @@
+{
+ "rules": [
+  {
+   "id": "r1",
+   "title": "Never use my data for advertising",
+   "effect": "dont_allow",
+   "applies_to": "all"
+  },
+  {
+   "id": "r2",
+   "title": "Camera and microphone data stays in my home",
+   "effect": "dont_allow",
+   "applies_to": [
+    "reolink-e1-zoom",
+    "lg-oled65c6pua-c6",
+    "aqara-w200"
+   ]
+  },
+  {
+   "id": "r3",
+   "title": "Don’t share my precise location",
+   "effect": "dont_allow",
+   "applies_to": "all"
+  },
+  {
+   "id": "r4",
+   "title": "Data a device needs to work",
+   "effect": "allow",
+   "applies_to": "all"
+  }
+ ]
+}

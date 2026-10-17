@@ -1,0 +1,31 @@
+{
+  "name": "ppd-privacy-preferences-app",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:https": "HTTPS=1 vite --host",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host",
+    "typecheck": "tsc --noEmit",
+    "mock": "python3 tools/build_mock.py"
+  },
+  "dependencies": {
+    "jsqr": "^1.4.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.0"
+  },
+  "devDependencies": {
+    "@types/qrcode": "^1.5.5",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-basic-ssl": "^1.2.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "qrcode": "^1.5.4",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11",
+    "vite-plugin-pwa": "^0.21.1"
+  }
+}

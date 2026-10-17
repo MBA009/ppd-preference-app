@@ -1,0 +1,991 @@
+{
+ "id": "aqara-w200",
+ "name": "Aqara Thermostat Hub W200",
+ "short_name": "Aqara Thermostat Hub W200",
+ "category": "thermostat",
+ "category_label": "Thermostat",
+ "icon": "thermostat",
+ "matter": true,
+ "source": "declared",
+ "declaration": {
+  "state": "waiting_for_renewal",
+  "declaration_id": "aqara-w200-01",
+  "received_at": "2026-10-14T09:12:00Z",
+  "renew_by": "2026-10-21T09:12:00Z",
+  "statements": 21
+ },
+ "declaration_id_example": "aqara-w200-01",
+ "flow_count": 22,
+ "flows": [
+  {
+   "id": "aqara-w200.aqara-service-app-usage-activity-shared-with-analytics",
+   "title": "Usage shared with ad partners",
+   "workbook_text": "Aqara service/app usage activity shared with analytics/advertising service providers",
+   "summary": "Goes to partners · advertising",
+   "summary_parts": {
+    "who": "Goes to partners",
+    "purpose": "advertising"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:usageData",
+    "purpose": "ppd:advertisingAndMarketing",
+    "action": "ppd:transfer",
+    "source": "ppd:participantObserved",
+    "handling_context": "pat:thirdPartyServiceProvider",
+    "constraints": []
+   },
+   "display": {
+    "what": "How you use the device",
+    "why": "Advertising and marketing",
+    "what_happens": "Sent to another party",
+    "comes_from": "Observed by the device",
+    "handled_by": "A third-party service",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-393f775e",
+    "label": "Usage data sent to a third party"
+   },
+   "control": {
+    "type": "external_request",
+    "type_label": "Only by contacting the vendor",
+    "necessity": "optional",
+    "note": "You can ask Aqara to stop using your personal data for targeted advertising by emailing privacy@Lumiunited.com."
+   },
+   "evidence": "source_linked",
+   "evaluation": {
+    "verdict": "unsatisfiable",
+    "rule_id": "r1",
+    "reason": "Your rule “Never use my data for advertising” says no to this."
+   }
+  },
+  {
+   "id": "aqara-w200.precise-mobile-geolocation-collected-for-location-based-analysis",
+   "title": "Phone location for marketing",
+   "workbook_text": "Precise mobile geolocation collected for location-based analysis/marketing when separately consented",
+   "summary": "Collected by Aqara · marketing",
+   "summary_parts": {
+    "who": "Collected by Aqara",
+    "purpose": "marketing"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:locationData",
+    "purpose": "pat:locationBasedMarketing",
+    "action": "ppd:collection",
+    "source": "ppd:participantObserved",
+    "handling_context": "pat:aqaraService",
+    "constraints": []
+   },
+   "display": {
+    "what": "Location",
+    "why": "Location-based marketing",
+    "what_happens": "Collected",
+    "comes_from": "Observed by the device",
+    "handled_by": "Aqara",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-3795499e",
+    "label": "Location collected by a vendor"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "Precise location is collected only if you separately consent."
+   },
+   "evidence": "source_linked",
+   "evaluation": {
+    "verdict": "unsatisfiable",
+    "rule_id": "r1",
+    "reason": "Your rule “Never use my data for advertising” says no to this."
+   }
+  },
+  {
+   "id": "aqara-w200.customer-support-photo-video-attachment-upload",
+   "title": "Customer-support photo/video attachment upload",
+   "workbook_text": "Customer-support photo/video attachment upload",
+   "summary": "Collected by Aqara · support",
+   "summary_parts": {
+    "who": "Collected by Aqara",
+    "purpose": "support"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:visualData",
+    "purpose": "pat:customerSupport",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "pat:aqaraService",
+    "constraints": []
+   },
+   "display": {
+    "what": "Video or photos",
+    "why": "Customer support",
+    "what_happens": "Collected",
+    "comes_from": "You",
+    "handled_by": "Aqara",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-8743be11",
+    "label": "Content (video, audio, photos) collected by a vendor"
+   },
+   "control": {
+    "type": "user_initiated",
+    "type_label": "Happens only when you do it",
+    "necessity": "optional",
+    "note": "You choose whether to attach a photo or video when you contact support. You can ask Aqara to delete it afterwards, but Aqara may not always be able to."
+   },
+   "evidence": "source_linked",
+   "evaluation": {
+    "verdict": "decision_required",
+    "rule_id": "r2",
+    "reason": "Your rule “Camera and microphone data stays in my home” doesn’t settle this."
+   }
+  },
+  {
+   "id": "aqara-w200.aqara-zigbee-household-device-state-bridged-to-external",
+   "title": "Aqara Zigbee / household device state bridged to external Matter ecosystems",
+   "workbook_text": "Aqara Zigbee / household device state bridged to external Matter ecosystems",
+   "summary": "Goes to your smart-home app · integration",
+   "summary_parts": {
+    "who": "Goes to your smart-home app",
+    "purpose": "integration"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:householdDeviceState",
+    "purpose": "pat:ecosystemIntegration",
+    "action": "ppd:transfer",
+    "source": "ppd:householdProvided",
+    "handling_context": "pat:smartHomeEcosystem",
+    "constraints": []
+   },
+   "display": {
+    "what": "The state of your home devices",
+    "why": "Working with your smart-home app",
+    "what_happens": "Sent to another party",
+    "comes_from": "Your household",
+    "handled_by": "Your smart-home app (Alexa, Google…)",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-e07af878",
+    "label": "Device and network details sent to a third party"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "You choose whether to connect the thermostat to a Matter ecosystem such as Apple Home; the manual says unbinding may turn off features such as schedules."
+   },
+   "evidence": "source_linked",
+   "evaluation": {
+    "verdict": "decision_required",
+    "rule_id": null,
+    "reason": "None of your rules covers this."
+   }
+  },
+  {
+   "id": "aqara-w200.device-diagnostics-logs-status-sent-to-aqara",
+   "title": "Device logs sent to Aqara",
+   "workbook_text": "Device diagnostics / logs / status sent to Aqara",
+   "summary": "Goes to Aqara · diagnostics",
+   "summary_parts": {
+    "who": "Goes to Aqara",
+    "purpose": "diagnostics"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:diagnosticData",
+    "purpose": "ppd:diagnosticsAndMaintenance",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "pat:aqaraService",
+    "constraints": []
+   },
+   "display": {
+    "what": "Device logs and status",
+    "why": "Diagnostics and maintenance",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "Aqara",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-d0fc350e",
+    "label": "Device and network details sent to a vendor"
+   },
+   "control": {
+    "type": "external_request",
+    "type_label": "Only by contacting the vendor",
+    "necessity": "unknown",
+    "note": "You can ask Aqara to delete your data or withdraw your consent by emailing privacy@Lumiunited.com; the policy describes no in-app switch for device logs."
+   },
+   "evidence": "source_linked",
+   "evaluation": {
+    "verdict": "decision_required",
+    "rule_id": null,
+    "reason": "None of your rules covers this."
+   }
+  },
+  {
+   "id": "aqara-w200.device-usage-history-sent-to-aqara-services",
+   "title": "Usage history sent to Aqara",
+   "workbook_text": "Device usage history sent to Aqara services",
+   "summary": "Goes to Aqara · product use",
+   "summary_parts": {
+    "who": "Goes to Aqara",
+    "purpose": "product use"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:usageData",
+    "purpose": "pat:usageEfficiency",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "pat:aqaraService",
+    "constraints": []
+   },
+   "display": {
+    "what": "How you use the device",
+    "why": "Product use",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "Aqara",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-976049b7",
+    "label": "Usage data sent to a vendor"
+   },
+   "control": {
+    "type": "external_request",
+    "type_label": "Only by contacting the vendor",
+    "necessity": "unknown",
+    "note": "You can ask Aqara to delete your data or withdraw your consent by emailing privacy@Lumiunited.com; the policy describes no in-app switch for usage history."
+   },
+   "evidence": "source_linked",
+   "evaluation": {
+    "verdict": "decision_required",
+    "rule_id": null,
+    "reason": "None of your rules covers this."
+   }
+  },
+  {
+   "id": "aqara-w200.wi-fi-network-technical-telemetry-sent-to-aqara",
+   "title": "Wi-Fi details sent to Aqara",
+   "workbook_text": "Wi-Fi / network technical telemetry sent to Aqara",
+   "summary": "Goes to Aqara · diagnostics",
+   "summary_parts": {
+    "who": "Goes to Aqara",
+    "purpose": "diagnostics"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:networkTelemetry",
+    "purpose": "ppd:diagnosticsAndMaintenance",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "pat:aqaraService",
+    "constraints": []
+   },
+   "display": {
+    "what": "Wi-Fi connection details",
+    "why": "Diagnostics and maintenance",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "Aqara",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-d0fc350e",
+    "label": "Device and network details sent to a vendor"
+   },
+   "control": {
+    "type": "external_request",
+    "type_label": "Only by contacting the vendor",
+    "necessity": "unknown",
+    "note": "You can ask Aqara to delete your data or withdraw your consent by emailing privacy@Lumiunited.com; the policy describes no in-app switch for Wi-Fi information."
+   },
+   "evidence": "source_linked",
+   "evaluation": {
+    "verdict": "decision_required",
+    "rule_id": null,
+    "reason": "None of your rules covers this."
+   }
+  },
+  {
+   "id": "aqara-w200.mac-device-identifier-sent-to-aqara",
+   "title": "MAC / device identifier sent to Aqara",
+   "workbook_text": "MAC / device identifier sent to Aqara",
+   "summary": "Goes to Aqara · diagnostics",
+   "summary_parts": {
+    "who": "Goes to Aqara",
+    "purpose": "diagnostics"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:identifierData",
+    "purpose": "ppd:diagnosticsAndMaintenance",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "pat:aqaraService",
+    "constraints": []
+   },
+   "display": {
+    "what": "Names, accounts or device IDs",
+    "why": "Diagnostics and maintenance",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "Aqara",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-f2c2d35a",
+    "label": "Identifiers and accounts sent to a vendor"
+   },
+   "control": {
+    "type": "external_request",
+    "type_label": "Only by contacting the vendor",
+    "necessity": "unknown",
+    "note": "You can ask Aqara to delete your data or withdraw your consent by emailing privacy@Lumiunited.com; the policy describes no in-app switch for device identifiers."
+   },
+   "evidence": "source_linked",
+   "evaluation": {
+    "verdict": "decision_required",
+    "rule_id": null,
+    "reason": "None of your rules covers this."
+   }
+  },
+  {
+   "id": "aqara-w200.remote-thermostat-command-through-aqara-home-service",
+   "title": "Remote thermostat command through Aqara Home service",
+   "workbook_text": "Remote thermostat command through Aqara Home service",
+   "summary": "Collected by Aqara · remote control",
+   "summary_parts": {
+    "who": "Collected by Aqara",
+    "purpose": "remote control"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:thermostatControlCommand",
+    "purpose": "pat:remoteControl",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "pat:aqaraService",
+    "constraints": []
+   },
+   "display": {
+    "what": "Thermostat commands",
+    "why": "Controlling the device away from home",
+    "what_happens": "Collected",
+    "comes_from": "You",
+    "handled_by": "Aqara",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-b019ee2b",
+    "label": "Device and network details collected by a vendor"
+   },
+   "control": {
+    "type": "user_initiated",
+    "type_label": "Happens only when you do it",
+    "necessity": "optional",
+    "note": "A remote thermostat command is sent only when you send it from your phone."
+   },
+   "evidence": "needs_source",
+   "evaluation": {
+    "verdict": "indeterminate",
+    "rule_id": null,
+    "reason": "We could not find a source for this flow yet, so we cannot compare it with your rules."
+   }
+  },
+  {
+   "id": "aqara-w200.doorbell-visitor-snapshot-displayed-on-w200",
+   "title": "Doorbell visitor snapshot displayed on W200",
+   "workbook_text": "Doorbell visitor snapshot displayed on W200",
+   "summary": "Stays in your home · visitors",
+   "summary_parts": {
+    "who": "Stays in your home",
+    "purpose": "visitors"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:visualData",
+    "purpose": "pat:visitorViewing",
+    "action": "ppd:use",
+    "source": "pat:pairedDoorbell",
+    "handling_context": "ppd:householdContext",
+    "constraints": [
+     "processing_boundary=ppd:inHomeOnly"
+    ]
+   },
+   "display": {
+    "what": "Video or photos",
+    "why": "Showing who is at the door",
+    "what_happens": "Used",
+    "comes_from": "A paired doorbell",
+    "handled_by": "Your household",
+    "kept": "Not stated",
+    "limit": "Stays in your home"
+   },
+   "core_group": {
+    "id": "ck-f838b9a1",
+    "label": "Content (video, audio, photos) used at home"
+   },
+   "control": {
+    "type": "setup_step",
+    "type_label": "Provided during setup",
+    "necessity": "optional",
+    "note": "You choose whether to link a compatible Aqara doorbell to the thermostat in the Aqara Home app."
+   },
+   "evidence": "source_linked",
+   "evaluation": {
+    "verdict": "conditionally_satisfiable",
+    "rule_id": "r2",
+    "reason": "Fine only because it stays in your home."
+   }
+  },
+  {
+   "id": "aqara-w200.setup-wi-fi-network-credential-entered-during-pairing",
+   "title": "Wi-Fi network credential entered during pairing",
+   "workbook_text": "Setup: Wi-Fi network credential entered during pairing",
+   "summary": "Stays in your home · setup",
+   "summary_parts": {
+    "who": "Stays in your home",
+    "purpose": "setup"
+   },
+   "phase": "setup",
+   "taxonomy": {
+    "data_type": "pat:networkCredentialData",
+    "purpose": "pat:deviceSetup",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:householdContext",
+    "constraints": []
+   },
+   "display": {
+    "what": "Your Wi-Fi password",
+    "why": "Setting up the device",
+    "what_happens": "Collected",
+    "comes_from": "You",
+    "handled_by": "Your household",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-8d3ef5b3",
+    "label": "Device and network details collected at home"
+   },
+   "control": {
+    "type": "setup_step",
+    "type_label": "Provided during setup",
+    "necessity": "required_for_feature",
+    "note": "You enter your Wi-Fi password when pairing the thermostat; it needs it to get online."
+   },
+   "evidence": "source_linked",
+   "evaluation": {
+    "verdict": "compatible",
+    "rule_id": "r4",
+    "reason": "Covered by “Data a device needs to work”."
+   }
+  },
+  {
+   "id": "aqara-w200.setup-aqara-account-identifiers-email-phone-username-password",
+   "title": "Aqara account identifiers",
+   "workbook_text": "Setup: Aqara account identifiers (email/phone/username/password/social sign-in)",
+   "summary": "Collected by Aqara · account setup",
+   "summary_parts": {
+    "who": "Collected by Aqara",
+    "purpose": "account setup"
+   },
+   "phase": "setup",
+   "taxonomy": {
+    "data_type": "ppd:identifierData",
+    "purpose": "pat:accountSetup",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "pat:aqaraService",
+    "constraints": []
+   },
+   "display": {
+    "what": "Names, accounts or device IDs",
+    "why": "Setting up your account",
+    "what_happens": "Collected",
+    "comes_from": "You",
+    "handled_by": "Aqara",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-a323000c",
+    "label": "Identifiers and accounts collected by a vendor"
+   },
+   "control": {
+    "type": "setup_step",
+    "type_label": "Provided during setup",
+    "necessity": "required_for_feature",
+    "note": "You create or sign in to an Aqara account during setup."
+   },
+   "evidence": "source_linked",
+   "evaluation": {
+    "verdict": "compatible",
+    "rule_id": "r4",
+    "reason": "Covered by “Data a device needs to work”."
+   }
+  },
+  {
+   "id": "aqara-w200.setup-hvac-system-wiring-compatibility-profile",
+   "title": "HVAC system / wiring compatibility profile",
+   "workbook_text": "Setup: HVAC system / wiring compatibility profile",
+   "summary": "Stays in your home · setup",
+   "summary_parts": {
+    "who": "Stays in your home",
+    "purpose": "setup"
+   },
+   "phase": "setup",
+   "taxonomy": {
+    "data_type": "pat:hvacSystemProfileData",
+    "purpose": "pat:deviceSetup",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:householdContext",
+    "constraints": []
+   },
+   "display": {
+    "what": "Your heating and cooling setup",
+    "why": "Setting up the device",
+    "what_happens": "Collected",
+    "comes_from": "You",
+    "handled_by": "Your household",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-8d3ef5b3",
+    "label": "Device and network details collected at home"
+   },
+   "control": {
+    "type": "setup_step",
+    "type_label": "Provided during setup",
+    "necessity": "required_for_feature",
+    "note": "You answer questions about your heating and cooling wiring during setup."
+   },
+   "evidence": "source_linked",
+   "evaluation": {
+    "verdict": "compatible",
+    "rule_id": "r4",
+    "reason": "Covered by “Data a device needs to work”."
+   }
+  },
+  {
+   "id": "aqara-w200.linked-temperature-sensor-input-for-hvac-control",
+   "title": "Linked temperature sensor input for HVAC control",
+   "workbook_text": "Linked temperature sensor input for HVAC control",
+   "summary": "Stays in your home · climate",
+   "summary_parts": {
+    "who": "Stays in your home",
+    "purpose": "climate"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:environmentData",
+    "purpose": "pat:hvacControl",
+    "action": "ppd:collection",
+    "source": "pat:linkedClimateSensor",
+    "handling_context": "ppd:householdContext",
+    "constraints": []
+   },
+   "display": {
+    "what": "Temperature, humidity or light readings",
+    "why": "Heating and cooling",
+    "what_happens": "Collected",
+    "comes_from": "A linked climate sensor",
+    "handled_by": "Your household",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-35d576be",
+    "label": "Sensor readings collected at home"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "You choose which linked sensors and spaces the thermostat uses."
+   },
+   "evidence": "source_linked",
+   "evaluation": {
+    "verdict": "compatible",
+    "rule_id": null,
+    "reason": "Nothing here goes against your rules."
+   }
+  },
+  {
+   "id": "aqara-w200.linked-humidity-sensor-input-for-climate-balancing",
+   "title": "Linked humidity sensor input for climate balancing",
+   "workbook_text": "Linked humidity sensor input for climate balancing",
+   "summary": "Stays in your home · climate",
+   "summary_parts": {
+    "who": "Stays in your home",
+    "purpose": "climate"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:environmentData",
+    "purpose": "pat:hvacControl",
+    "action": "ppd:collection",
+    "source": "pat:linkedClimateSensor",
+    "handling_context": "ppd:householdContext",
+    "constraints": []
+   },
+   "display": {
+    "what": "Temperature, humidity or light readings",
+    "why": "Heating and cooling",
+    "what_happens": "Collected",
+    "comes_from": "A linked climate sensor",
+    "handled_by": "Your household",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-35d576be",
+    "label": "Sensor readings collected at home"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "You choose which linked sensors and spaces the thermostat uses."
+   },
+   "evidence": "source_linked",
+   "evaluation": {
+    "verdict": "compatible",
+    "rule_id": null,
+    "reason": "Nothing here goes against your rules."
+   }
+  },
+  {
+   "id": "aqara-w200.built-in-mmwave-presence-occupancy-sensing",
+   "title": "Built-in mmWave presence/occupancy sensing",
+   "workbook_text": "Built-in mmWave presence/occupancy sensing",
+   "summary": "Stays in your home · presence",
+   "summary_parts": {
+    "who": "Stays in your home",
+    "purpose": "presence"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:presenceData",
+    "purpose": "pat:occupancyControl",
+    "action": "ppd:collection",
+    "source": "pat:mmWaveSensor",
+    "handling_context": "ppd:householdContext",
+    "constraints": []
+   },
+   "display": {
+    "what": "Whether someone is there",
+    "why": "Detecting if someone is home",
+    "what_happens": "Collected",
+    "comes_from": "The built-in presence sensor",
+    "handled_by": "Your household",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-42c4986b",
+    "label": "Sensor readings collected at home"
+   },
+   "control": {
+    "type": "none_documented",
+    "type_label": "No control found",
+    "necessity": "optional",
+    "note": null
+   },
+   "evidence": "source_linked",
+   "evaluation": {
+    "verdict": "compatible",
+    "rule_id": null,
+    "reason": "Nothing here goes against your rules."
+   }
+  },
+  {
+   "id": "aqara-w200.presence-data-used-for-follow-presence-adaptive-hvac",
+   "title": "Presence data used for Follow Presence / adaptive HVAC",
+   "workbook_text": "Presence data used for Follow Presence / adaptive HVAC",
+   "summary": "Stays in your home · climate",
+   "summary_parts": {
+    "who": "Stays in your home",
+    "purpose": "climate"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:presenceData",
+    "purpose": "pat:adaptiveClimate",
+    "action": "ppd:use",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "ppd:householdContext",
+    "constraints": []
+   },
+   "display": {
+    "what": "Whether someone is there",
+    "why": "Adjusting the climate automatically",
+    "what_happens": "Used",
+    "comes_from": "Worked out from earlier data",
+    "handled_by": "Your household",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-bfcbc89a",
+    "label": "Sensor readings used at home"
+   },
+   "control": {
+    "type": "none_documented",
+    "type_label": "No control found",
+    "necessity": "optional",
+    "note": null
+   },
+   "evidence": "source_linked",
+   "evaluation": {
+    "verdict": "compatible",
+    "rule_id": null,
+    "reason": "Nothing here goes against your rules."
+   }
+  },
+  {
+   "id": "aqara-w200.climate-environment-data-used-for-adaptive-hvac",
+   "title": "Climate/environment data used for adaptive HVAC",
+   "workbook_text": "Climate/environment data used for adaptive HVAC",
+   "summary": "Stays in your home · climate",
+   "summary_parts": {
+    "who": "Stays in your home",
+    "purpose": "climate"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:environmentData",
+    "purpose": "pat:adaptiveClimate",
+    "action": "ppd:use",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "ppd:householdContext",
+    "constraints": []
+   },
+   "display": {
+    "what": "Temperature, humidity or light readings",
+    "why": "Adjusting the climate automatically",
+    "what_happens": "Used",
+    "comes_from": "Worked out from earlier data",
+    "handled_by": "Your household",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-bfcbc89a",
+    "label": "Sensor readings used at home"
+   },
+   "control": {
+    "type": "none_documented",
+    "type_label": "No control found",
+    "necessity": "optional",
+    "note": null
+   },
+   "evidence": "source_linked",
+   "evaluation": {
+    "verdict": "compatible",
+    "rule_id": null,
+    "reason": "Nothing here goes against your rules."
+   }
+  },
+  {
+   "id": "aqara-w200.smart-lock-unlock-command-from-w200-screen",
+   "title": "Smart-lock unlock command from W200 screen",
+   "workbook_text": "Smart-lock unlock command from W200 screen",
+   "summary": "Stays in your home · access",
+   "summary_parts": {
+    "who": "Stays in your home",
+    "purpose": "access"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:lockControlCommand",
+    "purpose": "pat:accessControl",
+    "action": "ppd:transfer",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:householdContext",
+    "constraints": []
+   },
+   "display": {
+    "what": "Lock and unlock commands",
+    "why": "Controlling who can get in",
+    "what_happens": "Sent within your home",
+    "comes_from": "You",
+    "handled_by": "Your household",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-6ce82887",
+    "label": "Device and network details sent within your home"
+   },
+   "control": {
+    "type": "user_initiated",
+    "type_label": "Happens only when you do it",
+    "necessity": "optional",
+    "note": "The unlock command is sent only when you press unlock on the thermostat screen."
+   },
+   "evidence": "source_linked",
+   "evaluation": {
+    "verdict": "compatible",
+    "rule_id": null,
+    "reason": "Nothing here goes against your rules."
+   }
+  },
+  {
+   "id": "aqara-w200.smart-home-device-scene-control-from-w200-panel",
+   "title": "Smart-home device / scene control from W200 panel",
+   "workbook_text": "Smart-home device / scene control from W200 panel",
+   "summary": "Stays in your home · control",
+   "summary_parts": {
+    "who": "Stays in your home",
+    "purpose": "control"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:deviceControlCommand",
+    "purpose": "pat:smartHomeControl",
+    "action": "ppd:transfer",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:householdContext",
+    "constraints": []
+   },
+   "display": {
+    "what": "Commands to your devices",
+    "why": "Controlling other devices",
+    "what_happens": "Sent within your home",
+    "comes_from": "You",
+    "handled_by": "Your household",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-6ce82887",
+    "label": "Device and network details sent within your home"
+   },
+   "control": {
+    "type": "user_initiated",
+    "type_label": "Happens only when you do it",
+    "necessity": "optional",
+    "note": "Device and scene commands are sent only when you use the thermostat panel."
+   },
+   "evidence": "source_linked",
+   "evaluation": {
+    "verdict": "compatible",
+    "rule_id": null,
+    "reason": "Nothing here goes against your rules."
+   }
+  },
+  {
+   "id": "aqara-w200.control-command-received-from-external-matter-ecosystem",
+   "title": "Control command received from external Matter ecosystem",
+   "workbook_text": "Control command received from external Matter ecosystem",
+   "summary": "Stays in your home · integration",
+   "summary_parts": {
+    "who": "Stays in your home",
+    "purpose": "integration"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:deviceControlCommand",
+    "purpose": "pat:ecosystemIntegration",
+    "action": "ppd:collection",
+    "source": "pat:smartHomeEcosystemProvided",
+    "handling_context": "ppd:householdContext",
+    "constraints": []
+   },
+   "display": {
+    "what": "Commands to your devices",
+    "why": "Working with your smart-home app",
+    "what_happens": "Collected",
+    "comes_from": "Your smart-home app",
+    "handled_by": "Your household",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-50df5684",
+    "label": "Device and network details collected at home"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "Commands from a Matter ecosystem arrive only if you connect the thermostat to one, and you can unbind it."
+   },
+   "evidence": "source_linked",
+   "evaluation": {
+    "verdict": "compatible",
+    "rule_id": null,
+    "reason": "Nothing here goes against your rules."
+   }
+  },
+  {
+   "id": "aqara-w200.installation-pairing-location-metadata-device-location-region-city",
+   "title": "Installation / pairing location metadata",
+   "workbook_text": "Installation / pairing location metadata (device location, region/city/timezone)",
+   "summary": "Collected by Aqara · setup",
+   "summary_parts": {
+    "who": "Collected by Aqara",
+    "purpose": "setup"
+   },
+   "phase": "setup",
+   "taxonomy": {
+    "data_type": "ppd:locationData",
+    "purpose": "pat:deviceSetup",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "pat:aqaraService",
+    "constraints": []
+   },
+   "display": {
+    "what": "Location",
+    "why": "Setting up the device",
+    "what_happens": "Collected",
+    "comes_from": "You",
+    "handled_by": "Aqara",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-3a2fb945",
+    "label": "Location collected by a vendor"
+   },
+   "control": {
+    "type": "setup_step",
+    "type_label": "Provided during setup",
+    "necessity": "unknown",
+    "note": "Location details are provided during pairing or setup."
+   },
+   "evidence": "source_linked",
+   "evaluation": {
+    "verdict": "compatible",
+    "rule_id": null,
+    "reason": "Nothing here goes against your rules."
+   }
+  }
+ ]
+}
