@@ -14,6 +14,8 @@ It implements the nine phone screens from the design canvas (1a Scan, 1b/1c Prev
 3a My home, 3b Device library, 3c Device detail, 3d Household rules), plus the questions, the policy review page, the rule
 editor and a sources page. The backend does not exist yet, so every call is answered from static JSON in `public/mock/`.
 
+App: https://ppd-preference-app.vercel.app/#/rules
+
 ## Run it
 
 ```bash
