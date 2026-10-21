@@ -45,6 +45,28 @@ export function BottomNav() {
   )
 }
 
+/** The desktop navigation rail (hidden on phones, where BottomNav is used). */
+export function SideRail() {
+  const items = [
+    { to: '/', icon: 'home', label: 'My home', end: true },
+    { to: '/scan', icon: 'scan', label: 'Scan', end: false },
+    { to: '/rules', icon: 'rules', label: 'Household rules', end: false },
+    { to: '/library', icon: 'plus', label: 'Device library', end: false },
+    { to: '/status', icon: 'status', label: 'System status', end: false },
+  ] as const
+  return (
+    <nav className="rail" aria-label="Main">
+      <div className="rail-brand">Privacy Preferences</div>
+      {items.map((i) => (
+        <NavLink key={i.to} to={i.to} end={i.end} className={({ isActive }) => 'rail-item' + (isActive ? ' on' : '')}>
+          <Icon name={i.icon} size={20} />
+          <span>{i.label}</span>
+        </NavLink>
+      ))}
+    </nav>
+  )
+}
+
 /* ---------- lists ---------- */
 export const SectionHeader = ({ children }: { children: ReactNode }) => <div className="sh">{children}</div>
 export const Footnote = ({ children }: { children: ReactNode }) => <div className="sf">{children}</div>

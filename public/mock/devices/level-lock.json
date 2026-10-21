@@ -22,12 +22,12 @@
    },
    "phase": "setup",
    "taxonomy": {
-    "data_type": "pat:pairingCredentialData",
-    "purpose": "pat:deviceSetup",
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:collection",
     "source": "ppd:userProvided",
     "handling_context": "ppd:householdContext",
-    "constraints": []
+    "constraints": {}
    },
    "display": {
     "what": "A pairing code",
@@ -69,11 +69,11 @@
    "phase": "setup",
    "taxonomy": {
     "data_type": "ppd:identifierData",
-    "purpose": "pat:accountSetup",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:collection",
     "source": "ppd:userProvided",
-    "handling_context": "pat:levelService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "Names, accounts or device IDs",
@@ -114,12 +114,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:householdMemberAccessGrant",
-    "purpose": "pat:accessSharing",
+    "data_type": "ppd:profileData",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:collection",
     "source": "ppd:userProvided",
-    "handling_context": "pat:levelService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "Who you give access to",
@@ -161,11 +161,11 @@
    "phase": "runtime",
    "taxonomy": {
     "data_type": "ppd:usageData",
-    "purpose": "pat:accessControl",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:collection",
-    "source": "pat:lockMechanism",
+    "source": "ppd:participantObserved",
     "handling_context": "ppd:householdContext",
-    "constraints": []
+    "constraints": {}
    },
    "display": {
     "what": "How you use the device",
@@ -207,13 +207,13 @@
    "phase": "runtime",
    "taxonomy": {
     "data_type": "ppd:usageData",
-    "purpose": "pat:activityHistory",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:transfer",
     "source": "ppd:participantGenerated",
-    "handling_context": "pat:levelService",
-    "constraints": [
-     "retention=ppd:indefinite"
-    ]
+    "handling_context": "ppd:vendorContext",
+    "constraints": {
+     "retention": "ppd:indefinite"
+    }
    },
    "display": {
     "what": "How you use the device",
@@ -255,11 +255,11 @@
    "phase": "runtime",
    "taxonomy": {
     "data_type": "ppd:usageData",
-    "purpose": "pat:activityHistory",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:use",
     "source": "ppd:vendorProvided",
     "handling_context": "ppd:householdContext",
-    "constraints": []
+    "constraints": {}
    },
    "display": {
     "what": "How you use the device",
@@ -301,11 +301,11 @@
    "phase": "runtime",
    "taxonomy": {
     "data_type": "ppd:identifierData",
-    "purpose": "pat:activityHistory",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:use",
     "source": "ppd:vendorProvided",
     "handling_context": "ppd:householdContext",
-    "constraints": []
+    "constraints": {}
    },
    "display": {
     "what": "Names, accounts or device IDs",
@@ -347,11 +347,11 @@
    "phase": "runtime",
    "taxonomy": {
     "data_type": "ppd:identifierData",
-    "purpose": "pat:accessSharing",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:collection",
     "source": "ppd:userProvided",
-    "handling_context": "pat:levelService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "Names, accounts or device IDs",
@@ -393,11 +393,11 @@
    "phase": "runtime",
    "taxonomy": {
     "data_type": "ppd:identifierData",
-    "purpose": "pat:accessSharing",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:collection",
     "source": "ppd:userProvided",
-    "handling_context": "pat:levelService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "Names, accounts or device IDs",
@@ -439,11 +439,11 @@
    "phase": "runtime",
    "taxonomy": {
     "data_type": "ppd:locationData",
-    "purpose": "pat:autoUnlock",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:collection",
-    "source": "pat:mobileLocationService",
-    "handling_context": "pat:levelService",
-    "constraints": []
+    "source": "ppd:participantObserved",
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "Location",
@@ -484,12 +484,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:geofenceState",
-    "purpose": "pat:autoUnlock",
+    "data_type": "ppd:locationData",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:use",
     "source": "ppd:derivedFromPriorData",
-    "handling_context": "pat:levelService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "Whether you are home or away",
@@ -531,11 +531,11 @@
    "phase": "setup",
    "taxonomy": {
     "data_type": "ppd:locationData",
-    "purpose": "pat:deviceSetup",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:collection",
     "source": "ppd:userProvided",
-    "handling_context": "pat:levelService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "Location",
@@ -576,12 +576,12 @@
    },
    "phase": "setup",
    "taxonomy": {
-    "data_type": "pat:visualData",
-    "purpose": "pat:deviceSetup",
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:collection",
     "source": "ppd:userProvided",
-    "handling_context": "pat:levelService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "Video or photos",
@@ -622,12 +622,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:lockControlCommand",
-    "purpose": "pat:remoteAccessControl",
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:collection",
     "source": "ppd:userProvided",
-    "handling_context": "pat:levelService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "Lock and unlock commands",
@@ -668,12 +668,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:lockState",
-    "purpose": "pat:remoteAccessControl",
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:transfer",
     "source": "ppd:participantGenerated",
-    "handling_context": "pat:levelService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "Whether the door is locked",
@@ -714,12 +714,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:lockControlCommand",
-    "purpose": "pat:ecosystemIntegration",
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:collection",
-    "source": "pat:smartHomeEcosystemProvided",
+    "source": "ppd:thirdPartyProvided",
     "handling_context": "ppd:householdContext",
-    "constraints": []
+    "constraints": {}
    },
    "display": {
     "what": "Lock and unlock commands",
@@ -760,12 +760,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:lockState",
-    "purpose": "pat:ecosystemIntegration",
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:transfer",
     "source": "ppd:participantGenerated",
-    "handling_context": "pat:smartHomeEcosystem",
-    "constraints": []
+    "handling_context": "ppd:thirdPartyContext",
+    "constraints": {}
    },
    "display": {
     "what": "Whether the door is locked",
@@ -806,12 +806,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:diagnosticData",
+    "data_type": "ppd:deviceAndNetworkData",
     "purpose": "ppd:diagnosticsAndMaintenance",
     "action": "ppd:transfer",
     "source": "ppd:participantGenerated",
-    "handling_context": "pat:levelService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "Device logs and status",
@@ -856,8 +856,8 @@
     "purpose": "ppd:diagnosticsAndMaintenance",
     "action": "ppd:transfer",
     "source": "ppd:participantGenerated",
-    "handling_context": "pat:levelService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "Names, accounts or device IDs",
@@ -899,11 +899,11 @@
    "phase": "runtime",
    "taxonomy": {
     "data_type": "ppd:identifierData",
-    "purpose": "pat:localConnectivity",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:transfer",
     "source": "ppd:participantGenerated",
     "handling_context": "ppd:householdContext",
-    "constraints": []
+    "constraints": {}
    },
    "display": {
     "what": "Names, accounts or device IDs",
@@ -945,11 +945,11 @@
    "phase": "runtime",
    "taxonomy": {
     "data_type": "ppd:usageData",
-    "purpose": "pat:researchAndDevelopment",
+    "purpose": "ppd:analyticsAndImprovement",
     "action": "ppd:inference",
     "source": "ppd:derivedFromPriorData",
-    "handling_context": "pat:levelService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "How you use the device",

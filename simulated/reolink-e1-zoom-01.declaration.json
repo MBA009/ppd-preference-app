@@ -1,0 +1,211 @@
+{
+  "device_id": "reolink-e1-zoom-01",
+  "declaration_id": "reolink-e1-zoom-01-declaration",
+  "taxonomy": {
+    "release": "ppd-core-2026-05"
+  },
+  "statements": [
+    {
+      "statement_id": "setup-wi-fi-network-password-credential-entered-during",
+      "data_type": "ppd:deviceAndNetworkData",
+      "purpose": "ppd:coreFunctionality",
+      "action": "ppd:collection",
+      "source": "ppd:userProvided",
+      "handling_context": "ppd:householdContext"
+    },
+    {
+      "statement_id": "setup-local-camera-device-password-created-during-initialization",
+      "data_type": "ppd:deviceAndNetworkData",
+      "purpose": "ppd:coreFunctionality",
+      "action": "ppd:collection",
+      "source": "ppd:userProvided",
+      "handling_context": "ppd:householdContext"
+    },
+    {
+      "statement_id": "optional-reolink-account-identifiers-for-cloud-smart-home",
+      "data_type": "ppd:identifierData",
+      "purpose": "ppd:coreFunctionality",
+      "action": "ppd:collection",
+      "source": "ppd:userProvided",
+      "handling_context": "ppd:vendorContext"
+    },
+    {
+      "statement_id": "video-capture-from-camera-sensor",
+      "data_type": "ppd:contentData",
+      "purpose": "ppd:security",
+      "action": "ppd:collection",
+      "source": "ppd:participantObserved",
+      "handling_context": "ppd:householdContext"
+    },
+    {
+      "statement_id": "audio-capture-from-built-in-microphone",
+      "data_type": "ppd:contentData",
+      "purpose": "ppd:security",
+      "action": "ppd:collection",
+      "source": "ppd:participantObserved",
+      "handling_context": "ppd:householdContext"
+    },
+    {
+      "statement_id": "ambient-light-daylight-sensing-for-camera-operation",
+      "data_type": "ppd:sensorData",
+      "purpose": "ppd:coreFunctionality",
+      "action": "ppd:collection",
+      "source": "ppd:participantObserved",
+      "handling_context": "ppd:householdContext"
+    },
+    {
+      "statement_id": "motion-event-inferred-by-local-detection",
+      "data_type": "ppd:sensorData",
+      "purpose": "ppd:security",
+      "action": "ppd:inference",
+      "source": "ppd:derivedFromPriorData",
+      "handling_context": "ppd:householdContext",
+      "constraints": {
+        "processing_boundary": "ppd:onDeviceOnly"
+      }
+    },
+    {
+      "statement_id": "person-event-inferred-by-local-ai",
+      "data_type": "ppd:sensorData",
+      "purpose": "ppd:security",
+      "action": "ppd:inference",
+      "source": "ppd:derivedFromPriorData",
+      "handling_context": "ppd:householdContext",
+      "constraints": {
+        "processing_boundary": "ppd:onDeviceOnly"
+      }
+    },
+    {
+      "statement_id": "pet-event-inferred-by-local-ai",
+      "data_type": "ppd:sensorData",
+      "purpose": "ppd:security",
+      "action": "ppd:inference",
+      "source": "ppd:derivedFromPriorData",
+      "handling_context": "ppd:householdContext",
+      "constraints": {
+        "processing_boundary": "ppd:onDeviceOnly"
+      }
+    },
+    {
+      "statement_id": "crying-sound-event-inferred-by-local-ai",
+      "data_type": "ppd:sensorData",
+      "purpose": "ppd:security",
+      "action": "ppd:inference",
+      "source": "ppd:derivedFromPriorData",
+      "handling_context": "ppd:householdContext",
+      "constraints": {
+        "processing_boundary": "ppd:onDeviceOnly"
+      }
+    },
+    {
+      "statement_id": "ptz-auto-tracking-uses-detection-results-to-follow",
+      "data_type": "ppd:sensorData",
+      "purpose": "ppd:security",
+      "action": "ppd:use",
+      "source": "ppd:derivedFromPriorData",
+      "handling_context": "ppd:householdContext"
+    },
+    {
+      "statement_id": "local-microsd-video-recording-playback",
+      "data_type": "ppd:contentData",
+      "purpose": "ppd:security",
+      "action": "ppd:use",
+      "source": "ppd:derivedFromPriorData",
+      "handling_context": "ppd:householdContext"
+    },
+    {
+      "statement_id": "local-microsd-audio-recording-playback",
+      "data_type": "ppd:contentData",
+      "purpose": "ppd:security",
+      "action": "ppd:use",
+      "source": "ppd:derivedFromPriorData",
+      "handling_context": "ppd:householdContext"
+    },
+    {
+      "statement_id": "video-transferred-to-local-nvr-home-hub-ftp",
+      "data_type": "ppd:contentData",
+      "purpose": "ppd:security",
+      "action": "ppd:transfer",
+      "source": "ppd:participantGenerated",
+      "handling_context": "ppd:householdContext"
+    },
+    {
+      "statement_id": "live-recorded-video-delivered-through-reolink-remote-app",
+      "data_type": "ppd:contentData",
+      "purpose": "ppd:coreFunctionality",
+      "action": "ppd:transfer",
+      "source": "ppd:participantGenerated",
+      "handling_context": "ppd:vendorContext"
+    },
+    {
+      "statement_id": "two-way-audio-from-remote-user-delivered-to",
+      "data_type": "ppd:contentData",
+      "purpose": "ppd:coreFunctionality",
+      "action": "ppd:collection",
+      "source": "ppd:vendorProvided",
+      "handling_context": "ppd:householdContext"
+    },
+    {
+      "statement_id": "cloud-video-upload-when-reolink-cloud-is-enabled",
+      "data_type": "ppd:contentData",
+      "purpose": "ppd:coreFunctionality",
+      "action": "ppd:transfer",
+      "source": "ppd:participantGenerated",
+      "handling_context": "ppd:vendorContext",
+      "constraints": {
+        "retention": "ppd:indefinite"
+      }
+    },
+    {
+      "statement_id": "device-alert-event-information-sent-for-push-notifications",
+      "data_type": "ppd:sensorData",
+      "purpose": "ppd:communicationsAndNotifications",
+      "action": "ppd:transfer",
+      "source": "ppd:participantGenerated",
+      "handling_context": "ppd:vendorContext"
+    },
+    {
+      "statement_id": "email-alert-event-sent-when-email-alerts-are",
+      "data_type": "ppd:sensorData",
+      "purpose": "ppd:communicationsAndNotifications",
+      "action": "ppd:transfer",
+      "source": "ppd:participantGenerated",
+      "handling_context": "ppd:thirdPartyContext"
+    },
+    {
+      "statement_id": "live-video-shared-to-alexa-google-assistant-display",
+      "data_type": "ppd:contentData",
+      "purpose": "ppd:coreFunctionality",
+      "action": "ppd:transfer",
+      "source": "ppd:participantGenerated",
+      "handling_context": "ppd:thirdPartyContext"
+    },
+    {
+      "statement_id": "device-uid-sent-to-reolink-for-device-binding",
+      "data_type": "ppd:identifierData",
+      "purpose": "ppd:coreFunctionality",
+      "action": "ppd:transfer",
+      "source": "ppd:participantGenerated",
+      "handling_context": "ppd:vendorContext"
+    },
+    {
+      "statement_id": "wi-fi-ssid-accessed-locally-during-setup-and",
+      "data_type": "ppd:deviceAndNetworkData",
+      "purpose": "ppd:coreFunctionality",
+      "action": "ppd:collection",
+      "source": "ppd:participantObserved",
+      "handling_context": "ppd:householdContext",
+      "constraints": {
+        "retention": "ppd:ephemeral"
+      }
+    },
+    {
+      "statement_id": "optional-reolink-app-usage-analytics-experience-program-telemetry",
+      "data_type": "ppd:usageData",
+      "purpose": "ppd:analyticsAndImprovement",
+      "action": "ppd:transfer",
+      "source": "ppd:participantGenerated",
+      "handling_context": "ppd:vendorContext"
+    }
+  ]
+}

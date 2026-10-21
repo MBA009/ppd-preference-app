@@ -19,6 +19,22 @@ an offline mock mode answers the same calls from static JSON in `public/mock/`.
 
 Needs Node 24 or later (app-api uses Node's built-in SQLite).
 
+### The whole demo stack (recommended)
+
+With the two CableLabs repositories (`habanero-ppd-gateway`, `habanero-ppd-clients`) checked out next to this one,
+and Go and Python 3 installed:
+
+```bash
+scripts/dev-stack.sh
+```
+
+It builds and starts the PPD preference repository and gateway (configured like the cloud: operator token on operator
+routes, demo extensions relayed to app-api), app-api, the web app on http://localhost:5173, and two simulated PPD
+participants (the Aqara and Reolink research devices, sent by the CableLabs host stub). A real ESP32 bulb provisioned
+with `http://<this machine>:8080` joins too. Logs go to `.dev-stack/logs`; Ctrl-C stops everything.
+
+### Pieces on their own
+
 ```bash
 npm install
 npm install --prefix server
@@ -75,6 +91,9 @@ Everything the screens need goes through one interface, `PpdApi` in `shared/type
 | `listLibrary()` / `getDevice(id)` | device summaries / a device with all its flows and verdicts |
 | `resolveCode(text)` | which device a scanned code points to |
 | `getHousehold()`, `addDevice`, `removeDevice`, `saveForLater`, `markJoinedSeen`, `saveDecision` | the household's devices and saved preferences |
+| `getOverview()`, `getSystemStatus()`, `getMe()` | the gateway's readiness summary, service checks, and who is signed in |
+| `getPublishedPolicy()`, `previewPublish()`, `publish()`, `listPresets()`, `applyPreset()` | the household policy the gateway serves, and sending a new one |
+| `disassociate()`, `listCommands()`, `sendCommand()`, `getTelemetry()` | operator actions and guided-demo controls for connected devices |
 
 `src/api/httpClient.ts` implements it against app-api; each call is one route under `/api` (see `server/src/app.ts`). The browser
 only ever calls `/api` on its own origin; app-api is the one that talks to the PPD gateway. `src/api/index.ts` picks the client:
@@ -85,10 +104,30 @@ Both clients use the same code from `shared/` for what happens to the household 
 
 ### app-api
 
-`server/` is a Node + TypeScript service (Fastify). It reads the fixtures in `public/mock/` at start-up, keeps the household
-(devices, decisions, answers, rules) in SQLite with an audit log of every change, and computes each device's verdicts from the
-stored rules on every read. `GET /api/health` reports the database and whether the PPD gateway (`GATEWAY_URL`) answers.
-Reading live devices from the gateway and publishing the household policy to it are the next steps.
+`server/` is a Node + TypeScript service (Fastify), the web app's only backend. It:
+
+- keeps the household (devices, decisions, answers, rules) in SQLite with an audit log, and computes every device's verdicts
+  on read;
+- talks to the PPD gateway (`GATEWAY_URL`): it finds the API through `GET /.well-known/ppd` (draft-dsmullen-ppd-protocol-04),
+  sends the operator token, and uses mutual TLS when certificate files are set;
+- shows devices the gateway knows: they join My home on their own, their flows are their declared statements, and their
+  live state (association, delivered policy, receipt, identity) is what the CableLabs dashboard shows;
+- **publishes the household policy**: it compiles the rules and saved decisions into one PPD policy of atomic allow/deny
+  rules, one per dataflow a connected device declared (`server/src/compiler.ts`), sends it to the gateway, and reads it back.
+  "Ask me first" is not a protocol effect, so a flow still waiting for a decision blocks publication;
+- relays the cloud demo extensions: devices upload telemetry and poll for guided-demo commands through the gateway, which
+  authenticates them and calls `/internal/*` with a service token;
+- requires sign-in in production (it verifies Cloudflare Access tokens itself), refuses writes without the app's
+  `X-PPD-Client` header, and marks every response `no-store`.
+
+Settings are in `server/.env.example`; `server/config/devices.json` says which gateway devices are real hardware or
+simulated participants and how to present them.
+
+### Taxonomy
+
+Everything uses only the core `ppd:` terms of draft-dsmullen-ppd-taxonomy-05 (`shared/taxonomy.ts`): fixtures, rules,
+declarations and published policies. No extension vocabulary or prefix declaration is needed, and terms compare by exact
+identity. The workbook's finer research terms only feed the plain-language labels.
 
 ### The fixtures
 
@@ -99,8 +138,9 @@ pip install openpyxl
 npm run mock         # or: python3 tools/build_mock.py path/to/workbook.xlsx
 ```
 
-Each flow carries its taxonomy fields (fine-grained, and the coarse `core` terms household rules are written in),
-plain-language labels, control type and note from the workbook.
+Each flow carries its taxonomy (core `ppd:` terms, constraints as an object), plain-language labels, control type and
+note from the workbook. `python3 tools/build_simulated_devices.py` turns the declared research devices into
+registrations and declarations for the simulated participants (`simulated/`).
 
 **The verdicts are this project's comparison, not the PPD protocol's.** app-api computes them with `shared/engine.ts` from the
 household's current rules (a stricter rule wins: Never, then Ask me first, then Allowed; no matching rule and the flow leaves
@@ -134,13 +174,23 @@ and are not user-tested.
 - Added: "Type the code instead" on Scan (useful without a camera), a "Saved" tag in the library, a "Remove from my home" row,
   an "About this declaration" block on the device screen, and the Test tools page.
 - Added: the first-launch questions, the policy review page, the rule editor, and the sources page (none are in the canvas).
-- Not built: real accounts, sending the summaries and warnings chosen in the last question, push notifications, real declaration fetching.
+- Added: live devices from the PPD gateway, System status, sending rules to devices, demo presets and controls, and a
+  desktop layout (navigation rail and list-beside-detail panes from 1200 px).
+- Not built: sending the summaries and warnings chosen in the last question, push notifications.
+
+## Deploying
+
+`Dockerfile.web` (Nginx serving the build and forwarding `/api`) and `server/Dockerfile` (app-api) build from the repository
+root. `deploy/compose.example.yaml` shows the four services together with the gateway and repository images from the
+`habanero-ppd-gateway` fork.
 
 ## Project map
 
 ```
-shared/            used by the app and app-api: the contract (types.ts), household changes, verdict engine, rule matching
-server/            app-api: routes (src/app.ts), SQLite store, fixture loader, gateway check, tests
+shared/            used by the app and app-api: the contract (types.ts), core taxonomy, household changes, verdict engine, rule matching
+server/            app-api: routes (src/routes/), policy compiler, gateway client, live devices, SQLite store, sign-in, tests
+deploy/            compose.example.yaml for the cloud deployment (Coolify)
+scripts/           dev-stack.sh: the whole demo stack on one machine
 src/api/           app-api client, offline mock client, the switch between them (index.ts)
 src/scanner/       camera + QR decoding
 src/screens/       one file per screen (Questionnaire, Rules and RuleEditor make up the household policy)

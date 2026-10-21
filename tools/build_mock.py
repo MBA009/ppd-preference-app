@@ -7,10 +7,10 @@ The app never reads the workbook directly. It reads the JSON written here throug
 src/api/mockClient.ts, so a real backend only has to serve the same shapes
 (documented in src/api/types.ts).
 
-The fixtures hold each flow's taxonomy fields (fine-grained and core), plain-language labels and
-control. They do NOT hold verdicts: a verdict compares a flow with the household's rules, which the
-person creates in the app. The mock client (src/api/mockEngine.ts) computes them on read; the real
-backend will own that comparison.
+Each flow's taxonomy uses only the core ppd: terms of draft-dsmullen-ppd-taxonomy-05 (the workbook's
+"Core rule groups"), with constraints as the protocol's Constraints Object. The workbook's finer-grained
+research terms only feed the plain-language labels. The fixtures do NOT hold verdicts: a verdict compares
+a flow with the household's rules; app-api computes it on read with shared/engine.ts.
 """
 import json, os, re, sys, collections
 import openpyxl
@@ -221,8 +221,7 @@ def main():
                 "summary": summary,
                 "summary_parts": {"who": who, "purpose": PURPOSE[pur][1]},
                 "phase": f["Phase"],
-                "taxonomy": {"data_type": f["data_type"], "purpose": f["purpose"], "action": f["action"], "source": f["source"],
-                             "handling_context": f["handling_context"], "constraints": [c.strip() for c in (f["Constraints"] or "").split(";") if c.strip()]},
+                "taxonomy": dict(core, constraints={k: "ppd:" + v for k, v in cons.items()}),
                 "display": {"what": DATA_TYPE.get(dt, words(dt)), "why": PURPOSE[pur][0], "what_happens": what_happens,
                             "comes_from": SOURCE.get(src, words(src)), "handled_by": handler_label, "kept": kept, "limit": limit},
                 "core_group": {"id": f["Core rule group"], "label": gl.strip()},

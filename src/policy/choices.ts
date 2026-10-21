@@ -35,6 +35,13 @@ export const ACTION_CHOICES: Choice[] = [
   { id: 'inference', label: 'Worked out', iris: ['ppd:inference'] },
 ]
 
+export const SOURCE_CHOICES: Choice[] = [
+  { id: 'you', label: 'You enter or choose it', iris: ['ppd:userProvided'] },
+  { id: 'device', label: 'The device notices or produces it', iris: ['ppd:participantObserved', 'ppd:participantGenerated'] },
+  { id: 'derived', label: 'Worked out from other data', iris: ['ppd:derivedFromPriorData'] },
+  { id: 'others', label: 'Other devices or companies', iris: ['ppd:householdProvided', 'ppd:vendorProvided', 'ppd:thirdPartyProvided'] },
+]
+
 export const KEPT_FOREVER = 'retention=ppd:indefinite'
 
 export const EFFECT_LABEL: Record<RuleEffect, string> = { dont_allow: 'Never', ask: 'Ask me first', allow: 'Allowed' }

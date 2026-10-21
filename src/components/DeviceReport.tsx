@@ -5,7 +5,7 @@ import { Cell, Expander, Group, SectionHeader, Tile, VerdictChips, VerdictMark }
 import { PREFERENCE_LABEL, VERDICT_ORDER, countVerdicts, decisionFor, needsAttention } from '../lib/verdicts'
 import { vendorOf } from '../lib/device'
 
-const NOUN: Record<string, string> = { thermostat: 'the thermostat', lock: 'the lock', tv: 'the TV', camera: 'the camera' }
+const NOUN: Record<string, string> = { thermostat: 'the thermostat', lock: 'the lock', tv: 'the TV', camera: 'the camera', bulb: 'the bulb' }
 export const nounOf = (d: DeviceSummary) => NOUN[d.icon] ?? 'the device'
 
 export const flowPath = (deviceId: string, flowId: string) => `/device/${encodeURIComponent(deviceId)}/flow/${encodeURIComponent(flowId)}`

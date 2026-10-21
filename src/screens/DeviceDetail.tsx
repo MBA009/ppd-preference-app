@@ -1,19 +1,22 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { api } from '../api'
 import { AppBar, Cell, DeviceTile, ErrorBox, Group, Loading, SectionHeader } from '../components/ui'
 import { AttentionList, ProvenanceCard } from '../components/DeviceReport'
-import { useDevice, useHousehold, useRules } from '../state/data'
-import { STATE_LABEL, subtitle, timeAgo } from '../lib/device'
+import { AssociationCard, DemoControls, IdentityAndNetwork, LifecycleSteps, PolicyReceipt, ReportedBehavior, TelemetryCard } from '../components/LiveDevice'
+import { useDevice, useHousehold, useMe, useRules } from '../state/data'
+import { STATE_LABEL, kindLabel, subtitle, timeAgo } from '../lib/device'
 import { decidedCount } from '../lib/verdicts'
 
-/** Screen 3c. */
+/** Screen 3c. For a device the PPD gateway knows, it also shows the gateway's live view of it. */
 export default function DeviceDetail() {
   const { id } = useParams()
   const nav = useNavigate()
   const { household, removeDevice, addDevice, toast } = useHousehold()
-  const dev = useDevice(id)
+  const dev = useDevice(id, true)
   const rules = useRules(true)
+  const { data: me } = useMe()
 
-  if (dev.error) return <><AppBar title="Device" back="/" /><ErrorBox error={dev.error} /></>
+  if (dev.error && !dev.data) return <><AppBar title="Device" back="/" /><ErrorBox error={dev.error} /></>
   const d = dev.data
   if (!d || !household) return <><AppBar title="Device" back="/" /><Loading /></>
 
@@ -21,6 +24,19 @@ export default function DeviceDetail() {
   const ruleCount = rules.length
   const decided = decidedCount(d, household)
   const decl = d.declaration
+  const live = d.live
+  const operator = me?.role === 'operator'
+
+  const disassociate = async () => {
+    if (!window.confirm(`Ask ${d.short_name} to reconnect? It will receive and confirm your rules again.`)) return
+    try {
+      await api.disassociate(d.id)
+      toast('The device will reconnect.')
+      dev.reload()
+    } catch (e) {
+      toast((e as Error).message)
+    }
+  }
 
   return (
     <div className="screen">
@@ -30,32 +46,54 @@ export default function DeviceDetail() {
           <DeviceTile device={d} size="hero" />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 18, lineHeight: '24px', fontWeight: 500 }}>{d.short_name}</div>
-            <div className="sub">{subtitle(d, decl ? 'Gets your rules' : 'Advisory only')}</div>
+            <div className="sub">{subtitle(d, live ? kindLabel(d) : decl ? 'Gets your rules' : 'Advisory only')}</div>
           </div>
         </Cell>
       </Group>
       <div className="gap" />
+      {live && (
+        <>
+          <AssociationCard live={live} />
+          <div className="gap" />
+        </>
+      )}
       <ProvenanceCard device={d} household={household} ruleCount={ruleCount} />
       <div className="sf" style={{ fontStyle: 'italic' }}>We can’t check that the device will follow your rules.</div>
       {decided > 0 && <div className="sf">{decided} {decided === 1 ? 'decision' : 'decisions'} made by you.</div>}
 
       <AttentionList device={d} household={household} />
 
-      {decl && (
+      {live ? (
         <>
-          <SectionHeader>About this declaration</SectionHeader>
-          <Group>
-            <div className="cell kv"><span className="ttl">Rules status</span><span className="v">{STATE_LABEL[decl.state].replace('Gets your rules · ', '')}</span></div>
-            <div className="cell kv"><span className="ttl">Declaration received</span><span className="v">{timeAgo(decl.received_at)}</span></div>
-            <div className="cell kv"><span className="ttl">Renews by</span><span className="v">{new Date(decl.renew_by).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</span></div>
-            <div className="cell kv"><span className="ttl">Statements</span><span className="v">{decl.statements}</span></div>
-          </Group>
-          <div className="sf">“Confirmed” means the device said it received your rules. It is not proof that it follows them.</div>
+          <PolicyReceipt live={live} />
+          <LifecycleSteps live={live} />
+          <ReportedBehavior live={live} />
+          <TelemetryCard device={d} />
+          {operator && <DemoControls device={d} />}
+          <IdentityAndNetwork live={live} />
         </>
+      ) : (
+        decl && (
+          <>
+            <SectionHeader>About this declaration</SectionHeader>
+            <Group>
+              <div className="cell kv"><span className="ttl">Rules status</span><span className="v">{STATE_LABEL[decl.state].replace('Gets your rules · ', '')}</span></div>
+              <div className="cell kv"><span className="ttl">Declaration received</span><span className="v">{timeAgo(decl.received_at)}</span></div>
+              <div className="cell kv"><span className="ttl">Renews by</span><span className="v">{new Date(decl.renew_by).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</span></div>
+              <div className="cell kv"><span className="ttl">Statements</span><span className="v">{decl.statements}</span></div>
+            </Group>
+            <div className="sf">“Confirmed” means the device said it received your rules. It is not proof that it follows them.</div>
+          </>
+        )
       )}
 
       <div className="gap" />
       <Group>
+        {live && operator && (
+          <Cell className="t" chevron={false} onClick={disassociate}>
+            <div className="cb" style={{ padding: '12px 0' }}><span className="ttl" style={{ color: '#0066CC' }}>Ask the device to reconnect</span><span className="sub">Its association ends until it confirms your rules again</span></div>
+          </Cell>
+        )}
         {inHome ? (
           <Cell className="t" chevron={false} onClick={async () => { if (window.confirm(`Remove ${d.short_name} from your home?`)) { await removeDevice(d.id); toast('Removed from your home'); nav('/') } }}>
             <div className="cb" style={{ padding: '12px 0' }}><span className="ttl" style={{ color: '#D70015' }}>Remove from my home</span></div>

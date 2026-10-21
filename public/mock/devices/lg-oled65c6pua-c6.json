@@ -22,12 +22,12 @@
    },
    "phase": "setup",
    "taxonomy": {
-    "data_type": "pat:networkCredentialData",
-    "purpose": "pat:deviceSetup",
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:collection",
     "source": "ppd:userProvided",
     "handling_context": "ppd:householdContext",
-    "constraints": []
+    "constraints": {}
    },
    "display": {
     "what": "Your Wi-Fi password",
@@ -69,11 +69,11 @@
    "phase": "setup",
    "taxonomy": {
     "data_type": "ppd:identifierData",
-    "purpose": "pat:accountSetup",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:collection",
     "source": "ppd:userProvided",
-    "handling_context": "pat:lgService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "Names, accounts or device IDs",
@@ -114,12 +114,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:environmentData",
-    "purpose": "pat:displayAdaptation",
+    "data_type": "ppd:sensorData",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:collection",
-    "source": "pat:ambientLightSensor",
+    "source": "ppd:participantObserved",
     "handling_context": "ppd:householdContext",
-    "constraints": []
+    "constraints": {}
    },
    "display": {
     "what": "Temperature, humidity or light readings",
@@ -160,12 +160,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:audioData",
-    "purpose": "pat:voiceControl",
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:collection",
     "source": "ppd:userProvided",
     "handling_context": "ppd:householdContext",
-    "constraints": []
+    "constraints": {}
    },
    "display": {
     "what": "Sound from the microphone",
@@ -206,12 +206,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:audioData",
-    "purpose": "pat:voiceControl",
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:transfer",
     "source": "ppd:participantObserved",
-    "handling_context": "pat:voiceRecognitionService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "Sound from the microphone",
@@ -252,12 +252,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:voiceRecognitionResult",
-    "purpose": "pat:voiceControl",
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:inference",
     "source": "ppd:derivedFromPriorData",
-    "handling_context": "pat:voiceRecognitionService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "What the TV heard you say",
@@ -298,12 +298,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:voiceTechnicalLog",
+    "data_type": "ppd:deviceAndNetworkData",
     "purpose": "ppd:diagnosticsAndMaintenance",
     "action": "ppd:transfer",
     "source": "ppd:participantGenerated",
-    "handling_context": "pat:voiceRecognitionService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "Logs from the voice feature",
@@ -344,14 +344,14 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:audioFingerprint",
-    "purpose": "pat:contentRecognition",
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:analyticsAndImprovement",
     "action": "ppd:inference",
     "source": "ppd:derivedFromPriorData",
     "handling_context": "ppd:householdContext",
-    "constraints": [
-     "processing_boundary=ppd:onDeviceOnly"
-    ]
+    "constraints": {
+     "processing_boundary": "ppd:onDeviceOnly"
+    }
    },
    "display": {
     "what": "A pattern of the sound that is playing",
@@ -393,11 +393,11 @@
    "phase": "runtime",
    "taxonomy": {
     "data_type": "ppd:usageData",
-    "purpose": "pat:audienceMeasurement",
+    "purpose": "ppd:analyticsAndImprovement",
     "action": "ppd:inference",
     "source": "ppd:derivedFromPriorData",
-    "handling_context": "pat:acrService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "How you use the device",
@@ -438,12 +438,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:audienceSegment",
-    "purpose": "pat:audienceMeasurement",
+    "data_type": "ppd:profileData",
+    "purpose": "ppd:analyticsAndImprovement",
     "action": "ppd:inference",
     "source": "ppd:derivedFromPriorData",
-    "handling_context": "pat:advertisingService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "The audience group you are placed in",
@@ -485,11 +485,11 @@
    "phase": "runtime",
    "taxonomy": {
     "data_type": "ppd:usageData",
-    "purpose": "pat:audienceMeasurement",
+    "purpose": "ppd:analyticsAndImprovement",
     "action": "ppd:transfer",
     "source": "ppd:participantGenerated",
-    "handling_context": "pat:advertisingService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "How you use the device",
@@ -530,12 +530,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:audienceSegment",
+    "data_type": "ppd:profileData",
     "purpose": "ppd:advertisingAndMarketing",
     "action": "ppd:use",
     "source": "ppd:derivedFromPriorData",
-    "handling_context": "pat:advertisingService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "The audience group you are placed in",
@@ -580,8 +580,8 @@
     "purpose": "ppd:advertisingAndMarketing",
     "action": "ppd:transfer",
     "source": "ppd:vendorProvided",
-    "handling_context": "pat:advertiser",
-    "constraints": []
+    "handling_context": "ppd:thirdPartyContext",
+    "constraints": {}
    },
    "display": {
     "what": "How you use the device",
@@ -622,12 +622,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:nearbyWifiData",
-    "purpose": "pat:acrLocationSupport",
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:advertisingAndMarketing",
     "action": "ppd:collection",
     "source": "ppd:participantObserved",
-    "handling_context": "pat:acrService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "Nearby Wi-Fi networks",
@@ -669,11 +669,11 @@
    "phase": "runtime",
    "taxonomy": {
     "data_type": "ppd:locationData",
-    "purpose": "pat:acrLocationSupport",
+    "purpose": "ppd:advertisingAndMarketing",
     "action": "ppd:inference",
     "source": "ppd:derivedFromPriorData",
-    "handling_context": "pat:acrService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "Location",
@@ -714,12 +714,12 @@
    },
    "phase": "setup+runtime",
    "taxonomy": {
-    "data_type": "pat:connectedDeviceInfo",
-    "purpose": "pat:deviceDiscovery",
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:collection",
     "source": "ppd:participantObserved",
     "handling_context": "ppd:householdContext",
-    "constraints": []
+    "constraints": {}
    },
    "display": {
     "what": "Devices connected to the TV",
@@ -760,12 +760,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:hdmiDeviceInfo",
+    "data_type": "ppd:deviceAndNetworkData",
     "purpose": "ppd:advertisingAndMarketing",
     "action": "ppd:use",
     "source": "ppd:derivedFromPriorData",
-    "handling_context": "pat:advertisingService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "Devices connected by HDMI",
@@ -806,12 +806,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:aiPromptData",
-    "purpose": "pat:aiAssistant",
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:transfer",
     "source": "ppd:userProvided",
-    "handling_context": "pat:thirdPartyServiceProvider",
-    "constraints": []
+    "handling_context": "ppd:thirdPartyContext",
+    "constraints": {}
    },
    "display": {
     "what": "Questions you ask the AI assistant",
@@ -852,12 +852,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:diagnosticData",
+    "data_type": "ppd:deviceAndNetworkData",
     "purpose": "ppd:diagnosticsAndMaintenance",
     "action": "ppd:transfer",
     "source": "ppd:participantGenerated",
-    "handling_context": "pat:lgService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "Device logs and status",

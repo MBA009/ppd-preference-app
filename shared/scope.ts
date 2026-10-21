@@ -1,18 +1,25 @@
-import type { Flow, RuleScope } from './types'
+import { constraintKeys } from './taxonomy'
+import type { Flow, RuleScope, Taxonomy } from './types'
 
-/** True when the flow is one the scope describes. Fields left out of the scope match anything. */
-export function matchesScope(flow: Flow, scope: RuleScope): boolean {
-  const t = flow.taxonomy
-  const c = flow.core
-  const has = (wanted: string[] | undefined, ...values: string[]) => !wanted?.length || wanted.some((w) => values.includes(w))
+/**
+ * True when the dataflow is one the scope describes. Fields left out of the scope match anything.
+ * Every term is a core ppd: term, so matching is exact (draft-dsmullen-ppd-taxonomy-05 section 7 needs
+ * no broader/narrower resolution between core terms).
+ */
+export function matchesDataflow(t: Taxonomy, scope: RuleScope): boolean {
+  const has = (wanted: string[] | undefined, value: string) => !wanted?.length || wanted.includes(value)
+  const keys = constraintKeys(t.constraints)
   return (
-    has(scope.data_type, c.data_type, t.data_type) &&
-    has(scope.purpose, c.purpose, t.purpose) &&
-    has(scope.handling_context, c.handling_context, t.handling_context) &&
-    has(scope.action, c.action, t.action) &&
-    (scope.constraints ?? []).every((k) => t.constraints.includes(k))
+    has(scope.data_type, t.data_type) &&
+    has(scope.purpose, t.purpose) &&
+    has(scope.handling_context, t.handling_context) &&
+    has(scope.action, t.action) &&
+    has(scope.source, t.source) &&
+    (scope.constraints ?? []).every((k) => keys.includes(k))
   )
 }
 
+export const matchesScope = (flow: Flow, scope: RuleScope) => matchesDataflow(flow.taxonomy, scope)
+
 /** A flow "leaves the home" when a company (the maker, its services, or someone else) handles it. */
-export const leavesHome = (flow: Flow) => flow.core.handling_context !== 'ppd:householdContext'
+export const leavesHome = (flow: Flow) => flow.taxonomy.handling_context !== 'ppd:householdContext'

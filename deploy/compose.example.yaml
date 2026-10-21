@@ -1,0 +1,90 @@
+# The PPD demo as one Docker Compose application (Coolify: project "PPD Capstone", environment "demo",
+# application "ppd-demo"). Copy this file to the deployment repository and set the images and secrets.
+#
+#   ppd.example.com      -> Coolify proxy (HTTPS 443) -> web -> /api -> app-api
+#   devices.example.com  -> host port 8443 (direct, NOT through the Coolify proxy) -> gateway (mutual TLS)
+#
+# Images:
+#   ppd-web, ppd-app-api        built from this repository (Dockerfile.web, server/Dockerfile)
+#   ppd-gateway, ppd-repository built from the habanero-ppd-gateway fork (go-ppd/, go-ppd-repository/)
+#
+# Secrets (Coolify environment variables, never committed):
+#   OPERATOR_TOKEN, REPOSITORY_TOKEN, DEMO_TOKEN   long random strings
+#   CF_ACCESS_TEAM_DOMAIN, CF_ACCESS_AUD           from the Cloudflare Access application for ppd.example.com
+#   OPERATOR_EMAILS                                comma-separated; empty means every signed-in person
+# Certificate files in ./tls (mounted read-only):
+#   server-chain.pem, server-key.pem   gateway certificate for devices.example.com
+#   client-ca.pem                      CA that signs device and operator client certificates
+#   gateway-ca.pem                     CA that signed the gateway certificate (for app-api)
+#   operator-cert.pem, operator-key.pem  app-api's own client certificate
+
+services:
+  web:
+    image: ${REGISTRY}/ppd-web:${TAG}
+    depends_on: [app-api]
+    networks: [backend]
+    # Coolify attaches this service to its proxy and routes ppd.example.com to port 80.
+    expose: ["80"]
+
+  app-api:
+    image: ${REGISTRY}/ppd-app-api:${TAG}
+    environment:
+      APP_ENV: production
+      DATABASE_PATH: /data/app.db
+      GATEWAY_URL: https://gateway:8080
+      GATEWAY_TLS_SERVER_NAME: devices.example.com
+      GATEWAY_CA_FILE: /run/ppd-tls/gateway-ca.pem
+      GATEWAY_CLIENT_CERT_FILE: /run/ppd-tls/operator-cert.pem
+      GATEWAY_CLIENT_KEY_FILE: /run/ppd-tls/operator-key.pem
+      GATEWAY_OPERATOR_TOKEN: ${OPERATOR_TOKEN}
+      INTERNAL_SERVICE_TOKEN: ${DEMO_TOKEN}
+      CF_ACCESS_TEAM_DOMAIN: ${CF_ACCESS_TEAM_DOMAIN}
+      CF_ACCESS_AUD: ${CF_ACCESS_AUD}
+      OPERATOR_EMAILS: ${OPERATOR_EMAILS}
+    volumes:
+      - app-data:/data
+      - ./tls:/run/ppd-tls:ro
+    networks: [backend]
+
+  gateway:
+    image: ${REGISTRY}/ppd-gateway:${TAG}
+    environment:
+      PPD_DATA_DIR: /data
+      PPD_LISTEN_ADDR: ":8080"
+      PPD_REPOSITORY_URL: http://repository:8081
+      PPD_REPOSITORY_AUTH_TOKEN: ${REPOSITORY_TOKEN}
+      PPD_OPERATOR_TOKEN: ${OPERATOR_TOKEN}
+      PPD_TAXONOMY_PROFILE: core-only
+      PPD_TLS_CERT_FILE: /run/ppd-tls/server-chain.pem
+      PPD_TLS_KEY_FILE: /run/ppd-tls/server-key.pem
+      PPD_TLS_CLIENT_CA_FILE: /run/ppd-tls/client-ca.pem
+      PPD_DEMO_APP_API_URL: http://app-api:3000
+      PPD_DEMO_APP_API_TOKEN: ${DEMO_TOKEN}
+      # Router-only observation sources do not exist in the cloud.
+      PPD_DHCP_LEASES_FILE: /dev/null
+      PPD_ARP_TABLE_FILE: /dev/null
+    ports:
+      - "8443:8080"
+    volumes:
+      - gateway-data:/data
+      - ./tls:/run/ppd-tls:ro
+    depends_on: [repository]
+    networks: [backend]
+
+  repository:
+    image: ${REGISTRY}/ppd-repository:${TAG}
+    environment:
+      PPD_DATA_DIR: /data
+      PPD_REPOSITORY_AUTH_TOKEN: ${REPOSITORY_TOKEN}
+    # No ports: reachable only by the gateway on the backend network.
+    volumes:
+      - repository-data:/data
+    networks: [backend]
+
+volumes:
+  app-data:
+  gateway-data:
+  repository-data:
+
+networks:
+  backend:

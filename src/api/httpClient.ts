@@ -1,4 +1,4 @@
-import type { Device, DeviceSummary, Household, PpdApi, Questionnaire, ResolveResult, Rule } from './types'
+import type { Command, Device, DeviceSummary, Household, Me, Overview, Policy, PpdApi, Preset, PublishPreview, PublishResult, Questionnaire, ResolveResult, Rule, SystemStatus, Telemetry } from './types'
 
 /**
  * The real backend: app-api (server/), reached on the same origin under /api. In development Vite
@@ -19,7 +19,8 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
   try {
     res = await fetch(BASE + path, {
       method,
-      headers: body === undefined ? { Accept: 'application/json' } : { Accept: 'application/json', 'Content-Type': 'application/json' },
+      // X-PPD-Client marks requests from this app; app-api refuses writes without it (CSRF protection).
+      headers: body === undefined ? { Accept: 'application/json', 'X-PPD-Client': 'web' } : { Accept: 'application/json', 'Content-Type': 'application/json', 'X-PPD-Client': 'web' },
       body: body === undefined ? undefined : JSON.stringify(body),
       cache: 'no-store',
       credentials: 'same-origin',
@@ -28,6 +29,7 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
     throw new ApiError('Could not reach the server. Check your connection and try again.', 0)
   }
   const data = res.headers.get('content-type')?.includes('json') ? await res.json().catch(() => null) : null
+  if (res.status === 401) throw new ApiError('Your sign-in has expired. Reload the page to sign in again.', 401)
   if (!res.ok) throw new ApiError((data as { message?: string } | null)?.message ?? `The server returned ${res.status}.`, res.status)
   return data as T
 }
@@ -52,4 +54,17 @@ export const httpClient: PpdApi = {
   markJoinedSeen: (deviceId) => call<Household>('POST', `/household/devices/${id(deviceId)}/seen`),
   saveDecision: (d) => call<Household>('POST', '/household/decisions', d),
   resetDemo: (mode) => call<Household>('POST', '/household/reset', { mode }),
+
+  getMe: () => call<Me>('GET', '/me'),
+  getOverview: () => call<Overview>('GET', '/overview'),
+  getSystemStatus: () => call<SystemStatus>('GET', '/system-status'),
+  getPublishedPolicy: () => call<Policy | null>('GET', '/household/published'),
+  previewPublish: () => call<PublishPreview>('GET', '/household/preview'),
+  publish: () => call<PublishResult>('POST', '/household/publish', {}),
+  listPresets: () => call<Preset[]>('GET', '/presets'),
+  applyPreset: (name) => call<Policy>('POST', `/presets/${id(name)}/apply`, {}),
+  disassociate: async (deviceId) => { await call<null>('POST', `/devices/${id(deviceId)}/disassociate`, {}) },
+  listCommands: (deviceId) => call<Command[]>('GET', `/devices/${id(deviceId)}/commands`),
+  sendCommand: (deviceId, action, value) => call<Command>('POST', `/devices/${id(deviceId)}/commands`, value === undefined ? { action } : { action, value }),
+  getTelemetry: (deviceId) => call<Telemetry>('GET', `/devices/${id(deviceId)}/telemetry`),
 }

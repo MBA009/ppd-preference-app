@@ -28,12 +28,12 @@
    },
    "phase": "setup",
    "taxonomy": {
-    "data_type": "pat:networkCredentialData",
-    "purpose": "pat:deviceSetup",
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:collection",
     "source": "ppd:userProvided",
     "handling_context": "ppd:householdContext",
-    "constraints": []
+    "constraints": {}
    },
    "display": {
     "what": "Your Wi-Fi password",
@@ -74,12 +74,12 @@
    },
    "phase": "setup",
    "taxonomy": {
-    "data_type": "pat:deviceCredentialData",
-    "purpose": "pat:deviceSetup",
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:collection",
     "source": "ppd:userProvided",
     "handling_context": "ppd:householdContext",
-    "constraints": []
+    "constraints": {}
    },
    "display": {
     "what": "A password for the device",
@@ -121,11 +121,11 @@
    "phase": "runtime",
    "taxonomy": {
     "data_type": "ppd:identifierData",
-    "purpose": "pat:accountSetup",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:collection",
     "source": "ppd:userProvided",
-    "handling_context": "pat:reolinkService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "Names, accounts or device IDs",
@@ -166,12 +166,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:visualData",
+    "data_type": "ppd:contentData",
     "purpose": "ppd:security",
     "action": "ppd:collection",
-    "source": "pat:cameraSensor",
+    "source": "ppd:participantObserved",
     "handling_context": "ppd:householdContext",
-    "constraints": []
+    "constraints": {}
    },
    "display": {
     "what": "Video or photos",
@@ -212,12 +212,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:audioData",
+    "data_type": "ppd:contentData",
     "purpose": "ppd:security",
     "action": "ppd:collection",
-    "source": "pat:microphone",
+    "source": "ppd:participantObserved",
     "handling_context": "ppd:householdContext",
-    "constraints": []
+    "constraints": {}
    },
    "display": {
     "what": "Sound from the microphone",
@@ -258,12 +258,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:environmentData",
-    "purpose": "pat:cameraAdaptation",
+    "data_type": "ppd:sensorData",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:collection",
-    "source": "pat:daylightSensor",
+    "source": "ppd:participantObserved",
     "handling_context": "ppd:householdContext",
-    "constraints": []
+    "constraints": {}
    },
    "display": {
     "what": "Temperature, humidity or light readings",
@@ -304,14 +304,14 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:presenceData",
+    "data_type": "ppd:sensorData",
     "purpose": "ppd:security",
     "action": "ppd:inference",
     "source": "ppd:derivedFromPriorData",
     "handling_context": "ppd:householdContext",
-    "constraints": [
-     "processing_boundary=ppd:onDeviceOnly"
-    ]
+    "constraints": {
+     "processing_boundary": "ppd:onDeviceOnly"
+    }
    },
    "display": {
     "what": "Whether someone is there",
@@ -352,14 +352,14 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:presenceData",
+    "data_type": "ppd:sensorData",
     "purpose": "ppd:security",
     "action": "ppd:inference",
     "source": "ppd:derivedFromPriorData",
     "handling_context": "ppd:householdContext",
-    "constraints": [
-     "processing_boundary=ppd:onDeviceOnly"
-    ]
+    "constraints": {
+     "processing_boundary": "ppd:onDeviceOnly"
+    }
    },
    "display": {
     "what": "Whether someone is there",
@@ -400,14 +400,14 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:presenceData",
+    "data_type": "ppd:sensorData",
     "purpose": "ppd:security",
     "action": "ppd:inference",
     "source": "ppd:derivedFromPriorData",
     "handling_context": "ppd:householdContext",
-    "constraints": [
-     "processing_boundary=ppd:onDeviceOnly"
-    ]
+    "constraints": {
+     "processing_boundary": "ppd:onDeviceOnly"
+    }
    },
    "display": {
     "what": "Whether someone is there",
@@ -448,14 +448,14 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:cryingDetectionEvent",
+    "data_type": "ppd:sensorData",
     "purpose": "ppd:security",
     "action": "ppd:inference",
     "source": "ppd:derivedFromPriorData",
     "handling_context": "ppd:householdContext",
-    "constraints": [
-     "processing_boundary=ppd:onDeviceOnly"
-    ]
+    "constraints": {
+     "processing_boundary": "ppd:onDeviceOnly"
+    }
    },
    "display": {
     "what": "Crying sound detected",
@@ -496,12 +496,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:presenceData",
+    "data_type": "ppd:sensorData",
     "purpose": "ppd:security",
     "action": "ppd:use",
     "source": "ppd:derivedFromPriorData",
     "handling_context": "ppd:householdContext",
-    "constraints": []
+    "constraints": {}
    },
    "display": {
     "what": "Whether someone is there",
@@ -542,12 +542,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:visualData",
+    "data_type": "ppd:contentData",
     "purpose": "ppd:security",
     "action": "ppd:use",
     "source": "ppd:derivedFromPriorData",
     "handling_context": "ppd:householdContext",
-    "constraints": []
+    "constraints": {}
    },
    "display": {
     "what": "Video or photos",
@@ -588,12 +588,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:audioData",
+    "data_type": "ppd:contentData",
     "purpose": "ppd:security",
     "action": "ppd:use",
     "source": "ppd:derivedFromPriorData",
     "handling_context": "ppd:householdContext",
-    "constraints": []
+    "constraints": {}
    },
    "display": {
     "what": "Sound from the microphone",
@@ -634,12 +634,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:visualData",
+    "data_type": "ppd:contentData",
     "purpose": "ppd:security",
     "action": "ppd:transfer",
     "source": "ppd:participantGenerated",
     "handling_context": "ppd:householdContext",
-    "constraints": []
+    "constraints": {}
    },
    "display": {
     "what": "Video or photos",
@@ -680,12 +680,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:audioData",
+    "data_type": "ppd:contentData",
     "purpose": "ppd:security",
     "action": "ppd:transfer",
     "source": "ppd:participantGenerated",
     "handling_context": "ppd:householdContext",
-    "constraints": []
+    "constraints": {}
    },
    "display": {
     "what": "Sound from the microphone",
@@ -726,12 +726,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:visualData",
-    "purpose": "pat:remoteViewing",
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:transfer",
     "source": "ppd:participantGenerated",
-    "handling_context": "pat:reolinkService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "Video or photos",
@@ -772,12 +772,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:audioData",
-    "purpose": "pat:remoteViewing",
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:transfer",
     "source": "ppd:participantGenerated",
-    "handling_context": "pat:reolinkService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "Sound from the microphone",
@@ -818,12 +818,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:audioData",
-    "purpose": "pat:twoWayAudio",
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:collection",
     "source": "ppd:vendorProvided",
     "handling_context": "ppd:householdContext",
-    "constraints": []
+    "constraints": {}
    },
    "display": {
     "what": "Sound from the microphone",
@@ -864,14 +864,14 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:visualData",
-    "purpose": "pat:cloudStorage",
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:transfer",
     "source": "ppd:participantGenerated",
-    "handling_context": "pat:reolinkCloud",
-    "constraints": [
-     "retention=ppd:indefinite"
-    ]
+    "handling_context": "ppd:vendorContext",
+    "constraints": {
+     "retention": "ppd:indefinite"
+    }
    },
    "display": {
     "what": "Video or photos",
@@ -912,12 +912,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:alertEventData",
-    "purpose": "pat:pushAlert",
+    "data_type": "ppd:sensorData",
+    "purpose": "ppd:communicationsAndNotifications",
     "action": "ppd:transfer",
     "source": "ppd:participantGenerated",
-    "handling_context": "pat:reolinkService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "Alert and event details",
@@ -958,12 +958,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:alertEventData",
-    "purpose": "pat:emailAlert",
+    "data_type": "ppd:sensorData",
+    "purpose": "ppd:communicationsAndNotifications",
     "action": "ppd:transfer",
     "source": "ppd:participantGenerated",
-    "handling_context": "pat:thirdPartyServiceProvider",
-    "constraints": []
+    "handling_context": "ppd:thirdPartyContext",
+    "constraints": {}
    },
    "display": {
     "what": "Alert and event details",
@@ -1004,12 +1004,12 @@
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:visualData",
-    "purpose": "pat:smartDisplayViewing",
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:transfer",
     "source": "ppd:participantGenerated",
-    "handling_context": "pat:smartHomeEcosystem",
-    "constraints": []
+    "handling_context": "ppd:thirdPartyContext",
+    "constraints": {}
    },
    "display": {
     "what": "Video or photos",
@@ -1051,11 +1051,11 @@
    "phase": "setup",
    "taxonomy": {
     "data_type": "ppd:identifierData",
-    "purpose": "pat:deviceSetup",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:transfer",
     "source": "ppd:participantGenerated",
-    "handling_context": "pat:reolinkService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "Names, accounts or device IDs",
@@ -1097,11 +1097,11 @@
    "phase": "setup",
    "taxonomy": {
     "data_type": "ppd:deviceAndNetworkData",
-    "purpose": "pat:deviceSetup",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:transfer",
     "source": "ppd:participantGenerated",
-    "handling_context": "pat:reolinkService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "Device model and network details",
@@ -1142,14 +1142,14 @@
    },
    "phase": "setup",
    "taxonomy": {
-    "data_type": "pat:wifiNetworkName",
-    "purpose": "pat:deviceSetup",
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:collection",
     "source": "ppd:participantObserved",
     "handling_context": "ppd:householdContext",
-    "constraints": [
-     "retention=ppd:ephemeral"
-    ]
+    "constraints": {
+     "retention": "ppd:ephemeral"
+    }
    },
    "display": {
     "what": "Your Wi-Fi network name",
@@ -1191,11 +1191,11 @@
    "phase": "runtime",
    "taxonomy": {
     "data_type": "ppd:usageData",
-    "purpose": "pat:usageEfficiency",
+    "purpose": "ppd:analyticsAndImprovement",
     "action": "ppd:transfer",
     "source": "ppd:participantGenerated",
-    "handling_context": "pat:reolinkService",
-    "constraints": []
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
    },
    "display": {
     "what": "How you use the device",

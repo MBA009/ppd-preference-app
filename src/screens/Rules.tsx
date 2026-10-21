@@ -8,6 +8,7 @@ import { matchesScope } from '../policy/scope'
 import { originLabel } from '../policy/generate'
 import { plural } from '../lib/verdicts'
 import Questionnaire from './Questionnaire'
+import { PublishCard, PublishedRules, Presets } from '../components/Publish'
 
 /**
  * The household policy page. On first launch (no answers yet) it asks the questions;
@@ -108,9 +109,12 @@ function Policy() {
       )}
 
       {!isNew && (
-        <div className="sf" style={{ paddingTop: 0 }}>
-          Every device is checked against these rules. If two rules disagree, the stricter one wins.
-        </div>
+        <>
+          <PublishCard />
+          <div className="sf" style={{ paddingTop: 0 }}>
+            Every device is checked against these rules. If two rules disagree, the stricter one wins.
+          </div>
+        </>
       )}
 
       {GROUPS.map((g) => {
@@ -140,6 +144,9 @@ function Policy() {
           <div className="cb"><span className="ttl" style={{ color: '#0066CC' }}>Add a rule</span></div>
         </Cell>
       </Group>
+
+      {!isNew && <PublishedRules />}
+      {!isNew && <Presets />}
 
       <SectionHeader>Keeping you posted</SectionHeader>
       <Group>

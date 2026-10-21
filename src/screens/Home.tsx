@@ -1,22 +1,24 @@
 import { Link } from 'react-router-dom'
 import { AppBar, Cell, DeviceTile, Group, SectionHeader, Tile, VerdictChip, VerdictChips, Loading, ErrorBox } from '../components/ui'
 import { DashedCircle, Icon, SmallCheck } from '../components/icons'
-import { useDevices, useHousehold } from '../state/data'
+import { useDevices, useHousehold, useOverview } from '../state/data'
 import { countVerdicts, pendingFlows, plural } from '../lib/verdicts'
 import { stateLabel } from '../lib/device'
+import type { Overview } from '../api'
 
 export default function Home() {
   const { household, error } = useHousehold()
   const ids = household?.devices.map((d) => d.device_id) ?? []
-  const { data: devices, error: loadError, loading } = useDevices(ids)
+  const { data: devices, error: loadError, loading } = useDevices(ids, true)
+  const { data: overview } = useOverview()
 
-  if (error || loadError) return <><AppBar title="My home" /><ErrorBox error={(error ?? loadError)!} /></>
+  if (error || (loadError && !devices)) return <><AppBar title="My home" /><ErrorBox error={(error ?? loadError)!} /></>
   if (!household || (loading && ids.length > 0 && !devices)) return <><AppBar title="My home" /><Loading /></>
 
   const list = devices ?? []
   const waiting = list.map((d) => ({ d, n: pendingFlows(d, household).length })).filter((x) => x.n > 0)
   const totalWaiting = waiting.reduce((s, x) => s + x.n, 0)
-  const updating = list.filter((d) => d.declaration?.state === 'waiting_for_renewal').length
+  const updating = list.filter((d) => d.declaration?.state === 'waiting_for_renewal' || d.live?.publication === 'waiting').length
   const unseen = household.devices.find((h) => h.joined_seen === false)
   const first = waiting[0]?.d
 
@@ -39,6 +41,8 @@ export default function Home() {
         </Group>
       )}
 
+      {overview && <Readiness overview={overview} />}
+
       <SectionHeader>Devices · {list.length}</SectionHeader>
       {list.length > 0 ? (
         <Group>
@@ -49,7 +53,7 @@ export default function Home() {
               <Cell key={d.id} className="d" to={`/device/${d.id}`}>
                 <DeviceTile device={d} />
                 <div className="cb">
-                  <span className="ttl">{d.short_name}</span>
+                  <span className="ttl">{d.short_name}{d.kind === 'simulated' && <span className="tag" style={{ marginLeft: 8 }}>Simulated</span>}</span>
                   <span className="st">
                     {d.declaration?.state === 'rules_confirmed' ? <SmallCheck /> : <DashedCircle />}
                     <span>{stateLabel(d)}</span>
@@ -80,6 +84,47 @@ export default function Home() {
       </Group>
       <div className="spacer" />
     </div>
+  )
+}
+
+/** The gateway's readiness summary (the CableLabs dashboard's "Network Privacy Readiness"). */
+function Readiness({ overview: o }: { overview: Overview }) {
+  const c = o.counts
+  if (!o.gateway.reachable) {
+    return (
+      <Group style={{ marginTop: 8 }}>
+        <Cell className="t" to="/status">
+          <Tile tone="grey"><Icon name="status" size={18} /></Tile>
+          <div className="cb"><span className="ttl">Home gateway not reachable</span><span className="sub">Devices that get your rules can’t be checked right now</span></div>
+        </Cell>
+      </Group>
+    )
+  }
+  const attention = c.needs_reassociation + c.stale + c.broken + c.policy_conflict
+  const stats: [string, number, string?][] = [
+    ['Connected', c.known],
+    ['Confirmed your rules', c.associated, 'ok'],
+    ['Need attention', attention, attention ? 'dec' : undefined],
+    ['With device exceptions', c.overrides],
+  ]
+  return (
+    <>
+      <SectionHeader>Privacy readiness</SectionHeader>
+      <Group>
+        <div className="stats">
+          {stats.map(([label, n, cls]) => (
+            <div key={label} className="stat"><span className={'n ' + (cls ?? '')}>{n}</span><span className="sub">{label}</span></div>
+          ))}
+        </div>
+        <Cell className="t" to="/status">
+          <Tile tone={o.gateway.security === 'direct-certificate' ? 'green' : 'grey'}><Icon name="status" size={18} /></Tile>
+          <div className="cb">
+            <span className="ttl">System status</span>
+            <span className="sub">{o.gateway.security === 'direct-certificate' ? 'Devices prove who they are with certificates' : 'Prototype mode: devices are not authenticated'}{o.household_policy.policy_id ? ` · rules ${o.household_policy.policy_id}` : ''}</span>
+          </div>
+        </Cell>
+      </Group>
+    </>
   )
 }
 

@@ -1,3 +1,5 @@
+import type { Constraints, Field } from './taxonomy'
+
 /**
  * The contract between the app and app-api (server/), shared by both.
  *
@@ -11,17 +13,24 @@ export type Verdict =
   | 'conditionally_satisfiable' //  "With limits"
   | 'decision_required' //          "Needs your decision"
   | 'unsatisfiable' //              "Conflicts with your rules"
-  | 'indeterminate' //              "Can't tell" (our mapping for missing sources; not a draft term)
+  | 'indeterminate' //              "Can't tell": no source for the flow, or a term the comparison cannot resolve
 
+/**
+ * Where a device stands with the household's rules. For devices known to the gateway these follow the
+ * protocol's association states (draft-dsmullen-ppd-protocol-04 section 7.14); research fixtures use
+ * 'rules_confirmed' and 'waiting_for_renewal'.
+ */
 export type DeclarationState =
   | 'advisory' //                   non-PPD device, researched library entry
   | 'registered_no_declaration'
-  | 'rules_confirmed' //            the device acknowledged receiving the rules (receipt only)
-  | 'waiting_for_renewal' //        app-defined: a rule change is waiting to be picked up
-  | 'stale'
+  | 'not_associated' //             registered, rules not received and acknowledged yet
+  | 'rules_confirmed' //            associated: the device acknowledged receiving the current rules (receipt only)
+  | 'waiting_for_renewal' //        research fixtures only: a rule change is waiting to be picked up
+  | 'stale' //                      stale_association: the device did not renew in time
   | 'needs_reassociation'
+  | 'broken'
 
-export type DeviceIcon = 'thermostat' | 'lock' | 'tv' | 'camera'
+export type DeviceIcon = 'thermostat' | 'lock' | 'tv' | 'camera' | 'bulb'
 
 /** What a rule says to do with a flow it matches. Stricter wins: dont_allow beats ask, ask beats allow. */
 export type RuleEffect = 'allow' | 'ask' | 'dont_allow'
@@ -37,6 +46,7 @@ export interface RuleScope {
   purpose?: string[]
   handling_context?: string[]
   action?: string[]
+  source?: string[]
   constraints?: string[]
 }
 
@@ -93,14 +103,14 @@ export interface Questionnaire {
 export type AnswerValue = string | Record<string, string | boolean>
 export type Answers = Record<string, AnswerValue>
 
-/** The taxonomy fields of one flow, as IRIs (data_type, purpose, action, source, handling_context, constraints). */
+/** The taxonomy fields of one flow: five core ppd: terms and the Constraints Object (protocol-04 section 7.8). */
 export interface Taxonomy {
   data_type: string
   purpose: string
   action: string
   source: string
   handling_context: string
-  constraints: string[]
+  constraints: Constraints
 }
 
 export interface Flow {
@@ -157,6 +167,8 @@ export interface DeviceSummary {
   matter: boolean
   /** 'declared' = the device published a PPD declaration. 'advisory' = researched library entry. */
   source: 'declared' | 'advisory'
+  /** 'real' and 'simulated' devices talk to the PPD gateway; 'research' entries come from our fixtures. */
+  kind?: 'real' | 'simulated' | 'research'
   declaration: Declaration | null
   declaration_id_example: string
   flow_count: number
@@ -164,6 +176,8 @@ export interface DeviceSummary {
 
 export interface Device extends DeviceSummary {
   flows: Flow[]
+  /** Present for devices known to the PPD gateway (real hardware or simulated participants). */
+  live?: LiveState
 }
 
 export type Preference = 'allow' | 'allow_with_limits' | 'dont_allow'
@@ -201,6 +215,101 @@ export interface Household {
   profile: Profile | null
 }
 
+/* ---------- PPD wire objects (draft-dsmullen-ppd-protocol-04 section 7) ---------- */
+export interface TaxonomyContext { release?: string; prefixes?: Record<string, string> }
+
+export interface PolicyRule extends Record<Field, string> {
+  rule_id: string
+  effect: 'allow' | 'deny'
+  constraints?: Constraints
+}
+
+/** A household (or device override) policy as the repository stores it. */
+export interface Policy {
+  policy_id: string
+  taxonomy?: TaxonomyContext
+  scope: string
+  rules: PolicyRule[]
+  updated_at?: string
+}
+
+export type AssociationStatus = 'not_associated' | 'associated' | 'needs_reassociation' | 'stale_association' | 'broken' | 'policy_conflict'
+export type Tone = 'good' | 'warn' | 'bad' | 'neutral'
+
+/** What the gateway knows about a participating device (the CableLabs dashboard's device view). */
+export interface LiveState {
+  kind: 'real' | 'simulated'
+  association: {
+    status: AssociationStatus
+    label: string
+    tone: Tone
+    explanation: string
+    next_step: string
+    attention: string | null
+    fresh_until: string | null
+    renewed_at: string | null
+    freshness_interval: string | null
+  }
+  /** Lifecycle steps in order, with when each one last happened. */
+  lifecycle: { step: 'registered' | 'declared' | 'policy_retrieved' | 'acknowledged' | 'associated'; label: string; done: boolean; at: string | null }[]
+  registration: { manufacturer: string; model: string; firmware_version: string; registered_at: string | null }
+  declaration_id: string | null
+  /** The policy instance the gateway last delivered to this device. */
+  effective_policy: { policy_id: string; policy_hash: string; base_policy_id: string; applied_policy_id: string | null; retrieved_at: string | null; source: string } | null
+  /** The instance the device acknowledged. A receipt only: it never means the device complies. */
+  receipt: { policy_id: string; policy_hash: string; acknowledged_at: string | null; current: boolean } | null
+  /** Whether the device has picked up the household policy the app last published. */
+  publication: 'current' | 'waiting' | 'not_published'
+  identity: { auth_method: string; label: string; tone: Tone; certificate_bound: boolean }
+  network: { observed: boolean; label: string; mac_address: string | null; ip_address: string | null; hostname: string | null }
+  runtime: { conflict_active: boolean; behavior_mode: string | null; conflicting_purposes: string[] }
+  badges: { label: string; tone: Tone }[]
+}
+
+/* ---------- operator views ---------- */
+export interface Overview {
+  gateway: { reachable: boolean; security: string; mutual_tls_required: boolean; tls_enabled: boolean; freshness_interval: string | null; error: string | null }
+  counts: {
+    known: number; registered: number; declared: number; policy_retrieved: number; acknowledged: number; associated: number
+    needs_reassociation: number; stale: number; broken: number; policy_conflict: number; overrides: number; authenticated: number; compatibility_mode: number
+  }
+  household_policy: { policy_id: string | null; updated_at: string | null; published_by_app: boolean }
+  updated_at: string
+}
+
+export interface HealthCheck { id: string; group: 'gateway' | 'repository' | 'app'; label: string; status: 'pass' | 'warn' | 'fail'; detail: string }
+export interface SystemStatus { checks: HealthCheck[]; updated_at: string }
+
+export interface Me { email: string; role: 'operator' | 'viewer' }
+
+/** One atomic rule the compiler wants to publish, and why. */
+export interface CompiledRule extends PolicyRule {
+  reason: string
+  /** Which device flows produced it. */
+  flows: { device_id: string; flow_id: string; title: string }[]
+  change: 'added' | 'changed' | 'unchanged'
+}
+
+export interface PublishPreview {
+  base_policy_id: string | null
+  rules: CompiledRule[]
+  removed: PolicyRule[]
+  /** Flows whose household rule says "Ask me first" and that have no decision yet. Publishing waits for them. */
+  blocked: { device_id: string; flow_id: string; title: string; reason: string }[]
+  warnings: string[]
+  devices: number
+}
+
+export interface PublishResult { policy_id: string; rules: number; published_at: string; preview: PublishPreview }
+
+export interface Preset { name: string; title: string; summary: string; policy_id: string; current: boolean }
+
+export interface Command { id: string; device_id: string; action: CommandAction; value: string | null; status: 'queued' | 'delivered' | 'completed' | 'skipped' | 'failed' | 'expired'; detail: string | null; created_at: string; expires_at: string }
+export type CommandAction = 'advance_step' | 'set_lifecycle_mode' | 'set_behavior_mode' | 'reassociate'
+
+export interface TelemetrySample { sample_id: string; purpose: string; temperature_c: number | null; humidity_pct: number | null; reported_policy_id: string | null; behavior_mode: string | null; received_at: string }
+export interface Telemetry { samples: TelemetrySample[]; by_purpose: { purpose: string; label: string; count: number; last_at: string | null }[] }
+
 export type ResolveResult =
   | { ok: true; device_id: string }
   | { ok: false; reason: 'matter_code' | 'unknown_code' | 'not_a_code' }
@@ -226,4 +335,19 @@ export interface PpdApi {
   saveDecision(d: Omit<Decision, 'decided_at'>): Promise<Household>
   /** Test helper: 'seed' restores the fixture household, 'empty' removes everything. */
   resetDemo(mode: 'seed' | 'empty'): Promise<Household>
+
+  /* Gateway-backed views (empty or unavailable in mock mode). */
+  getMe(): Promise<Me>
+  getOverview(): Promise<Overview>
+  getSystemStatus(): Promise<SystemStatus>
+  /** The household policy the gateway currently serves, or null if none is reachable. */
+  getPublishedPolicy(): Promise<Policy | null>
+  previewPublish(): Promise<PublishPreview>
+  publish(): Promise<PublishResult>
+  listPresets(): Promise<Preset[]>
+  applyPreset(name: string): Promise<Policy>
+  disassociate(deviceId: string): Promise<void>
+  listCommands(deviceId: string): Promise<Command[]>
+  sendCommand(deviceId: string, action: CommandAction, value?: string): Promise<Command>
+  getTelemetry(deviceId: string): Promise<Telemetry>
 }

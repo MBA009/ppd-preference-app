@@ -7,10 +7,17 @@ export const STATE_LABEL: Record<DeclarationState, string> = {
   waiting_for_renewal: 'Gets your rules · Updating',
   stale: 'Gets your rules · Out of date',
   needs_reassociation: 'Needs to reconnect',
+  not_associated: 'Gets your rules · Not confirmed yet',
+  broken: 'Gets your rules · Receipt does not match',
 }
 
 export function stateLabel(d: DeviceSummary) {
   return STATE_LABEL[d.declaration?.state ?? 'advisory']
+}
+
+/** "Connected device" or "Simulated participant" for devices the PPD gateway knows. */
+export function kindLabel(d: DeviceSummary) {
+  return d.kind === 'simulated' ? 'Simulated participant' : d.kind === 'real' ? 'Connected device' : 'From our library'
 }
 
 export function vendorOf(d: DeviceSummary) {
