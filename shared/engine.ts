@@ -1,10 +1,9 @@
 import type { Device, Flow, Rule, Verdict } from './types'
-import { leavesHome, matchesScope } from '../policy/scope'
+import { leavesHome, matchesScope } from './scope'
 
 /**
- * STAND-IN for the backend's comparison of a flow with the household's rules.
- * It only exists so the app has real, changing verdicts to show. The real comparison belongs to
- * the backend; replace this file's use in mockClient.ts when that exists.
+ * The comparison of a flow with the household's rules. app-api runs it on every device read;
+ * mockClient.ts runs the same code in the browser when the app is offline.
  *
  * Order of decisions for one flow:
  *   1. No source for the flow yet                         -> indeterminate ("Can't tell")

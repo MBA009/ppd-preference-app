@@ -1,6 +1,6 @@
 import { HashRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { HouseholdProvider, useHousehold } from './state/data'
-import { BottomNav, Loading } from './components/ui'
+import { BottomNav, ErrorBox, Loading } from './components/ui'
 import Home from './screens/Home'
 import Scan from './screens/Scan'
 import Preview from './screens/Preview'
@@ -16,8 +16,16 @@ import Dev from './screens/Dev'
 
 /** Until the household has answered the questions, the only screens are the questions themselves and the test tools. */
 function OnboardingGate() {
-  const { household } = useHousehold()
+  const { household, error, reload } = useHousehold()
   const { pathname } = useLocation()
+  if (!household && error) {
+    return (
+      <div className="sf">
+        <ErrorBox error={error} />
+        <button className="btn" onClick={reload}>Try again</button>
+      </div>
+    )
+  }
   if (!household) return <Loading />
   const onboarding = household.answers === null
   if (onboarding && pathname !== '/rules' && pathname !== '/rules/sources' && pathname !== '/dev') return <Navigate to="/rules" replace />

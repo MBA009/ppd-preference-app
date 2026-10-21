@@ -1,0 +1,26 @@
+{
+  "name": "ppd-app-api",
+  "private": true,
+  "version": "0.1.0",
+  "description": "app-api: the PPD web app's backend (household store, device comparison, gateway client).",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false src/index.ts",
+    "start": "node --disable-warning=ExperimentalWarning dist/index.js",
+    "build": "tsc --noEmit && esbuild src/index.ts --bundle --platform=node --target=node24 --format=esm --packages=external --outfile=dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "test": "node --disable-warning=ExperimentalWarning --import tsx --test test/*.test.ts"
+  },
+  "dependencies": {
+    "fastify": "5.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "esbuild": "0.25.12",
+    "tsx": "4.20.6",
+    "typescript": "5.6.3"
+  }
+}

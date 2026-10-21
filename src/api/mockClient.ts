@@ -1,10 +1,11 @@
-import type { Decision, Device, DeviceSummary, Household, PpdApi, Questionnaire, ResolveResult } from './types'
-import { evaluateDevice } from './mockEngine'
+import type { Device, DeviceSummary, Household, PpdApi, Questionnaire } from './types'
+import { evaluateDevice } from '../../shared/engine'
+import * as hh from '../../shared/household'
 
 /**
- * Backend stand-in. Reads the static JSON in public/mock/ and keeps the household (devices in the home,
- * saved decisions, answers and rules) in localStorage so it survives reloads. Verdicts are computed on
- * every read from the household's current rules (see mockEngine.ts).
+ * Offline stand-in for app-api, used when VITE_API_MODE=mock. Reads the static JSON in public/mock/ and
+ * keeps the household in localStorage so it survives reloads. The household changes and the verdicts
+ * come from shared/, the same code app-api runs.
  */
 
 const BASE = import.meta.env.BASE_URL + 'mock/'
@@ -28,27 +29,13 @@ async function getJson<T>(path: string): Promise<T> {
   return (await p) as T
 }
 
-const blank = (): Household => ({ devices: [], saved: [], decisions: {}, group_decisions: {}, answers: null, rules: [], profile: null })
-
-async function seed(): Promise<Household> {
-  const s = await getJson<{ devices: { device_id: string; added_at: string }[] }>('household.json')
-  const now = Date.now()
-  return {
-    ...blank(),
-    // Reolink "just joined" (2 minutes ago, not yet reviewed); the others have been in the home for a day.
-    devices: s.devices.map((d) => ({
-      ...d,
-      added_at: new Date(now - (d.device_id === 'reolink-e1-zoom' ? 2 * 60_000 : 86_400_000)).toISOString(),
-      joined_seen: d.device_id !== 'reolink-e1-zoom',
-    })),
-  }
-}
+const seed = async () => hh.seedHousehold(await getJson('household.json'))
 
 function read(): Household | null {
   try {
     const raw = localStorage.getItem(STORE_KEY)
     // Older saves lack the policy fields; fill them in so the person lands on the questions.
-    return raw ? { ...blank(), ...(JSON.parse(raw) as Partial<Household>) } : null
+    return raw ? { ...hh.blankHousehold(), ...(JSON.parse(raw) as Partial<Household>) } : null
   } catch {
     return null
   }
@@ -77,16 +64,13 @@ export const mockClient: PpdApi = {
     return (await current()).rules
   },
   async savePolicy(p) {
-    return write({ ...(await current()), answers: p.answers, rules: p.rules, profile: p.profile })
+    return write(hh.savePolicy(await current(), p))
   },
   async upsertRule(rule) {
-    const h = await current()
-    const exists = h.rules.some((r) => r.id === rule.id)
-    return write({ ...h, rules: exists ? h.rules.map((r) => (r.id === rule.id ? rule : r)) : [...h.rules, rule] })
+    return write(hh.upsertRule(await current(), rule))
   },
   async deleteRule(id) {
-    const h = await current()
-    return write({ ...h, rules: h.rules.filter((r) => r.id !== id) })
+    return write(hh.deleteRule(await current(), id))
   },
 
   async listLibrary() {
@@ -94,62 +78,33 @@ export const mockClient: PpdApi = {
   },
   async getDevice(id) {
     const raw = await getJson<Device>(`devices/${encodeURIComponent(id)}.json`)
-    const d = evaluateDevice(raw, (await current()).rules)
-    if (!d.declaration) return d
-    // The fixture has fixed dates; make them relative to now so the demo never looks stale.
-    const now = Date.now()
-    return { ...d, declaration: { ...d.declaration, received_at: new Date(now - 2 * 60_000).toISOString(), renew_by: new Date(now + 7 * 86_400_000).toISOString() } }
+    return hh.withFreshDeclaration(evaluateDevice(raw, (await current()).rules))
   },
 
-  async resolveCode(payload): Promise<ResolveResult> {
-    const text = payload.trim()
-    if (!text) return { ok: false, reason: 'not_a_code' }
-    if (/^MT:/i.test(text) || /^\d{11}$|^\d{4}-\d{3}-\d{4}$/.test(text)) return { ok: false, reason: 'matter_code' }
-    const { codes } = await getJson<{ codes: Record<string, string> }>('codes.json')
-    // Accept the full URL, "ppd:<id>", or the bare declaration id.
-    const id = text.replace(/^ppd:/i, '').replace(/^https?:\/\/[^/]+\/d\//i, '')
-    const hit = codes[text] ?? Object.entries(codes).find(([url]) => url.endsWith('/' + id))?.[1]
-    return hit ? { ok: true, device_id: hit } : { ok: false, reason: /^[a-z0-9:/._-]+$/i.test(text) ? 'unknown_code' : 'not_a_code' }
+  async resolveCode(payload) {
+    return hh.resolveCode(payload, (await getJson<{ codes: Record<string, string> }>('codes.json')).codes)
   },
 
   async getHousehold() {
     return current()
   },
   async addDevice(id, opts) {
-    const h = await current()
-    if (h.devices.some((d) => d.device_id === id)) return h
-    return write({
-      ...h,
-      saved: h.saved.filter((s) => s !== id),
-      devices: [...h.devices, { device_id: id, added_at: new Date().toISOString(), joined_seen: !opts?.joined }],
-    })
+    return write(hh.addDevice(await current(), id, opts))
   },
   async removeDevice(id) {
-    const h = await current()
-    const decisions = Object.fromEntries(Object.entries(h.decisions).filter(([, d]) => d.device_id !== id))
-    return write({ ...h, devices: h.devices.filter((d) => d.device_id !== id), decisions })
+    return write(hh.removeDevice(await current(), id))
   },
   async saveForLater(id) {
-    const h = await current()
-    return write({ ...h, saved: h.saved.includes(id) ? h.saved : [...h.saved, id] })
+    return write(hh.saveForLater(await current(), id))
   },
   async markJoinedSeen(id) {
-    const h = await current()
-    return write({ ...h, devices: h.devices.map((d) => (d.device_id === id ? { ...d, joined_seen: true } : d)) })
+    return write(hh.markJoinedSeen(await current(), id))
   },
   async saveDecision(d) {
-    const h = await current()
-    const decision: Decision = { ...d, decided_at: new Date().toISOString() }
-    return write({
-      ...h,
-      decisions: { ...h.decisions, [d.flow_id]: decision },
-      group_decisions: d.remember_similar
-        ? { ...h.group_decisions, [d.core_group_id]: decision }
-        : Object.fromEntries(Object.entries(h.group_decisions).filter(([k]) => k !== d.core_group_id)),
-    })
+    return write(hh.saveDecision(await current(), d))
   },
   async resetDemo(mode) {
     // Both modes return to first launch: no answers and no rules yet.
-    return write(mode === 'seed' ? await seed() : blank())
+    return write(mode === 'seed' ? await seed() : hh.blankHousehold())
   },
 }

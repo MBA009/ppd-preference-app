@@ -12,16 +12,29 @@ the answer-to-rule mapping and the citations.
 
 It implements the nine phone screens from the design canvas (1a Scan, 1b/1c Preview, 2a New device, 2b Flow detail and decision,
 3a My home, 3b Device library, 3c Device detail, 3d Household rules), plus the questions, the policy review page, the rule
-editor and a sources page. The backend does not exist yet, so every call is answered from static JSON in `public/mock/`.
+editor and a sources page. Its backend is **app-api** (`server/`), which stores the household and computes the verdicts;
+an offline mock mode answers the same calls from static JSON in `public/mock/`.
 
 ## Run it
 
+Needs Node 24 or later (app-api uses Node's built-in SQLite).
+
 ```bash
 npm install
-npm run dev          # http://localhost:5173  (the camera works on localhost)
-npm run build        # type-checks, then builds to dist/
-npm run preview      # serves dist/ on :4173 so you can test the installed-app behaviour
+npm install --prefix server
+
+npm run api          # app-api on http://localhost:3000 (household stored in server/data/app.db)
+npm run dev          # the app on http://localhost:5173; Vite forwards /api to app-api
+npm run dev:mock     # the app alone, offline: public/mock/ + localStorage, no app-api needed
+
+npm run build                    # type-checks, then builds the app to dist/
+npm --prefix server run build    # type-checks, then bundles app-api to server/dist/
+npm --prefix server test         # app-api route tests
+npm run preview                  # serves dist/ on :4173 (also forwards /api) to test the installed-app behaviour
 ```
+
+Run `npm run api` and `npm run dev` in two terminals. Settings are in `.env.example` (the app) and
+`server/.env.example` (app-api); the defaults need no changes on a workstation.
 
 ### Trying it on a phone (the camera needs HTTPS)
 
@@ -51,9 +64,9 @@ The scanned text goes to `api.resolveCode()`. In the fixtures a privacy code is 
 `https://ppd.example/d/aqara-w200-01`. A Matter setup code (`MT:…`) is recognised and refused with an explanation, because
 the design separates the two codes. Replace `resolveCode` once the real code format is decided.
 
-## Where the "backend" is
+## Where the backend is
 
-Everything the screens need goes through one interface, `PpdApi` in `src/api/types.ts`:
+Everything the screens need goes through one interface, `PpdApi` in `shared/types.ts`:
 
 | Call | Returns |
 | --- | --- |
@@ -63,8 +76,19 @@ Everything the screens need goes through one interface, `PpdApi` in `src/api/typ
 | `resolveCode(text)` | which device a scanned code points to |
 | `getHousehold()`, `addDevice`, `removeDevice`, `saveForLater`, `markJoinedSeen`, `saveDecision` | the household's devices and saved preferences |
 
-`src/api/mockClient.ts` implements it from `public/mock/*.json` and keeps the household in `localStorage`. To connect a real
-backend, write another `PpdApi` implementation and change the one line in `src/api/index.ts`. The screens do not change.
+`src/api/httpClient.ts` implements it against app-api; each call is one route under `/api` (see `server/src/app.ts`). The browser
+only ever calls `/api` on its own origin; app-api is the one that talks to the PPD gateway. `src/api/index.ts` picks the client:
+app-api by default, or `src/api/mockClient.ts` (fixtures + `localStorage`) when `VITE_API_MODE=mock`. The screens do not change.
+
+Both clients use the same code from `shared/` for what happens to the household (`household.ts`) and for the verdicts
+(`engine.ts`), so mock mode behaves like app-api.
+
+### app-api
+
+`server/` is a Node + TypeScript service (Fastify). It reads the fixtures in `public/mock/` at start-up, keeps the household
+(devices, decisions, answers, rules) in SQLite with an audit log of every change, and computes each device's verdicts from the
+stored rules on every read. `GET /api/health` reports the database and whether the PPD gateway (`GATEWAY_URL`) answers.
+Reading live devices from the gateway and publishing the household policy to it are the next steps.
 
 ### The fixtures
 
@@ -78,11 +102,10 @@ npm run mock         # or: python3 tools/build_mock.py path/to/workbook.xlsx
 Each flow carries its taxonomy fields (fine-grained, and the coarse `core` terms household rules are written in),
 plain-language labels, control type and note from the workbook.
 
-**The verdicts are placeholders.** They are computed in the browser by `src/api/mockEngine.ts` from the household's current
-rules (a stricter rule wins: Never, then Ask me first, then Allowed; no matching rule and the flow leaves the home means
-"needs your decision"). It exists so every state has data to render and so editing a rule visibly changes the verdicts. It says
-nothing about what the PPD protocol would return. Replace it with the backend's real comparison: `getDevice` should return each
-flow's `evaluation` block computed server-side.
+**The verdicts are this project's comparison, not the PPD protocol's.** app-api computes them with `shared/engine.ts` from the
+household's current rules (a stricter rule wins: Never, then Ask me first, then Allowed; no matching rule and the flow leaves
+the home means "needs your decision"), and `getDevice` returns each flow's `evaluation` block. The PPD protocol defines the
+same five outcome names but not this procedure.
 
 ### The questions
 
@@ -116,10 +139,12 @@ and are not user-tested.
 ## Project map
 
 ```
-src/api/           contract (types.ts), mock backend, the one-line switch (index.ts)
+shared/            used by the app and app-api: the contract (types.ts), household changes, verdict engine, rule matching
+server/            app-api: routes (src/app.ts), SQLite store, fixture loader, gateway check, tests
+src/api/           app-api client, offline mock client, the switch between them (index.ts)
 src/scanner/       camera + QR decoding
 src/screens/       one file per screen (Questionnaire, Rules and RuleEditor make up the household policy)
-src/policy/        the decision tree as code: generate.ts (answers to rules), scope.ts (rule matching), choices.ts (editor wording)
+src/policy/        the decision tree as code: generate.ts (answers to rules), choices.ts (editor wording)
 src/components/    app bars, lists, chips, form controls, the shared device report
 src/lib/           verdict labels and counting, device helpers
 src/state/         household store and data hooks
@@ -132,5 +157,6 @@ docs/              household-policy-decision-tree.md (generated)
 ## PWA details
 
 `vite-plugin-pwa` generates the manifest and the service worker. The app shell (HTML, JS, CSS, icons, the QR decoder) is
-precached, so the app opens offline. Requests for `/mock/*.json` are network-first with a cache fallback, so edits to fixtures
-show up on reload and the last data still works offline. The worker updates itself when a new build is deployed.
+precached, so the app opens offline. `/api` responses are never cached (app-api sends `Cache-Control: no-store` and the worker
+leaves `/api` alone), so the app always shows the stored household. In mock mode, requests for `/mock/*.json` are network-first
+with a cache fallback. The worker updates itself when a new build is deployed.

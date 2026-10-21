@@ -54,6 +54,8 @@ interface Ctx {
   markJoinedSeen: (id: string) => Promise<void>
   saveDecision: (d: Omit<Decision, 'decided_at'>) => Promise<void>
   resetDemo: (mode: 'seed' | 'empty') => Promise<void>
+  /** Loads the household again after a failed first load. */
+  reload: () => void
   savePolicy: (p: { answers: Answers; rules: Rule[]; profile: Profile }) => Promise<void>
   upsertRule: (r: Rule) => Promise<void>
   deleteRule: (id: string) => Promise<void>
@@ -68,9 +70,11 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
   const [message, setMessage] = useState<string | null>(null)
   const timer = useRef<number>()
 
-  useEffect(() => {
+  const reload = useCallback(() => {
+    setError(null)
     api.getHousehold().then(setHousehold, setError)
   }, [])
+  useEffect(reload, [reload])
 
   const toast = useCallback((text: string) => {
     setMessage(text)
@@ -78,16 +82,17 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
     timer.current = window.setTimeout(() => setMessage(null), 2600)
   }, [])
 
+  // A failed change leaves the household as it was and says so; the person can try again.
   const run = useCallback(<A extends unknown[]>(fn: (...a: A) => Promise<Household>) => async (...a: A) => {
-    try { setHousehold(await fn(...a)) } catch (e) { setError(e as Error) }
-  }, [])
+    try { setHousehold(await fn(...a)) } catch (e) { toast(`Not saved. ${(e as Error).message}`) }
+  }, [toast])
 
   const value = useMemo<Ctx>(() => ({
-    household, error, toast,
+    household, error, toast, reload,
     addDevice: run(api.addDevice), removeDevice: run(api.removeDevice), saveForLater: run(api.saveForLater),
     markJoinedSeen: run(api.markJoinedSeen), saveDecision: run(api.saveDecision), resetDemo: run(api.resetDemo),
     savePolicy: run(api.savePolicy), upsertRule: run(api.upsertRule), deleteRule: run(api.deleteRule),
-  }), [household, error, toast, run])
+  }), [household, error, toast, reload, run])
 
   return (
     <HouseholdCtx.Provider value={value}>
