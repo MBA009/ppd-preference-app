@@ -58,8 +58,8 @@ export default function Dev() {
 
       <SectionHeader>Household</SectionHeader>
       <Group>
-        <Cell onClick={async () => { await resetDemo('seed'); toast('Household reset to the fixture') }} chevron={false}><div className="cb" style={{ padding: '12px 0' }}><span className="ttl">Reset to the demo household</span><span className="sub">Four devices, no saved decisions</span></div></Cell>
-        <Cell onClick={async () => { await resetDemo('empty'); toast('Household emptied') }} chevron={false}><div className="cb" style={{ padding: '12px 0' }}><span className="ttl">Start with an empty home</span><span className="sub">To try scanning and adding devices</span></div></Cell>
+        <Cell onClick={async () => { await resetDemo('seed'); toast('Reset to first launch'); nav('/', { replace: true }) }} chevron={false}><div className="cb" style={{ padding: '12px 0' }}><span className="ttl">Start over with the demo household</span><span className="sub">Four devices. Clears your answers, rules and decisions, so the questions come up again.</span></div></Cell>
+        <Cell onClick={async () => { await resetDemo('empty'); toast('Reset to first launch'); nav('/', { replace: true }) }} chevron={false}><div className="cb" style={{ padding: '12px 0' }}><span className="ttl">Start over with an empty home</span><span className="sub">No devices, answers or rules. To try the questions, then scanning and adding devices.</span></div></Cell>
         {notHome.map((d) => (
           <Cell key={d.id} chevron={false} onClick={async () => { await addDevice(d.id, { joined: true }); nav(`/device/${d.id}/joined`) }}>
             <div className="cb" style={{ padding: '12px 0' }}><span className="ttl">Simulate {d.short_name} joining</span><span className="sub">Opens the “joined your home” screen</span></div>

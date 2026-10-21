@@ -5,12 +5,12 @@ import { VERDICTS } from '../lib/verdicts'
 import { ChevronDown, ChevronRight, ChipGlyph, DeviceGlyph, Icon, RowGlyph } from './icons'
 
 /* ---------- app bars ---------- */
-export function AppBar({ title, subtitle, back, right }: { title: string; subtitle?: string; back?: string | true; right?: ReactNode }) {
+export function AppBar({ title, subtitle, back, right }: { title: string; subtitle?: string; back?: string | true | (() => void); right?: ReactNode }) {
   const nav = useNavigate()
   return (
     <div className="nav">
       {back && (
-        <button className="back" aria-label="Back" onClick={() => (back === true ? nav(-1) : nav(back))}>
+        <button className="back" aria-label="Back" onClick={() => (typeof back === 'function' ? back() : back === true ? nav(-1) : nav(back))}>
           <Icon name="back" />
         </button>
       )}
@@ -102,9 +102,9 @@ export function Switch({ on, onChange, label }: { on: boolean; onChange: (v: boo
   )
 }
 
-export function Segmented<T extends string>({ value, options, onChange, label }: { value: T; options: { value: T; label: string }[]; onChange: (v: T) => void; label: string }) {
+export function Segmented<T extends string>({ value, options, onChange, label, full }: { value: T; options: { value: T; label: string }[]; onChange: (v: T) => void; label: string; full?: boolean }) {
   return (
-    <div className="segc" role="group" aria-label={label}>
+    <div className={'segc' + (full ? ' full' : '')} role="group" aria-label={label}>
       {options.map((o) => (
         <button key={o.value} className={'seg' + (o.value === value ? ' on' : '')} aria-pressed={o.value === value} onClick={() => onChange(o.value)}>
           {o.value === value && <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.8" /></svg>}
@@ -123,6 +123,16 @@ export function Expander({ open, onToggle, children, sub }: { open: boolean; onT
         {sub && <span className="sub" style={{ fontSize: 13, lineHeight: '16px' }}>{sub}</span>}
       </div>
       <span className="tr"><ChevronDown up={open} /></span>
+    </button>
+  )
+}
+
+/** A multi-select pill. */
+export function Pill({ on, onClick, children }: { on: boolean; onClick: () => void; children: ReactNode }) {
+  return (
+    <button className={'pill' + (on ? ' on' : '')} role="checkbox" aria-checked={on} onClick={onClick}>
+      {on && <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.8" /></svg>}
+      {children}
     </button>
   )
 }

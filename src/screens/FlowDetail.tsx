@@ -155,6 +155,9 @@ function Detail({ device, flow }: { device: Device; flow: Flow }) {
       {verdict === 'indeterminate' && (
         <Footnote>We will compare this flow once a source is found or the device declares it.</Footnote>
       )}
+      {flow.evaluation.rule_id && (
+        <Footnote>This comes from one of your household rules. <Link to={`/rules/${encodeURIComponent(flow.evaluation.rule_id)}`} className="link">View the rule</Link></Footnote>
+      )}
 
       <div className="spacer" />
       {canDecide && (

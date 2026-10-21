@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { api, type Decision, type Device, type DeviceSummary, type Household, type Rule } from '../api'
+import { api, type Answers, type Decision, type Device, type DeviceSummary, type Household, type Profile, type Questionnaire, type Rule } from '../api'
 
 /* ---------- tiny async hook ---------- */
 export interface Async<T> { data: T | undefined; error: Error | undefined; loading: boolean }
@@ -19,11 +19,30 @@ export function useAsync<T>(fn: () => Promise<T>, deps: unknown[]): Async<T> {
   return state
 }
 
-export const useRules = () => useAsync<Rule[]>(() => api.listRules(), [])
+export const useQuestionnaire = () => useAsync<Questionnaire>(() => api.getQuestionnaire(), [])
 export const useLibrary = () => useAsync<DeviceSummary[]>(() => api.listLibrary(), [])
-export const useDevice = (id: string | undefined) => useAsync<Device>(() => api.getDevice(id!), [id])
-export const useDevices = (ids: string[]) =>
-  useAsync<Device[]>(() => Promise.all(ids.map((i) => api.getDevice(i))), [ids.join('|')])
+
+/** Changes whenever the household's rules change, so device data (whose verdicts depend on the rules) is fetched again. */
+function useRulesKey(): string {
+  const { household } = useHousehold()
+  return JSON.stringify((household?.rules ?? []).map((r) => [r.id, r.effect, r.enabled, r.scope]))
+}
+
+export const useDevice = (id: string | undefined) => {
+  const key = useRulesKey()
+  return useAsync<Device>(() => api.getDevice(id!), [id, key])
+}
+export const useDevices = (ids: string[]) => {
+  const key = useRulesKey()
+  return useAsync<Device[]>(() => Promise.all(ids.map((i) => api.getDevice(i))), [ids.join('|'), key])
+}
+
+/** The household's rules, in policy order. Pass `onlyOn` to leave out rules the person switched off. */
+export function useRules(onlyOn = false): Rule[] {
+  const { household } = useHousehold()
+  const all = household?.rules ?? []
+  return onlyOn ? all.filter((r) => r.enabled) : all
+}
 
 /* ---------- household (devices in the home + saved decisions) ---------- */
 interface Ctx {
@@ -35,6 +54,9 @@ interface Ctx {
   markJoinedSeen: (id: string) => Promise<void>
   saveDecision: (d: Omit<Decision, 'decided_at'>) => Promise<void>
   resetDemo: (mode: 'seed' | 'empty') => Promise<void>
+  savePolicy: (p: { answers: Answers; rules: Rule[]; profile: Profile }) => Promise<void>
+  upsertRule: (r: Rule) => Promise<void>
+  deleteRule: (id: string) => Promise<void>
   toast: (text: string) => void
 }
 
@@ -64,6 +86,7 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
     household, error, toast,
     addDevice: run(api.addDevice), removeDevice: run(api.removeDevice), saveForLater: run(api.saveForLater),
     markJoinedSeen: run(api.markJoinedSeen), saveDecision: run(api.saveDecision), resetDemo: run(api.resetDemo),
+    savePolicy: run(api.savePolicy), upsertRule: run(api.upsertRule), deleteRule: run(api.deleteRule),
   }), [household, error, toast, run])
 
   return (

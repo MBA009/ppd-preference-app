@@ -12,360 +12,6 @@
  "flow_count": 21,
  "flows": [
   {
-   "id": "level-lock.lock-unlock-activity-communicated-to-level-services",
-   "title": "Lock/unlock activity communicated to Level services",
-   "workbook_text": "Lock/unlock activity communicated to Level services",
-   "summary": "Goes to Level · activity history",
-   "summary_parts": {
-    "who": "Goes to Level",
-    "purpose": "activity history"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "ppd:usageData",
-    "purpose": "pat:activityHistory",
-    "action": "ppd:transfer",
-    "source": "ppd:participantGenerated",
-    "handling_context": "pat:levelService",
-    "constraints": [
-     "retention=ppd:indefinite"
-    ]
-   },
-   "display": {
-    "what": "How you use the device",
-    "why": "Showing activity history",
-    "what_happens": "Sent to another party",
-    "comes_from": "The device",
-    "handled_by": "Level",
-    "kept": "Until deleted",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-2e4b45cc",
-    "label": "Usage data sent to a vendor"
-   },
-   "control": {
-    "type": "external_request",
-    "type_label": "Only by contacting the vendor",
-    "necessity": "optional",
-    "note": "You can ask Level to access or delete your Level data by emailing privacy@level.co or calling 1-833-453-8354."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "decision_required",
-    "rule_id": null,
-    "reason": "None of your rules covers this."
-   }
-  },
-  {
-   "id": "level-lock.mobile-geolocation-collected-for-home-away-boundary-features",
-   "title": "Mobile geolocation collected for Home/Away boundary features",
-   "workbook_text": "Mobile geolocation collected for Home/Away boundary features",
-   "summary": "Collected by Level · auto unlock",
-   "summary_parts": {
-    "who": "Collected by Level",
-    "purpose": "auto unlock"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "ppd:locationData",
-    "purpose": "pat:autoUnlock",
-    "action": "ppd:collection",
-    "source": "pat:mobileLocationService",
-    "handling_context": "pat:levelService",
-    "constraints": []
-   },
-   "display": {
-    "what": "Location",
-    "why": "Unlocking when you arrive",
-    "what_happens": "Collected",
-    "comes_from": "Your phone's location",
-    "handled_by": "Level",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-83dae5df",
-    "label": "Location collected by a vendor"
-   },
-   "control": {
-    "type": "user_setting",
-    "type_label": "Change in settings",
-    "necessity": "optional",
-    "note": "You choose whether to share your phone's location with the Level app by granting location permission, and Auto-Unlock can be switched on or off in the lock's settings in the app."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "decision_required",
-    "rule_id": "r3",
-    "reason": "Your rule “Don’t share my precise location” doesn’t settle this."
-   }
-  },
-  {
-   "id": "level-lock.geofence-state-used-for-auto-unlock-touch-to",
-   "title": "Geofence state used for Auto Unlock / Touch to Unlock",
-   "workbook_text": "Geofence state used for Auto Unlock / Touch to Unlock",
-   "summary": "Used by Level · auto unlock",
-   "summary_parts": {
-    "who": "Used by Level",
-    "purpose": "auto unlock"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "pat:geofenceState",
-    "purpose": "pat:autoUnlock",
-    "action": "ppd:use",
-    "source": "ppd:derivedFromPriorData",
-    "handling_context": "pat:levelService",
-    "constraints": []
-   },
-   "display": {
-    "what": "Whether you are home or away",
-    "why": "Unlocking when you arrive",
-    "what_happens": "Used",
-    "comes_from": "Worked out from earlier data",
-    "handled_by": "Level",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-4daa844f",
-    "label": "Location used by a vendor"
-   },
-   "control": {
-    "type": "user_setting",
-    "type_label": "Change in settings",
-    "necessity": "optional",
-    "note": "You can turn Auto-Unlock on or off in the lock's settings in the Level app."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "decision_required",
-    "rule_id": "r3",
-    "reason": "Your rule “Don’t share my precise location” doesn’t settle this."
-   }
-  },
-  {
-   "id": "level-lock.lock-state-activity-returned-to-level-service",
-   "title": "Lock state / activity returned to Level service",
-   "workbook_text": "Lock state / activity returned to Level service",
-   "summary": "Goes to Level · remote access",
-   "summary_parts": {
-    "who": "Goes to Level",
-    "purpose": "remote access"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "pat:lockState",
-    "purpose": "pat:remoteAccessControl",
-    "action": "ppd:transfer",
-    "source": "ppd:participantGenerated",
-    "handling_context": "pat:levelService",
-    "constraints": []
-   },
-   "display": {
-    "what": "Whether the door is locked",
-    "why": "Controlling the lock away from home",
-    "what_happens": "Sent to another party",
-    "comes_from": "The device",
-    "handled_by": "Level",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-5aedaaf3",
-    "label": "Device and network details sent to a vendor"
-   },
-   "control": {
-    "type": "external_request",
-    "type_label": "Only by contacting the vendor",
-    "necessity": "optional",
-    "note": "You can ask Level to access or delete your Level data by emailing privacy@level.co or calling 1-833-453-8354."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "decision_required",
-    "rule_id": null,
-    "reason": "None of your rules covers this."
-   }
-  },
-  {
-   "id": "level-lock.lock-state-shared-with-matter-ecosystem",
-   "title": "Lock state shared with Matter ecosystem",
-   "workbook_text": "Lock state shared with Matter ecosystem",
-   "summary": "Goes to your smart-home app · integration",
-   "summary_parts": {
-    "who": "Goes to your smart-home app",
-    "purpose": "integration"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "pat:lockState",
-    "purpose": "pat:ecosystemIntegration",
-    "action": "ppd:transfer",
-    "source": "ppd:participantGenerated",
-    "handling_context": "pat:smartHomeEcosystem",
-    "constraints": []
-   },
-   "display": {
-    "what": "Whether the door is locked",
-    "why": "Working with your smart-home app",
-    "what_happens": "Sent to another party",
-    "comes_from": "The device",
-    "handled_by": "Your smart-home app (Alexa, Google…)",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-e8b6b621",
-    "label": "Device and network details sent to a third party"
-   },
-   "control": {
-    "type": "user_initiated",
-    "type_label": "Happens only when you do it",
-    "necessity": "optional",
-    "note": "This happens only if you add your lock to a smart home app such as Apple Home, Google Home, Amazon Alexa or SmartThings."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "decision_required",
-    "rule_id": null,
-    "reason": "None of your rules covers this."
-   }
-  },
-  {
-   "id": "level-lock.device-software-battery-status-telemetry-sent-to-level",
-   "title": "Device software / battery / status telemetry sent to Level",
-   "workbook_text": "Device software / battery / status telemetry sent to Level",
-   "summary": "Goes to Level · diagnostics",
-   "summary_parts": {
-    "who": "Goes to Level",
-    "purpose": "diagnostics"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "pat:diagnosticData",
-    "purpose": "ppd:diagnosticsAndMaintenance",
-    "action": "ppd:transfer",
-    "source": "ppd:participantGenerated",
-    "handling_context": "pat:levelService",
-    "constraints": []
-   },
-   "display": {
-    "what": "Device logs and status",
-    "why": "Diagnostics and maintenance",
-    "what_happens": "Sent to another party",
-    "comes_from": "The device",
-    "handled_by": "Level",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-d0fc350e",
-    "label": "Device and network details sent to a vendor"
-   },
-   "control": {
-    "type": "external_request",
-    "type_label": "Only by contacting the vendor",
-    "necessity": "unknown",
-    "note": "You can ask Level to access or delete your Level data by emailing privacy@level.co or calling 1-833-453-8354."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "decision_required",
-    "rule_id": null,
-    "reason": "None of your rules covers this."
-   }
-  },
-  {
-   "id": "level-lock.device-serial-stable-device-identifier-sent-to-level",
-   "title": "Device serial / stable device identifier sent to Level",
-   "workbook_text": "Device serial / stable device identifier sent to Level",
-   "summary": "Goes to Level · diagnostics",
-   "summary_parts": {
-    "who": "Goes to Level",
-    "purpose": "diagnostics"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "ppd:identifierData",
-    "purpose": "ppd:diagnosticsAndMaintenance",
-    "action": "ppd:transfer",
-    "source": "ppd:participantGenerated",
-    "handling_context": "pat:levelService",
-    "constraints": []
-   },
-   "display": {
-    "what": "Names, accounts or device IDs",
-    "why": "Diagnostics and maintenance",
-    "what_happens": "Sent to another party",
-    "comes_from": "The device",
-    "handled_by": "Level",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-f2c2d35a",
-    "label": "Identifiers and accounts sent to a vendor"
-   },
-   "control": {
-    "type": "external_request",
-    "type_label": "Only by contacting the vendor",
-    "necessity": "unknown",
-    "note": "You can ask Level to access or delete your Level data by emailing privacy@level.co or calling 1-833-453-8354."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "decision_required",
-    "rule_id": null,
-    "reason": "None of your rules covers this."
-   }
-  },
-  {
-   "id": "level-lock.access-event-data-aggregated-inferred-for-product-research",
-   "title": "Access-event data aggregated / inferred for product research and service…",
-   "workbook_text": "Access-event data aggregated / inferred for product research and service improvement",
-   "summary": "Worked out by Level · research",
-   "summary_parts": {
-    "who": "Worked out by Level",
-    "purpose": "research"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "ppd:usageData",
-    "purpose": "pat:researchAndDevelopment",
-    "action": "ppd:inference",
-    "source": "ppd:derivedFromPriorData",
-    "handling_context": "pat:levelService",
-    "constraints": []
-   },
-   "display": {
-    "what": "How you use the device",
-    "why": "Product research",
-    "what_happens": "Worked out from other data",
-    "comes_from": "Worked out from earlier data",
-    "handled_by": "Level",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-bb9073e6",
-    "label": "Usage data worked out by a vendor"
-   },
-   "control": {
-    "type": "none_documented",
-    "type_label": "No control found",
-    "necessity": "optional",
-    "note": null
-   },
-   "evidence": "needs_source",
-   "evaluation": {
-    "verdict": "indeterminate",
-    "rule_id": null,
-    "reason": "We could not find a source for this flow yet, so we cannot compare it with your rules."
-   }
-  },
-  {
    "id": "level-lock.setup-bluetooth-matter-pairing-credential-or-setup-code",
    "title": "Bluetooth/Matter pairing credential or setup code",
    "workbook_text": "Setup: Bluetooth/Matter pairing credential or setup code",
@@ -403,10 +49,12 @@
     "note": "You enter or scan the pairing/setup code when adding the lock."
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": "r4",
-    "reason": "Covered by “Data a device needs to work”."
+   "core": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:householdContext"
    }
   },
   {
@@ -447,10 +95,12 @@
     "note": "You create a Level account in the Level Home app when you set up your lock."
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": "r4",
-    "reason": "Covered by “Data a device needs to work”."
+   "core": {
+    "data_type": "ppd:identifierData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:vendorContext"
    }
   },
   {
@@ -491,10 +141,12 @@
     "note": "This happens only when you choose to add someone as a household member or guest in the Level Home app."
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": null,
-    "reason": "Nothing here goes against your rules."
+   "core": {
+    "data_type": "ppd:profileData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:vendorContext"
    }
   },
   {
@@ -535,10 +187,60 @@
     "note": null
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": null,
-    "reason": "Nothing here goes against your rules."
+   "core": {
+    "data_type": "ppd:usageData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:participantObserved",
+    "handling_context": "ppd:householdContext"
+   }
+  },
+  {
+   "id": "level-lock.lock-unlock-activity-communicated-to-level-services",
+   "title": "Lock/unlock activity communicated to Level services",
+   "workbook_text": "Lock/unlock activity communicated to Level services",
+   "summary": "Goes to Level · activity history",
+   "summary_parts": {
+    "who": "Goes to Level",
+    "purpose": "activity history"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:usageData",
+    "purpose": "pat:activityHistory",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "pat:levelService",
+    "constraints": [
+     "retention=ppd:indefinite"
+    ]
+   },
+   "display": {
+    "what": "How you use the device",
+    "why": "Showing activity history",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "Level",
+    "kept": "Until deleted",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-2e4b45cc",
+    "label": "Usage data sent to a vendor"
+   },
+   "control": {
+    "type": "external_request",
+    "type_label": "Only by contacting the vendor",
+    "necessity": "optional",
+    "note": "You can ask Level to access or delete your Level data by emailing privacy@level.co or calling 1-833-453-8354."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:usageData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext"
    }
   },
   {
@@ -579,10 +281,12 @@
     "note": null
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": null,
-    "reason": "Nothing here goes against your rules."
+   "core": {
+    "data_type": "ppd:usageData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:use",
+    "source": "ppd:vendorProvided",
+    "handling_context": "ppd:householdContext"
    }
   },
   {
@@ -623,10 +327,12 @@
     "note": null
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": null,
-    "reason": "Nothing here goes against your rules."
+   "core": {
+    "data_type": "ppd:identifierData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:use",
+    "source": "ppd:vendorProvided",
+    "handling_context": "ppd:householdContext"
    }
   },
   {
@@ -667,10 +373,12 @@
     "note": "This happens only when you choose to invite someone, and Level asks for their email address or mobile phone number to send the invitation."
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": null,
-    "reason": "Nothing here goes against your rules."
+   "core": {
+    "data_type": "ppd:identifierData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:vendorContext"
    }
   },
   {
@@ -711,10 +419,104 @@
     "note": "This happens only when you choose to create a pass or keypad code for someone in the Level Home app."
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": null,
-    "reason": "Nothing here goes against your rules."
+   "core": {
+    "data_type": "ppd:identifierData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "level-lock.mobile-geolocation-collected-for-home-away-boundary-features",
+   "title": "Mobile geolocation collected for Home/Away boundary features",
+   "workbook_text": "Mobile geolocation collected for Home/Away boundary features",
+   "summary": "Collected by Level · auto unlock",
+   "summary_parts": {
+    "who": "Collected by Level",
+    "purpose": "auto unlock"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:locationData",
+    "purpose": "pat:autoUnlock",
+    "action": "ppd:collection",
+    "source": "pat:mobileLocationService",
+    "handling_context": "pat:levelService",
+    "constraints": []
+   },
+   "display": {
+    "what": "Location",
+    "why": "Unlocking when you arrive",
+    "what_happens": "Collected",
+    "comes_from": "Your phone's location",
+    "handled_by": "Level",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-83dae5df",
+    "label": "Location collected by a vendor"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "You choose whether to share your phone's location with the Level app by granting location permission, and Auto-Unlock can be switched on or off in the lock's settings in the app."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:locationData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:participantObserved",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "level-lock.geofence-state-used-for-auto-unlock-touch-to",
+   "title": "Geofence state used for Auto Unlock / Touch to Unlock",
+   "workbook_text": "Geofence state used for Auto Unlock / Touch to Unlock",
+   "summary": "Used by Level · auto unlock",
+   "summary_parts": {
+    "who": "Used by Level",
+    "purpose": "auto unlock"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:geofenceState",
+    "purpose": "pat:autoUnlock",
+    "action": "ppd:use",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "pat:levelService",
+    "constraints": []
+   },
+   "display": {
+    "what": "Whether you are home or away",
+    "why": "Unlocking when you arrive",
+    "what_happens": "Used",
+    "comes_from": "Worked out from earlier data",
+    "handled_by": "Level",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-4daa844f",
+    "label": "Location used by a vendor"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "You can turn Auto-Unlock on or off in the lock's settings in the Level app."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:locationData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:use",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "ppd:vendorContext"
    }
   },
   {
@@ -755,10 +557,12 @@
     "note": "You enter your home address or ZIP code during setup."
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": null,
-    "reason": "Nothing here goes against your rules."
+   "core": {
+    "data_type": "ppd:locationData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:vendorContext"
    }
   },
   {
@@ -799,10 +603,12 @@
     "note": "You add a door or home photo during setup."
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": null,
-    "reason": "Nothing here goes against your rules."
+   "core": {
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:vendorContext"
    }
   },
   {
@@ -843,10 +649,58 @@
     "note": "This happens only when you send a lock or unlock command from the Level Home app while away, which needs a Level Connect Wi-Fi Bridge or a Matter-over-Thread hub."
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": null,
-    "reason": "Nothing here goes against your rules."
+   "core": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "level-lock.lock-state-activity-returned-to-level-service",
+   "title": "Lock state / activity returned to Level service",
+   "workbook_text": "Lock state / activity returned to Level service",
+   "summary": "Goes to Level · remote access",
+   "summary_parts": {
+    "who": "Goes to Level",
+    "purpose": "remote access"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:lockState",
+    "purpose": "pat:remoteAccessControl",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "pat:levelService",
+    "constraints": []
+   },
+   "display": {
+    "what": "Whether the door is locked",
+    "why": "Controlling the lock away from home",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "Level",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-5aedaaf3",
+    "label": "Device and network details sent to a vendor"
+   },
+   "control": {
+    "type": "external_request",
+    "type_label": "Only by contacting the vendor",
+    "necessity": "optional",
+    "note": "You can ask Level to access or delete your Level data by emailing privacy@level.co or calling 1-833-453-8354."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext"
    }
   },
   {
@@ -887,10 +741,150 @@
     "note": "This happens only when you (or an automation you set up) send a lock or unlock command from a smart home app such as Apple Home, Google Home, Amazon Alexa or SmartThings."
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": null,
-    "reason": "Nothing here goes against your rules."
+   "core": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:thirdPartyProvided",
+    "handling_context": "ppd:householdContext"
+   }
+  },
+  {
+   "id": "level-lock.lock-state-shared-with-matter-ecosystem",
+   "title": "Lock state shared with Matter ecosystem",
+   "workbook_text": "Lock state shared with Matter ecosystem",
+   "summary": "Goes to your smart-home app · integration",
+   "summary_parts": {
+    "who": "Goes to your smart-home app",
+    "purpose": "integration"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:lockState",
+    "purpose": "pat:ecosystemIntegration",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "pat:smartHomeEcosystem",
+    "constraints": []
+   },
+   "display": {
+    "what": "Whether the door is locked",
+    "why": "Working with your smart-home app",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "Your smart-home app (Alexa, Google…)",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-e8b6b621",
+    "label": "Device and network details sent to a third party"
+   },
+   "control": {
+    "type": "user_initiated",
+    "type_label": "Happens only when you do it",
+    "necessity": "optional",
+    "note": "This happens only if you add your lock to a smart home app such as Apple Home, Google Home, Amazon Alexa or SmartThings."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:thirdPartyContext"
+   }
+  },
+  {
+   "id": "level-lock.device-software-battery-status-telemetry-sent-to-level",
+   "title": "Device software / battery / status telemetry sent to Level",
+   "workbook_text": "Device software / battery / status telemetry sent to Level",
+   "summary": "Goes to Level · diagnostics",
+   "summary_parts": {
+    "who": "Goes to Level",
+    "purpose": "diagnostics"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:diagnosticData",
+    "purpose": "ppd:diagnosticsAndMaintenance",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "pat:levelService",
+    "constraints": []
+   },
+   "display": {
+    "what": "Device logs and status",
+    "why": "Diagnostics and maintenance",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "Level",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-d0fc350e",
+    "label": "Device and network details sent to a vendor"
+   },
+   "control": {
+    "type": "external_request",
+    "type_label": "Only by contacting the vendor",
+    "necessity": "unknown",
+    "note": "You can ask Level to access or delete your Level data by emailing privacy@level.co or calling 1-833-453-8354."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:diagnosticsAndMaintenance",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "level-lock.device-serial-stable-device-identifier-sent-to-level",
+   "title": "Device serial / stable device identifier sent to Level",
+   "workbook_text": "Device serial / stable device identifier sent to Level",
+   "summary": "Goes to Level · diagnostics",
+   "summary_parts": {
+    "who": "Goes to Level",
+    "purpose": "diagnostics"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:identifierData",
+    "purpose": "ppd:diagnosticsAndMaintenance",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "pat:levelService",
+    "constraints": []
+   },
+   "display": {
+    "what": "Names, accounts or device IDs",
+    "why": "Diagnostics and maintenance",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "Level",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-f2c2d35a",
+    "label": "Identifiers and accounts sent to a vendor"
+   },
+   "control": {
+    "type": "external_request",
+    "type_label": "Only by contacting the vendor",
+    "necessity": "unknown",
+    "note": "You can ask Level to access or delete your Level data by emailing privacy@level.co or calling 1-833-453-8354."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:identifierData",
+    "purpose": "ppd:diagnosticsAndMaintenance",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext"
    }
   },
   {
@@ -931,10 +925,58 @@
     "note": null
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": "r4",
-    "reason": "Covered by “Data a device needs to work”."
+   "core": {
+    "data_type": "ppd:identifierData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:householdContext"
+   }
+  },
+  {
+   "id": "level-lock.access-event-data-aggregated-inferred-for-product-research",
+   "title": "Access-event data aggregated / inferred for product research and service…",
+   "workbook_text": "Access-event data aggregated / inferred for product research and service improvement",
+   "summary": "Worked out by Level · research",
+   "summary_parts": {
+    "who": "Worked out by Level",
+    "purpose": "research"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:usageData",
+    "purpose": "pat:researchAndDevelopment",
+    "action": "ppd:inference",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "pat:levelService",
+    "constraints": []
+   },
+   "display": {
+    "what": "How you use the device",
+    "why": "Product research",
+    "what_happens": "Worked out from other data",
+    "comes_from": "Worked out from earlier data",
+    "handled_by": "Level",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-bb9073e6",
+    "label": "Usage data worked out by a vendor"
+   },
+   "control": {
+    "type": "none_documented",
+    "type_label": "No control found",
+    "necessity": "optional",
+    "note": null
+   },
+   "evidence": "needs_source",
+   "core": {
+    "data_type": "ppd:usageData",
+    "purpose": "ppd:analyticsAndImprovement",
+    "action": "ppd:inference",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "ppd:vendorContext"
    }
   }
  ]

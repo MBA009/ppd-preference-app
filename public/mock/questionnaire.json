@@ -1,0 +1,354 @@
+{
+  "version": "0.1.0",
+  "title": "Household privacy questions",
+  "description": "Seven short questions. The answers generate a household policy: a list of rules, each of which says Never, Ask me, or Allow for a kind of data flow. Rules use the core PPD taxonomy terms (data_type, purpose, handling_context, action, constraints).",
+  "disclaimer": "The questions are derived from factors studied in the cited papers. The wording, the branching and the mapping from answers to rules are this project's design and have not been user-tested.",
+  "precedence": ["dont_allow", "ask", "allow"],
+  "defaults_when_no_rule_matches": {
+    "stays_in_home": "compatible",
+    "leaves_home": "decision_required"
+  },
+  "sources": {
+    "naeini2017": {
+      "short": "Emami-Naeini et al., 2017",
+      "citation": "Pardis Emami Naeini, Sruti Bhagavatula, Hana Habib, Martin Degeling, Lujo Bauer, Lorrie Cranor, and Norman Sadeh. 2017. Privacy Expectations and Preferences in an IoT World. In Proceedings of the Thirteenth Symposium on Usable Privacy and Security (SOUPS 2017), pp. 399-412. USENIX Association.",
+      "url": "https://www.usenix.org/conference/soups2017/technical-sessions/presentation/naeini",
+      "pdf": "https://www.usenix.org/system/files/conference/soups2017/soups2017-naeini.pdf"
+    },
+    "naeini2020": {
+      "short": "Emami-Naeini et al., 2020",
+      "citation": "Pardis Emami-Naeini, Yuvraj Agarwal, Lorrie Faith Cranor, and Hanan Hibshi. 2020. Ask the Experts: What Should Be on an IoT Privacy and Security Label? IEEE Symposium on Security and Privacy (S&P 2020).",
+      "url": "https://iotsecurityprivacy.org/research/AskTheExperts/",
+      "pdf": "https://arxiv.org/pdf/2002.04631"
+    },
+    "naeini2021": {
+      "short": "Emami-Naeini et al., 2021",
+      "citation": "Pardis Emami-Naeini, Janarth Dheenadhayalan, Yuvraj Agarwal, and Lorrie Faith Cranor. 2021. Which Privacy and Security Attributes Most Impact Consumers' Risk Perception and Willingness to Purchase IoT Devices? IEEE Symposium on Security and Privacy (S&P 2021).",
+      "url": "https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=9519463",
+      "pdf": "https://par.nsf.gov/servlets/purl/10316411"
+    },
+    "naeini2022": {
+      "short": "Emami-Naeini et al., 2022",
+      "citation": "Pardis Emami-Naeini, Janarth Dheenadhayalan, Yuvraj Agarwal, and Lorrie Faith Cranor. 2022. An Informative Security and Privacy \"Nutrition\" Label for Internet of Things Devices. IEEE Security & Privacy, March/April 2022, pp. 31-39. doi:10.1109/MSEC.2021.3132398.",
+      "url": "https://doi.org/10.1109/MSEC.2021.3132398",
+      "pdf": "https://inspire.cs.duke.edu/publications/sp21/sp21-mag.pdf"
+    }
+  },
+  "questions": [
+    {
+      "id": "q1_children",
+      "short": "Children at home",
+      "type": "single",
+      "prompt": "Do children live in your home, or visit often?",
+      "help": "We only use this to start the next questions with stricter choices. You can change every one of them.",
+      "why": "The expert study listed special handling of children's data as an item for the label's detailed layer.",
+      "sources": ["naeini2020"],
+      "default": null,
+      "options": [
+        {
+          "id": "yes",
+          "label": "Yes",
+          "prefill": [
+            { "question": "q2_data", "row": "content", "value": "never" },
+            { "question": "q3_purposes", "row": "ads", "value": "never" }
+          ],
+          "rules": []
+        },
+        { "id": "no", "label": "No", "rules": [] }
+      ]
+    },
+    {
+      "id": "q2_data",
+      "short": "Data that leaves your home",
+      "type": "matrix",
+      "prompt": "Which kinds of data should stay in your home?",
+      "help": "For each kind, choose what a device may do when the data would go to a company outside your home: the maker, its services, or other companies.",
+      "why": "Comfort depends on the kind of data. In a study of 1,007 people, biometric data and collection at home worried people most, while presence and room-temperature data were easier to accept. Experts also put the type of data and the sensors on the label's first layer.",
+      "sources": ["naeini2017", "naeini2020"],
+      "scale": [
+        { "id": "never", "label": "Never send", "effect": "dont_allow" },
+        { "id": "ask", "label": "Ask me", "effect": "ask" },
+        { "id": "fine", "label": "OK to send", "effect": "allow" }
+      ],
+      "default": "ask",
+      "rows": [
+        {
+          "id": "content",
+          "label": "Video, photos and sound",
+          "example": "Camera footage, microphone audio, voice commands.",
+          "scope": { "data_type": ["ppd:contentData"], "handling_context": ["ppd:vendorContext", "ppd:thirdPartyContext"] },
+          "titles": {
+            "never": "Never send video, photos or sound out of my home",
+            "ask": "Ask me before video, photos or sound leave my home",
+            "fine": "Video, photos and sound may be sent to the company"
+          }
+        },
+        {
+          "id": "location",
+          "label": "Where you are",
+          "example": "Your phone's location, whether you are home or away.",
+          "scope": { "data_type": ["ppd:locationData"], "handling_context": ["ppd:vendorContext", "ppd:thirdPartyContext"] },
+          "titles": {
+            "never": "Never send my location out of my home",
+            "ask": "Ask me before my location leaves my home",
+            "fine": "My location may be sent to the company"
+          }
+        },
+        {
+          "id": "sensor",
+          "label": "What sensors notice",
+          "example": "Someone being in the room, motion, room temperature.",
+          "scope": { "data_type": ["ppd:sensorData"], "handling_context": ["ppd:vendorContext", "ppd:thirdPartyContext"] },
+          "titles": {
+            "never": "Never send sensor readings out of my home",
+            "ask": "Ask me before sensor readings leave my home",
+            "fine": "Sensor readings may be sent to the company"
+          }
+        },
+        {
+          "id": "identity",
+          "label": "Who you are",
+          "example": "Your name, email, account, and the guests you invite.",
+          "scope": { "data_type": ["ppd:identifierData", "ppd:profileData"], "handling_context": ["ppd:vendorContext", "ppd:thirdPartyContext"] },
+          "titles": {
+            "never": "Never send details about who I am out of my home",
+            "ask": "Ask me before details about who I am leave my home",
+            "fine": "Details about who I am may be sent to the company"
+          }
+        },
+        {
+          "id": "usage",
+          "label": "How you use your devices",
+          "example": "When you unlock the door, what you watch, which features you use.",
+          "scope": { "data_type": ["ppd:usageData"], "handling_context": ["ppd:vendorContext", "ppd:thirdPartyContext"] },
+          "titles": {
+            "never": "Never send my usage history out of my home",
+            "ask": "Ask me before my usage history leaves my home",
+            "fine": "My usage history may be sent to the company"
+          }
+        },
+        {
+          "id": "network",
+          "label": "Device and network details",
+          "example": "Device logs, Wi-Fi information, device IDs.",
+          "scope": { "data_type": ["ppd:deviceAndNetworkData"], "handling_context": ["ppd:vendorContext", "ppd:thirdPartyContext"] },
+          "titles": {
+            "never": "Never send device and network details out of my home",
+            "ask": "Ask me before device and network details leave my home",
+            "fine": "Device and network details may be sent to the company"
+          }
+        }
+      ]
+    },
+    {
+      "id": "q3_purposes",
+      "short": "What companies may use data for",
+      "type": "matrix",
+      "prompt": "What may companies use your data for?",
+      "help": "This applies to data that has already left your home.",
+      "why": "Why data is used matters. People were more willing to allow collection for uses that benefit them. In the label studies, purpose was something consumers said mattered, and a purpose of \"device function\" was often not trusted on its own.",
+      "sources": ["naeini2017", "naeini2020", "naeini2021"],
+      "show_if": { "not": { "all_rows": { "question": "q2_data", "equals": "never" } } },
+      "scale": [
+        { "id": "never", "label": "Never", "effect": "dont_allow" },
+        { "id": "ask", "label": "Ask me", "effect": "ask" },
+        { "id": "fine", "label": "OK", "effect": "allow" }
+      ],
+      "default": "ask",
+      "rows": [
+        {
+          "id": "core",
+          "label": "Making a feature work",
+          "example": "Watching your camera when you are away, cloud backup, linking to Alexa or Google.",
+          "scope": { "purpose": ["ppd:coreFunctionality"], "handling_context": ["ppd:vendorContext", "ppd:thirdPartyContext"] },
+          "titles": {
+            "never": "Never send my data to a company to make a feature work",
+            "ask": "Ask me when a feature needs to send my data to a company",
+            "fine": "Companies may use my data to make features work"
+          }
+        },
+        {
+          "id": "comms",
+          "label": "Sending you alerts",
+          "example": "Push notifications and email alerts.",
+          "scope": { "purpose": ["ppd:communicationsAndNotifications"], "handling_context": ["ppd:vendorContext", "ppd:thirdPartyContext"] },
+          "titles": {
+            "never": "Companies may not use my data to send me alerts",
+            "ask": "Ask me before a company uses my data to send alerts",
+            "fine": "Companies may use my data to send me alerts"
+          }
+        },
+        {
+          "id": "diag",
+          "label": "Fixing problems and keeping devices running",
+          "example": "Error logs, crash reports, support requests.",
+          "scope": { "purpose": ["ppd:diagnosticsAndMaintenance"], "handling_context": ["ppd:vendorContext", "ppd:thirdPartyContext"] },
+          "titles": {
+            "never": "Companies may not use my data for diagnostics",
+            "ask": "Ask me before a company uses my data for diagnostics",
+            "fine": "Companies may use my data to fix problems"
+          }
+        },
+        {
+          "id": "analytics",
+          "label": "Improving their products",
+          "example": "Usage statistics, research, measuring audiences.",
+          "scope": { "purpose": ["ppd:analyticsAndImprovement"], "handling_context": ["ppd:vendorContext", "ppd:thirdPartyContext"] },
+          "titles": {
+            "never": "Never use my data to improve products or measure audiences",
+            "ask": "Ask me before my data is used to improve products",
+            "fine": "Companies may use my data to improve their products"
+          }
+        },
+        {
+          "id": "personal",
+          "label": "Personalizing things for you",
+          "example": "Suggestions and settings that adapt to you.",
+          "scope": { "purpose": ["ppd:personalization"], "handling_context": ["ppd:vendorContext", "ppd:thirdPartyContext"] },
+          "titles": {
+            "never": "Never use my data for personalization",
+            "ask": "Ask me before my data is used for personalization",
+            "fine": "Companies may use my data to personalize things for me"
+          }
+        },
+        {
+          "id": "ads",
+          "label": "Advertising and marketing",
+          "example": "Ads, marketing, offers based on where you are.",
+          "scope": { "purpose": ["ppd:advertisingAndMarketing"], "handling_context": ["ppd:vendorContext", "ppd:thirdPartyContext"] },
+          "titles": {
+            "never": "Never use my data for advertising",
+            "ask": "Ask me before my data is used for advertising",
+            "fine": "My data may be used for advertising"
+          }
+        }
+      ]
+    },
+    {
+      "id": "q4_sharing",
+      "short": "Sharing with other companies",
+      "type": "single",
+      "prompt": "May a device's maker pass your data to other companies?",
+      "help": "This includes selling it. Your smart-home app, like Alexa or Google, counts as another company.",
+      "why": "In the 2021 study, sharing and selling moved people the most. Learning that data is not shared with third parties had the strongest positive effect on willingness to buy, and data sold to third parties raised perceived risk the most. All 15 interviewed consumers were concerned about sharing or selling, and sharing lowered comfort in the 2017 study.",
+      "sources": ["naeini2017", "naeini2020", "naeini2021"],
+      "show_if": { "not": { "all_rows": { "question": "q2_data", "equals": "never" } } },
+      "default": "ask",
+      "options": [
+        {
+          "id": "never",
+          "label": "Never",
+          "rules": [
+            { "id": "q4_sharing.third.never", "effect": "dont_allow", "scope": { "handling_context": ["ppd:thirdPartyContext"] }, "title": "Never let a device's maker pass my data to other companies" }
+          ]
+        },
+        {
+          "id": "ask",
+          "label": "Ask me each time",
+          "rules": [
+            { "id": "q4_sharing.third.ask", "effect": "ask", "scope": { "handling_context": ["ppd:thirdPartyContext"] }, "title": "Ask me before my data goes to other companies" }
+          ]
+        },
+        {
+          "id": "features",
+          "label": "Only when a feature I use needs it",
+          "rules": [
+            { "id": "q4_sharing.third.features", "effect": "allow", "scope": { "handling_context": ["ppd:thirdPartyContext"], "purpose": ["ppd:coreFunctionality", "ppd:communicationsAndNotifications"] }, "title": "My data may go to other companies when a feature I use needs it" },
+            { "id": "q4_sharing.third.other", "effect": "dont_allow", "scope": { "handling_context": ["ppd:thirdPartyContext"], "purpose": ["ppd:analyticsAndImprovement", "ppd:personalization", "ppd:diagnosticsAndMaintenance", "ppd:advertisingAndMarketing"] }, "title": "Never let other companies have my data for anything but a feature I use" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "q5_inference",
+      "short": "Working things out about you",
+      "type": "single",
+      "prompt": "May companies work out extra things about you from your data?",
+      "help": "For example, guessing when you are away, your daily routine, or what kind of viewer you are.",
+      "why": "Working out extra information about people lowered comfort in the 2017 study. Inference was also one of the attributes tested in 2021 and sits on the label's detailed layer.",
+      "sources": ["naeini2017", "naeini2020", "naeini2021"],
+      "show_if": { "not": { "all_rows": { "question": "q2_data", "equals": "never" } } },
+      "default": "ask",
+      "options": [
+        {
+          "id": "never",
+          "label": "Never",
+          "rules": [
+            { "id": "q5_inference.company.never", "effect": "dont_allow", "scope": { "action": ["ppd:inference"], "handling_context": ["ppd:vendorContext", "ppd:thirdPartyContext"] }, "title": "Never let companies work out extra things about me" }
+          ]
+        },
+        {
+          "id": "ask",
+          "label": "Ask me",
+          "rules": [
+            { "id": "q5_inference.company.ask", "effect": "ask", "scope": { "action": ["ppd:inference"], "handling_context": ["ppd:vendorContext", "ppd:thirdPartyContext"] }, "title": "Ask me before a company works out extra things about me" }
+          ]
+        },
+        {
+          "id": "ok",
+          "label": "That's fine",
+          "rules": [
+            { "id": "q5_inference.company.ok", "effect": "allow", "scope": { "action": ["ppd:inference"], "handling_context": ["ppd:vendorContext", "ppd:thirdPartyContext"] }, "title": "Companies may work out extra things from my data" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "q6_retention",
+      "short": "How long data is kept",
+      "type": "single",
+      "prompt": "How long may companies keep your data?",
+      "help": "We can only check this when a device says how long it keeps data.",
+      "why": "In 2017 only short retention (a week, or deleting right away) clearly raised comfort. In 2021, keeping no data in the cloud lowered perceived risk the most, and the authors recommended moving retention to the label's first layer.",
+      "sources": ["naeini2017", "naeini2021"],
+      "show_if": { "not": { "all_rows": { "question": "q2_data", "equals": "never" } } },
+      "default": "ask",
+      "options": [
+        {
+          "id": "briefly",
+          "label": "Only briefly, never forever",
+          "rules": [
+            { "id": "q6_retention.indefinite.never", "effect": "dont_allow", "scope": { "handling_context": ["ppd:vendorContext", "ppd:thirdPartyContext"], "constraints": ["retention=ppd:indefinite"] }, "title": "Companies may not keep my data forever" }
+          ]
+        },
+        {
+          "id": "ask",
+          "label": "Ask me",
+          "rules": [
+            { "id": "q6_retention.indefinite.ask", "effect": "ask", "scope": { "handling_context": ["ppd:vendorContext", "ppd:thirdPartyContext"], "constraints": ["retention=ppd:indefinite"] }, "title": "Ask me before a company keeps my data forever" }
+          ]
+        },
+        { "id": "any", "label": "No limit", "rules": [] }
+      ]
+    },
+    {
+      "id": "q7_updates",
+      "short": "Summaries and warnings",
+      "type": "profile",
+      "prompt": "How should we keep you posted?",
+      "help": "These are saved with your policy. The app does not send summaries or warnings yet.",
+      "why": "People were more likely to want a notice about practices they were uncomfortable with, and most wanted a monthly summary (63%, versus 23% daily, 8% yearly and 6% never). The 2022 label article describes a companion app where people set preferences for warnings.",
+      "sources": ["naeini2017", "naeini2022"],
+      "fields": [
+        {
+          "id": "summary_frequency",
+          "type": "single",
+          "label": "A summary of what your devices do with your data",
+          "default": "monthly",
+          "options": [
+            { "id": "daily", "label": "Every day" },
+            { "id": "monthly", "label": "Every month" },
+            { "id": "yearly", "label": "Every year" },
+            { "id": "never", "label": "Never" }
+          ]
+        },
+        {
+          "id": "warn_on_conflict",
+          "type": "toggle",
+          "label": "Warn me when a device conflicts with my rules",
+          "default": true
+        }
+      ]
+    }
+  ]
+}

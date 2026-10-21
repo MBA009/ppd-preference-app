@@ -2,7 +2,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ActionBar, AppBar, DeviceTile, ErrorBox, Group, Loading, Cell } from '../components/ui'
 import { AttentionList, ProvenanceCard } from '../components/DeviceReport'
 import { useDevice, useHousehold, useRules } from '../state/data'
-import { rulesFor, subtitle } from '../lib/device'
+import { subtitle } from '../lib/device'
 
 /** Screens 1b (declared device) and 1c (researched device): what a device says, before it joins the home. */
 export default function Preview() {
@@ -10,7 +10,7 @@ export default function Preview() {
   const nav = useNavigate()
   const { household, saveForLater, toast } = useHousehold()
   const dev = useDevice(id)
-  const rules = useRules()
+  const rules = useRules(true)
 
   if (dev.error) return <><AppBar title="Preview" back="/scan" /><ErrorBox error={dev.error} /></>
   const d = dev.data
@@ -18,7 +18,7 @@ export default function Preview() {
 
   const inHome = household.devices.some((h) => h.device_id === d.id)
   const saved = household.saved.includes(d.id)
-  const ruleCount = rulesFor(rules.data ?? [], d.id).length
+  const ruleCount = rules.length
 
   return (
     <div className="screen">

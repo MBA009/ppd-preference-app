@@ -18,275 +18,193 @@
  "flow_count": 26,
  "flows": [
   {
-   "id": "reolink-e1-zoom.live-recorded-video-delivered-through-reolink-remote-app",
-   "title": "Remote viewing through Reolink",
-   "workbook_text": "Live / recorded video delivered through Reolink remote app or client",
-   "summary": "Goes to Reolink · remote viewing",
+   "id": "reolink-e1-zoom.setup-wi-fi-network-password-credential-entered-during",
+   "title": "Wi-Fi network password/credential entered during initialization",
+   "workbook_text": "Setup: Wi-Fi network password/credential entered during initialization",
+   "summary": "Stays in your home · setup",
    "summary_parts": {
-    "who": "Goes to Reolink",
-    "purpose": "remote viewing"
+    "who": "Stays in your home",
+    "purpose": "setup"
+   },
+   "phase": "setup",
+   "taxonomy": {
+    "data_type": "pat:networkCredentialData",
+    "purpose": "pat:deviceSetup",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:householdContext",
+    "constraints": []
+   },
+   "display": {
+    "what": "Your Wi-Fi password",
+    "why": "Setting up the device",
+    "what_happens": "Collected",
+    "comes_from": "You",
+    "handled_by": "Your household",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-8d3ef5b3",
+    "label": "Device and network details collected at home"
+   },
+   "control": {
+    "type": "setup_step",
+    "type_label": "Provided during setup",
+    "necessity": "required_for_feature",
+    "note": "You enter the Wi-Fi password when initializing the camera."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:householdContext"
+   }
+  },
+  {
+   "id": "reolink-e1-zoom.setup-local-camera-device-password-created-during-initialization",
+   "title": "Local camera/device password created during initialization",
+   "workbook_text": "Setup: local camera/device password created during initialization",
+   "summary": "Stays in your home · setup",
+   "summary_parts": {
+    "who": "Stays in your home",
+    "purpose": "setup"
+   },
+   "phase": "setup",
+   "taxonomy": {
+    "data_type": "pat:deviceCredentialData",
+    "purpose": "pat:deviceSetup",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:householdContext",
+    "constraints": []
+   },
+   "display": {
+    "what": "A password for the device",
+    "why": "Setting up the device",
+    "what_happens": "Collected",
+    "comes_from": "You",
+    "handled_by": "Your household",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-8d3ef5b3",
+    "label": "Device and network details collected at home"
+   },
+   "control": {
+    "type": "setup_step",
+    "type_label": "Provided during setup",
+    "necessity": "required_for_feature",
+    "note": "You create the camera's local password when initializing it."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:householdContext"
+   }
+  },
+  {
+   "id": "reolink-e1-zoom.optional-reolink-account-identifiers-for-cloud-smart-home",
+   "title": "Optional Reolink account identifiers for cloud / smart-home services",
+   "workbook_text": "Optional Reolink account identifiers for cloud / smart-home services",
+   "summary": "Collected by Reolink · account setup",
+   "summary_parts": {
+    "who": "Collected by Reolink",
+    "purpose": "account setup"
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:visualData",
-    "purpose": "pat:remoteViewing",
-    "action": "ppd:transfer",
-    "source": "ppd:participantGenerated",
+    "data_type": "ppd:identifierData",
+    "purpose": "pat:accountSetup",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
     "handling_context": "pat:reolinkService",
     "constraints": []
    },
    "display": {
-    "what": "Video or photos",
-    "why": "Watching remotely",
-    "what_happens": "Sent to another party",
-    "comes_from": "The device",
+    "what": "Names, accounts or device IDs",
+    "why": "Setting up your account",
+    "what_happens": "Collected",
+    "comes_from": "You",
     "handled_by": "Reolink",
     "kept": "Not stated",
     "limit": null
    },
    "core_group": {
-    "id": "ck-5c7116f8",
-    "label": "Content (video, audio, photos) sent to a vendor"
+    "id": "ck-a323000c",
+    "label": "Identifiers and accounts collected by a vendor"
    },
    "control": {
-    "type": "user_initiated",
-    "type_label": "Happens only when you do it",
+    "type": "user_setting",
+    "type_label": "Change in settings",
     "necessity": "optional",
-    "note": "This happens only when you open live view or playback in the Reolink App or Client."
+    "note": "A Reolink account is optional; you provide account details only if you use cloud or smart-home services."
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "decision_required",
-    "rule_id": "r2",
-    "reason": "Your rule “Camera and microphone data stays in my home” doesn’t settle this."
+   "core": {
+    "data_type": "ppd:identifierData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:vendorContext"
    }
   },
   {
-   "id": "reolink-e1-zoom.cloud-video-upload-when-reolink-cloud-is-enabled",
-   "title": "Cloud video upload",
-   "workbook_text": "Cloud video upload when Reolink Cloud is enabled / supported",
-   "summary": "Goes to Reolink Cloud · cloud storage",
+   "id": "reolink-e1-zoom.video-capture-from-camera-sensor",
+   "title": "Video capture from camera sensor",
+   "workbook_text": "Video capture from camera sensor",
+   "summary": "Stays in your home · security",
    "summary_parts": {
-    "who": "Goes to Reolink Cloud",
-    "purpose": "cloud storage"
+    "who": "Stays in your home",
+    "purpose": "security"
    },
    "phase": "runtime",
    "taxonomy": {
     "data_type": "pat:visualData",
-    "purpose": "pat:cloudStorage",
-    "action": "ppd:transfer",
-    "source": "ppd:participantGenerated",
-    "handling_context": "pat:reolinkCloud",
-    "constraints": [
-     "retention=ppd:indefinite"
-    ]
-   },
-   "display": {
-    "what": "Video or photos",
-    "why": "Cloud storage",
-    "what_happens": "Sent to another party",
-    "comes_from": "The device",
-    "handled_by": "Reolink Cloud",
-    "kept": "Until deleted",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-8c312543",
-    "label": "Content (video, audio, photos) sent to a vendor"
-   },
-   "control": {
-    "type": "user_setting",
-    "type_label": "Change in settings",
-    "necessity": "optional",
-    "note": "Cloud video upload happens only when you enable Reolink Cloud, which is optional."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "decision_required",
-    "rule_id": "r2",
-    "reason": "Your rule “Camera and microphone data stays in my home” doesn’t settle this."
-   }
-  },
-  {
-   "id": "reolink-e1-zoom.device-alert-event-information-sent-for-push-notifications",
-   "title": "Push alerts through Reolink",
-   "workbook_text": "Device alert / event information sent for push notifications",
-   "summary": "Goes to Reolink · push alerts",
-   "summary_parts": {
-    "who": "Goes to Reolink",
-    "purpose": "push alerts"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "pat:alertEventData",
-    "purpose": "pat:pushAlert",
-    "action": "ppd:transfer",
-    "source": "ppd:participantGenerated",
-    "handling_context": "pat:reolinkService",
-    "constraints": []
-   },
-   "display": {
-    "what": "Alert and event details",
-    "why": "Push alerts",
-    "what_happens": "Sent to another party",
-    "comes_from": "The device",
-    "handled_by": "Reolink",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-0fdb83fb",
-    "label": "Sensor readings sent to a vendor"
-   },
-   "control": {
-    "type": "user_setting",
-    "type_label": "Change in settings",
-    "necessity": "optional",
-    "note": "You can turn push notifications on or off for each camera in the Reolink App, and Privacy Mode stops the camera triggering alarms."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "decision_required",
-    "rule_id": null,
-    "reason": "None of your rules covers this."
-   }
-  },
-  {
-   "id": "reolink-e1-zoom.email-alert-event-sent-when-email-alerts-are",
-   "title": "Email alert event sent when email alerts are enabled",
-   "workbook_text": "Email alert event sent when email alerts are enabled",
-   "summary": "Goes to partners · email alerts",
-   "summary_parts": {
-    "who": "Goes to partners",
-    "purpose": "email alerts"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "pat:alertEventData",
-    "purpose": "pat:emailAlert",
-    "action": "ppd:transfer",
-    "source": "ppd:participantGenerated",
-    "handling_context": "pat:thirdPartyServiceProvider",
-    "constraints": []
-   },
-   "display": {
-    "what": "Alert and event details",
-    "why": "Email alerts",
-    "what_happens": "Sent to another party",
-    "comes_from": "The device",
-    "handled_by": "A third-party service",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-e8ea4897",
-    "label": "Sensor readings sent to a third party"
-   },
-   "control": {
-    "type": "user_setting",
-    "type_label": "Change in settings",
-    "necessity": "optional",
-    "note": "Email alerts are sent only if you turn on Email Alerts and enter a sender email account in the Reolink App; Privacy Mode also stops the camera triggering alarms."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "decision_required",
-    "rule_id": null,
-    "reason": "None of your rules covers this."
-   }
-  },
-  {
-   "id": "reolink-e1-zoom.live-video-shared-to-alexa-google-assistant-display",
-   "title": "Smart-display sharing",
-   "workbook_text": "Live video shared to Alexa / Google Assistant display when integration is enabled",
-   "summary": "Goes to your smart-home app · smart display",
-   "summary_parts": {
-    "who": "Goes to your smart-home app",
-    "purpose": "smart display"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "pat:visualData",
-    "purpose": "pat:smartDisplayViewing",
-    "action": "ppd:transfer",
-    "source": "ppd:participantGenerated",
-    "handling_context": "pat:smartHomeEcosystem",
+    "purpose": "ppd:security",
+    "action": "ppd:collection",
+    "source": "pat:cameraSensor",
+    "handling_context": "ppd:householdContext",
     "constraints": []
    },
    "display": {
     "what": "Video or photos",
-    "why": "Showing video on a smart display",
-    "what_happens": "Sent to another party",
-    "comes_from": "The device",
-    "handled_by": "Your smart-home app (Alexa, Google…)",
+    "why": "Security",
+    "what_happens": "Collected",
+    "comes_from": "The camera",
+    "handled_by": "Your household",
     "kept": "Not stated",
     "limit": null
    },
    "core_group": {
-    "id": "ck-3bc70a3a",
-    "label": "Content (video, audio, photos) sent to a third party"
+    "id": "ck-dcd0db95",
+    "label": "Content (video, audio, photos) collected at home"
    },
    "control": {
     "type": "user_setting",
     "type_label": "Change in settings",
-    "necessity": "optional",
-    "note": "Live video is shared with an Alexa or Google Assistant display only after you link your Reolink account and enable the smart-home skill for that camera in the Reolink App."
+    "necessity": "required_for_feature",
+    "note": "You can turn on Privacy Mode in the camera's settings in the Reolink App to stop video capture, alerts and recording."
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "decision_required",
-    "rule_id": "r2",
-    "reason": "Your rule “Camera and microphone data stays in my home” doesn’t settle this."
+   "core": {
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:security",
+    "action": "ppd:collection",
+    "source": "ppd:participantObserved",
+    "handling_context": "ppd:householdContext"
    }
   },
   {
-   "id": "reolink-e1-zoom.optional-reolink-app-usage-analytics-experience-program-telemetry",
-   "title": "App analytics",
-   "workbook_text": "Optional Reolink App usage analytics / experience-program telemetry",
-   "summary": "Goes to Reolink · product use",
-   "summary_parts": {
-    "who": "Goes to Reolink",
-    "purpose": "product use"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "ppd:usageData",
-    "purpose": "pat:usageEfficiency",
-    "action": "ppd:transfer",
-    "source": "ppd:participantGenerated",
-    "handling_context": "pat:reolinkService",
-    "constraints": []
-   },
-   "display": {
-    "what": "How you use the device",
-    "why": "Product use",
-    "what_happens": "Sent to another party",
-    "comes_from": "The device",
-    "handled_by": "Reolink",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-976049b7",
-    "label": "Usage data sent to a vendor"
-   },
-   "control": {
-    "type": "user_setting",
-    "type_label": "Change in settings",
-    "necessity": "optional",
-    "note": "You can join or leave the User Experience Program in the Reolink App's settings."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "decision_required",
-    "rule_id": null,
-    "reason": "None of your rules covers this."
-   }
-  },
-  {
-   "id": "reolink-e1-zoom.audio-transferred-to-local-nvr-home-hub-ftp",
-   "title": "Audio transferred to local NVR / Home Hub / FTP / NAS",
-   "workbook_text": "Audio transferred to local NVR / Home Hub / FTP / NAS",
+   "id": "reolink-e1-zoom.audio-capture-from-built-in-microphone",
+   "title": "Audio capture from built-in microphone",
+   "workbook_text": "Audio capture from built-in microphone",
    "summary": "Stays in your home · security",
    "summary_parts": {
     "who": "Stays in your home",
@@ -296,123 +214,83 @@
    "taxonomy": {
     "data_type": "pat:audioData",
     "purpose": "ppd:security",
-    "action": "ppd:transfer",
-    "source": "ppd:participantGenerated",
+    "action": "ppd:collection",
+    "source": "pat:microphone",
     "handling_context": "ppd:householdContext",
     "constraints": []
    },
    "display": {
     "what": "Sound from the microphone",
     "why": "Security",
-    "what_happens": "Sent within your home",
-    "comes_from": "The device",
+    "what_happens": "Collected",
+    "comes_from": "The microphone",
     "handled_by": "Your household",
     "kept": "Not stated",
     "limit": null
    },
    "core_group": {
-    "id": "ck-3b938702",
-    "label": "Content (video, audio, photos) sent within your home"
+    "id": "ck-dcd0db95",
+    "label": "Content (video, audio, photos) collected at home"
    },
    "control": {
     "type": "user_setting",
     "type_label": "Change in settings",
     "necessity": "optional",
-    "note": "This happens only if you set up FTP/NAS upload or connect the camera to a Reolink NVR yourself."
+    "note": "You can turn on Privacy Mode in the camera's settings in the Reolink App to stop audio capture, alerts and recording."
    },
-   "evidence": "needs_source",
-   "evaluation": {
-    "verdict": "indeterminate",
-    "rule_id": null,
-    "reason": "We could not find a source for this flow yet, so we cannot compare it with your rules."
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:security",
+    "action": "ppd:collection",
+    "source": "ppd:participantObserved",
+    "handling_context": "ppd:householdContext"
    }
   },
   {
-   "id": "reolink-e1-zoom.live-recorded-audio-delivered-through-reolink-remote-app",
-   "title": "Live / recorded audio delivered through Reolink remote app or client",
-   "workbook_text": "Live / recorded audio delivered through Reolink remote app or client",
-   "summary": "Goes to Reolink · remote viewing",
+   "id": "reolink-e1-zoom.ambient-light-daylight-sensing-for-camera-operation",
+   "title": "Ambient-light / daylight sensing for camera operation",
+   "workbook_text": "Ambient-light / daylight sensing for camera operation",
+   "summary": "Stays in your home · camera",
    "summary_parts": {
-    "who": "Goes to Reolink",
-    "purpose": "remote viewing"
+    "who": "Stays in your home",
+    "purpose": "camera"
    },
    "phase": "runtime",
    "taxonomy": {
-    "data_type": "pat:audioData",
-    "purpose": "pat:remoteViewing",
-    "action": "ppd:transfer",
-    "source": "ppd:participantGenerated",
-    "handling_context": "pat:reolinkService",
+    "data_type": "pat:environmentData",
+    "purpose": "pat:cameraAdaptation",
+    "action": "ppd:collection",
+    "source": "pat:daylightSensor",
+    "handling_context": "ppd:householdContext",
     "constraints": []
    },
    "display": {
-    "what": "Sound from the microphone",
-    "why": "Watching remotely",
-    "what_happens": "Sent to another party",
-    "comes_from": "The device",
-    "handled_by": "Reolink",
+    "what": "Temperature, humidity or light readings",
+    "why": "Adjusting the camera",
+    "what_happens": "Collected",
+    "comes_from": "The daylight sensor",
+    "handled_by": "Your household",
     "kept": "Not stated",
     "limit": null
    },
    "core_group": {
-    "id": "ck-5c7116f8",
-    "label": "Content (video, audio, photos) sent to a vendor"
+    "id": "ck-42c4986b",
+    "label": "Sensor readings collected at home"
    },
    "control": {
-    "type": "user_initiated",
-    "type_label": "Happens only when you do it",
+    "type": "user_setting",
+    "type_label": "Change in settings",
     "necessity": "optional",
-    "note": "This happens only when you open live view or playback in the Reolink App or Client."
+    "note": "You can set the day/night mode to Color or Black & White instead of Auto in the Reolink App."
    },
-   "evidence": "needs_source",
-   "evaluation": {
-    "verdict": "indeterminate",
-    "rule_id": null,
-    "reason": "We could not find a source for this flow yet, so we cannot compare it with your rules."
-   }
-  },
-  {
-   "id": "reolink-e1-zoom.device-model-setup-information-sent-to-reolink",
-   "title": "Device model / setup information sent to Reolink",
-   "workbook_text": "Device model / setup information sent to Reolink",
-   "summary": "Goes to Reolink · setup",
-   "summary_parts": {
-    "who": "Goes to Reolink",
-    "purpose": "setup"
-   },
-   "phase": "setup",
-   "taxonomy": {
-    "data_type": "ppd:deviceAndNetworkData",
-    "purpose": "pat:deviceSetup",
-    "action": "ppd:transfer",
-    "source": "ppd:participantGenerated",
-    "handling_context": "pat:reolinkService",
-    "constraints": []
-   },
-   "display": {
-    "what": "Device model and network details",
-    "why": "Setting up the device",
-    "what_happens": "Sent to another party",
-    "comes_from": "The device",
-    "handled_by": "Reolink",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-5aedaaf3",
-    "label": "Device and network details sent to a vendor"
-   },
-   "control": {
-    "type": "none_documented",
-    "type_label": "No control found",
-    "necessity": "unknown",
-    "note": null
-   },
-   "evidence": "needs_source",
-   "evaluation": {
-    "verdict": "indeterminate",
-    "rule_id": null,
-    "reason": "We could not find a source for this flow yet, so we cannot compare it with your rules."
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:sensorData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:participantObserved",
+    "handling_context": "ppd:householdContext"
    }
   },
   {
@@ -455,10 +333,12 @@
     "note": "You can adjust motion-detection sensitivity and its schedule in the Reolink App, and Privacy Mode stops the camera triggering alarms."
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "conditionally_satisfiable",
-    "rule_id": "r2",
-    "reason": "Fine only because it stays on the device."
+   "core": {
+    "data_type": "ppd:sensorData",
+    "purpose": "ppd:security",
+    "action": "ppd:inference",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "ppd:householdContext"
    }
   },
   {
@@ -501,10 +381,12 @@
     "note": "You can adjust person-detection alarm settings and sensitivity in the Reolink App, and Privacy Mode stops the camera triggering alarms."
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "conditionally_satisfiable",
-    "rule_id": "r2",
-    "reason": "Fine only because it stays on the device."
+   "core": {
+    "data_type": "ppd:sensorData",
+    "purpose": "ppd:security",
+    "action": "ppd:inference",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "ppd:householdContext"
    }
   },
   {
@@ -547,10 +429,12 @@
     "note": "You can adjust pet (animal) detection alarm settings and sensitivity in the Reolink App, and Privacy Mode stops the camera triggering alarms."
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "conditionally_satisfiable",
-    "rule_id": "r2",
-    "reason": "Fine only because it stays on the device."
+   "core": {
+    "data_type": "ppd:sensorData",
+    "purpose": "ppd:security",
+    "action": "ppd:inference",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "ppd:householdContext"
    }
   },
   {
@@ -593,10 +477,658 @@
     "note": "Crying-sound alerts are sent only if you tick Cry Sound Detection in the push notification schedule settings of the Reolink App."
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "conditionally_satisfiable",
-    "rule_id": null,
-    "reason": "Fine only because it stays on the device."
+   "core": {
+    "data_type": "ppd:sensorData",
+    "purpose": "ppd:security",
+    "action": "ppd:inference",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "ppd:householdContext"
+   }
+  },
+  {
+   "id": "reolink-e1-zoom.ptz-auto-tracking-uses-detection-results-to-follow",
+   "title": "PTZ auto-tracking uses detection results to follow subject",
+   "workbook_text": "PTZ auto-tracking uses detection results to follow subject",
+   "summary": "Stays in your home · security",
+   "summary_parts": {
+    "who": "Stays in your home",
+    "purpose": "security"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:presenceData",
+    "purpose": "ppd:security",
+    "action": "ppd:use",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "ppd:householdContext",
+    "constraints": []
+   },
+   "display": {
+    "what": "Whether someone is there",
+    "why": "Security",
+    "what_happens": "Used",
+    "comes_from": "Worked out from earlier data",
+    "handled_by": "Your household",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-44cb07c3",
+    "label": "Sensor readings used at home"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "You can turn Auto Tracking on or off in the camera's Smart Detection settings."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:sensorData",
+    "purpose": "ppd:security",
+    "action": "ppd:use",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "ppd:householdContext"
+   }
+  },
+  {
+   "id": "reolink-e1-zoom.local-microsd-video-recording-playback",
+   "title": "Local microSD video recording / playback",
+   "workbook_text": "Local microSD video recording / playback",
+   "summary": "Stays in your home · security",
+   "summary_parts": {
+    "who": "Stays in your home",
+    "purpose": "security"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:visualData",
+    "purpose": "ppd:security",
+    "action": "ppd:use",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "ppd:householdContext",
+    "constraints": []
+   },
+   "display": {
+    "what": "Video or photos",
+    "why": "Security",
+    "what_happens": "Used",
+    "comes_from": "Worked out from earlier data",
+    "handled_by": "Your household",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-58bc1761",
+    "label": "Content (video, audio, photos) used at home"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "You can turn on Privacy Mode to stop capture, alerts and recording."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:security",
+    "action": "ppd:use",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "ppd:householdContext"
+   }
+  },
+  {
+   "id": "reolink-e1-zoom.local-microsd-audio-recording-playback",
+   "title": "Local microSD audio recording / playback",
+   "workbook_text": "Local microSD audio recording / playback",
+   "summary": "Stays in your home · security",
+   "summary_parts": {
+    "who": "Stays in your home",
+    "purpose": "security"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:audioData",
+    "purpose": "ppd:security",
+    "action": "ppd:use",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "ppd:householdContext",
+    "constraints": []
+   },
+   "display": {
+    "what": "Sound from the microphone",
+    "why": "Security",
+    "what_happens": "Used",
+    "comes_from": "Worked out from earlier data",
+    "handled_by": "Your household",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-58bc1761",
+    "label": "Content (video, audio, photos) used at home"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "You can use the Record Audio setting in the Reolink App to choose whether audio is recorded, and Privacy Mode stops all audio recording."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:security",
+    "action": "ppd:use",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "ppd:householdContext"
+   }
+  },
+  {
+   "id": "reolink-e1-zoom.video-transferred-to-local-nvr-home-hub-ftp",
+   "title": "Video transferred to local NVR / Home Hub / FTP / NAS",
+   "workbook_text": "Video transferred to local NVR / Home Hub / FTP / NAS",
+   "summary": "Stays in your home · security",
+   "summary_parts": {
+    "who": "Stays in your home",
+    "purpose": "security"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:visualData",
+    "purpose": "ppd:security",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:householdContext",
+    "constraints": []
+   },
+   "display": {
+    "what": "Video or photos",
+    "why": "Security",
+    "what_happens": "Sent within your home",
+    "comes_from": "The device",
+    "handled_by": "Your household",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-3b938702",
+    "label": "Content (video, audio, photos) sent within your home"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "This happens only if you set up FTP/NAS upload or connect the camera to a Reolink NVR yourself."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:security",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:householdContext"
+   }
+  },
+  {
+   "id": "reolink-e1-zoom.audio-transferred-to-local-nvr-home-hub-ftp",
+   "title": "Audio transferred to local NVR / Home Hub / FTP / NAS",
+   "workbook_text": "Audio transferred to local NVR / Home Hub / FTP / NAS",
+   "summary": "Stays in your home · security",
+   "summary_parts": {
+    "who": "Stays in your home",
+    "purpose": "security"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:audioData",
+    "purpose": "ppd:security",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:householdContext",
+    "constraints": []
+   },
+   "display": {
+    "what": "Sound from the microphone",
+    "why": "Security",
+    "what_happens": "Sent within your home",
+    "comes_from": "The device",
+    "handled_by": "Your household",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-3b938702",
+    "label": "Content (video, audio, photos) sent within your home"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "This happens only if you set up FTP/NAS upload or connect the camera to a Reolink NVR yourself."
+   },
+   "evidence": "needs_source",
+   "core": {
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:security",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:householdContext"
+   }
+  },
+  {
+   "id": "reolink-e1-zoom.live-recorded-video-delivered-through-reolink-remote-app",
+   "title": "Remote viewing through Reolink",
+   "workbook_text": "Live / recorded video delivered through Reolink remote app or client",
+   "summary": "Goes to Reolink · remote viewing",
+   "summary_parts": {
+    "who": "Goes to Reolink",
+    "purpose": "remote viewing"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:visualData",
+    "purpose": "pat:remoteViewing",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "pat:reolinkService",
+    "constraints": []
+   },
+   "display": {
+    "what": "Video or photos",
+    "why": "Watching remotely",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "Reolink",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-5c7116f8",
+    "label": "Content (video, audio, photos) sent to a vendor"
+   },
+   "control": {
+    "type": "user_initiated",
+    "type_label": "Happens only when you do it",
+    "necessity": "optional",
+    "note": "This happens only when you open live view or playback in the Reolink App or Client."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "reolink-e1-zoom.live-recorded-audio-delivered-through-reolink-remote-app",
+   "title": "Live / recorded audio delivered through Reolink remote app or client",
+   "workbook_text": "Live / recorded audio delivered through Reolink remote app or client",
+   "summary": "Goes to Reolink · remote viewing",
+   "summary_parts": {
+    "who": "Goes to Reolink",
+    "purpose": "remote viewing"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:audioData",
+    "purpose": "pat:remoteViewing",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "pat:reolinkService",
+    "constraints": []
+   },
+   "display": {
+    "what": "Sound from the microphone",
+    "why": "Watching remotely",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "Reolink",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-5c7116f8",
+    "label": "Content (video, audio, photos) sent to a vendor"
+   },
+   "control": {
+    "type": "user_initiated",
+    "type_label": "Happens only when you do it",
+    "necessity": "optional",
+    "note": "This happens only when you open live view or playback in the Reolink App or Client."
+   },
+   "evidence": "needs_source",
+   "core": {
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "reolink-e1-zoom.two-way-audio-from-remote-user-delivered-to",
+   "title": "Two-way audio from remote user delivered to camera speaker",
+   "workbook_text": "Two-way audio from remote user delivered to camera speaker",
+   "summary": "Stays in your home · two-way audio",
+   "summary_parts": {
+    "who": "Stays in your home",
+    "purpose": "two-way audio"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:audioData",
+    "purpose": "pat:twoWayAudio",
+    "action": "ppd:collection",
+    "source": "ppd:vendorProvided",
+    "handling_context": "ppd:householdContext",
+    "constraints": []
+   },
+   "display": {
+    "what": "Sound from the microphone",
+    "why": "Talking through the camera",
+    "what_happens": "Collected",
+    "comes_from": "The vendor",
+    "handled_by": "Your household",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-7552e333",
+    "label": "Content (video, audio, photos) collected at home"
+   },
+   "control": {
+    "type": "user_initiated",
+    "type_label": "Happens only when you do it",
+    "necessity": "optional",
+    "note": "Audio from the Reolink App is played on the camera's speaker only when you tap Talk during live view."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:vendorProvided",
+    "handling_context": "ppd:householdContext"
+   }
+  },
+  {
+   "id": "reolink-e1-zoom.cloud-video-upload-when-reolink-cloud-is-enabled",
+   "title": "Cloud video upload",
+   "workbook_text": "Cloud video upload when Reolink Cloud is enabled / supported",
+   "summary": "Goes to Reolink Cloud · cloud storage",
+   "summary_parts": {
+    "who": "Goes to Reolink Cloud",
+    "purpose": "cloud storage"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:visualData",
+    "purpose": "pat:cloudStorage",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "pat:reolinkCloud",
+    "constraints": [
+     "retention=ppd:indefinite"
+    ]
+   },
+   "display": {
+    "what": "Video or photos",
+    "why": "Cloud storage",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "Reolink Cloud",
+    "kept": "Until deleted",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-8c312543",
+    "label": "Content (video, audio, photos) sent to a vendor"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "Cloud video upload happens only when you enable Reolink Cloud, which is optional."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "reolink-e1-zoom.device-alert-event-information-sent-for-push-notifications",
+   "title": "Push alerts through Reolink",
+   "workbook_text": "Device alert / event information sent for push notifications",
+   "summary": "Goes to Reolink · push alerts",
+   "summary_parts": {
+    "who": "Goes to Reolink",
+    "purpose": "push alerts"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:alertEventData",
+    "purpose": "pat:pushAlert",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "pat:reolinkService",
+    "constraints": []
+   },
+   "display": {
+    "what": "Alert and event details",
+    "why": "Push alerts",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "Reolink",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-0fdb83fb",
+    "label": "Sensor readings sent to a vendor"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "You can turn push notifications on or off for each camera in the Reolink App, and Privacy Mode stops the camera triggering alarms."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:sensorData",
+    "purpose": "ppd:communicationsAndNotifications",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "reolink-e1-zoom.email-alert-event-sent-when-email-alerts-are",
+   "title": "Email alert event sent when email alerts are enabled",
+   "workbook_text": "Email alert event sent when email alerts are enabled",
+   "summary": "Goes to partners · email alerts",
+   "summary_parts": {
+    "who": "Goes to partners",
+    "purpose": "email alerts"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:alertEventData",
+    "purpose": "pat:emailAlert",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "pat:thirdPartyServiceProvider",
+    "constraints": []
+   },
+   "display": {
+    "what": "Alert and event details",
+    "why": "Email alerts",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "A third-party service",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-e8ea4897",
+    "label": "Sensor readings sent to a third party"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "Email alerts are sent only if you turn on Email Alerts and enter a sender email account in the Reolink App; Privacy Mode also stops the camera triggering alarms."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:sensorData",
+    "purpose": "ppd:communicationsAndNotifications",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:thirdPartyContext"
+   }
+  },
+  {
+   "id": "reolink-e1-zoom.live-video-shared-to-alexa-google-assistant-display",
+   "title": "Smart-display sharing",
+   "workbook_text": "Live video shared to Alexa / Google Assistant display when integration is enabled",
+   "summary": "Goes to your smart-home app · smart display",
+   "summary_parts": {
+    "who": "Goes to your smart-home app",
+    "purpose": "smart display"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:visualData",
+    "purpose": "pat:smartDisplayViewing",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "pat:smartHomeEcosystem",
+    "constraints": []
+   },
+   "display": {
+    "what": "Video or photos",
+    "why": "Showing video on a smart display",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "Your smart-home app (Alexa, Google…)",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-3bc70a3a",
+    "label": "Content (video, audio, photos) sent to a third party"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "Live video is shared with an Alexa or Google Assistant display only after you link your Reolink account and enable the smart-home skill for that camera in the Reolink App."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:thirdPartyContext"
+   }
+  },
+  {
+   "id": "reolink-e1-zoom.device-uid-sent-to-reolink-for-device-binding",
+   "title": "Device UID sent to Reolink for device binding",
+   "workbook_text": "Device UID sent to Reolink for device binding",
+   "summary": "Goes to Reolink · setup",
+   "summary_parts": {
+    "who": "Goes to Reolink",
+    "purpose": "setup"
+   },
+   "phase": "setup",
+   "taxonomy": {
+    "data_type": "ppd:identifierData",
+    "purpose": "pat:deviceSetup",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "pat:reolinkService",
+    "constraints": []
+   },
+   "display": {
+    "what": "Names, accounts or device IDs",
+    "why": "Setting up the device",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "Reolink",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-7c56cc04",
+    "label": "Identifiers and accounts sent to a vendor"
+   },
+   "control": {
+    "type": "setup_step",
+    "type_label": "Provided during setup",
+    "necessity": "required_for_feature",
+    "note": "You scan the camera's QR code or enter its UID in the Reolink App during setup to add the camera."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:identifierData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "reolink-e1-zoom.device-model-setup-information-sent-to-reolink",
+   "title": "Device model / setup information sent to Reolink",
+   "workbook_text": "Device model / setup information sent to Reolink",
+   "summary": "Goes to Reolink · setup",
+   "summary_parts": {
+    "who": "Goes to Reolink",
+    "purpose": "setup"
+   },
+   "phase": "setup",
+   "taxonomy": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "pat:deviceSetup",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "pat:reolinkService",
+    "constraints": []
+   },
+   "display": {
+    "what": "Device model and network details",
+    "why": "Setting up the device",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "Reolink",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-5aedaaf3",
+    "label": "Device and network details sent to a vendor"
+   },
+   "control": {
+    "type": "none_documented",
+    "type_label": "No control found",
+    "necessity": "unknown",
+    "note": null
+   },
+   "evidence": "needs_source",
+   "core": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext"
    }
   },
   {
@@ -639,517 +1171,35 @@
     "note": "The Reolink App asks for your permission to read the Wi-Fi name during setup, and Reolink's privacy policy says it does not upload or keep it."
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "conditionally_satisfiable",
-    "rule_id": null,
-    "reason": "Fine only because it is not kept."
-   }
-  },
-  {
-   "id": "reolink-e1-zoom.setup-wi-fi-network-password-credential-entered-during",
-   "title": "Wi-Fi network password/credential entered during initialization",
-   "workbook_text": "Setup: Wi-Fi network password/credential entered during initialization",
-   "summary": "Stays in your home · setup",
-   "summary_parts": {
-    "who": "Stays in your home",
-    "purpose": "setup"
-   },
-   "phase": "setup",
-   "taxonomy": {
-    "data_type": "pat:networkCredentialData",
-    "purpose": "pat:deviceSetup",
+   "core": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
     "action": "ppd:collection",
-    "source": "ppd:userProvided",
-    "handling_context": "ppd:householdContext",
-    "constraints": []
-   },
-   "display": {
-    "what": "Your Wi-Fi password",
-    "why": "Setting up the device",
-    "what_happens": "Collected",
-    "comes_from": "You",
-    "handled_by": "Your household",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-8d3ef5b3",
-    "label": "Device and network details collected at home"
-   },
-   "control": {
-    "type": "setup_step",
-    "type_label": "Provided during setup",
-    "necessity": "required_for_feature",
-    "note": "You enter the Wi-Fi password when initializing the camera."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": "r4",
-    "reason": "Covered by “Data a device needs to work”."
+    "source": "ppd:participantObserved",
+    "handling_context": "ppd:householdContext"
    }
   },
   {
-   "id": "reolink-e1-zoom.setup-local-camera-device-password-created-during-initialization",
-   "title": "Local camera/device password created during initialization",
-   "workbook_text": "Setup: local camera/device password created during initialization",
-   "summary": "Stays in your home · setup",
-   "summary_parts": {
-    "who": "Stays in your home",
-    "purpose": "setup"
-   },
-   "phase": "setup",
-   "taxonomy": {
-    "data_type": "pat:deviceCredentialData",
-    "purpose": "pat:deviceSetup",
-    "action": "ppd:collection",
-    "source": "ppd:userProvided",
-    "handling_context": "ppd:householdContext",
-    "constraints": []
-   },
-   "display": {
-    "what": "A password for the device",
-    "why": "Setting up the device",
-    "what_happens": "Collected",
-    "comes_from": "You",
-    "handled_by": "Your household",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-8d3ef5b3",
-    "label": "Device and network details collected at home"
-   },
-   "control": {
-    "type": "setup_step",
-    "type_label": "Provided during setup",
-    "necessity": "required_for_feature",
-    "note": "You create the camera's local password when initializing it."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": "r4",
-    "reason": "Covered by “Data a device needs to work”."
-   }
-  },
-  {
-   "id": "reolink-e1-zoom.optional-reolink-account-identifiers-for-cloud-smart-home",
-   "title": "Optional Reolink account identifiers for cloud / smart-home services",
-   "workbook_text": "Optional Reolink account identifiers for cloud / smart-home services",
-   "summary": "Collected by Reolink · account setup",
-   "summary_parts": {
-    "who": "Collected by Reolink",
-    "purpose": "account setup"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "ppd:identifierData",
-    "purpose": "pat:accountSetup",
-    "action": "ppd:collection",
-    "source": "ppd:userProvided",
-    "handling_context": "pat:reolinkService",
-    "constraints": []
-   },
-   "display": {
-    "what": "Names, accounts or device IDs",
-    "why": "Setting up your account",
-    "what_happens": "Collected",
-    "comes_from": "You",
-    "handled_by": "Reolink",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-a323000c",
-    "label": "Identifiers and accounts collected by a vendor"
-   },
-   "control": {
-    "type": "user_setting",
-    "type_label": "Change in settings",
-    "necessity": "optional",
-    "note": "A Reolink account is optional; you provide account details only if you use cloud or smart-home services."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": null,
-    "reason": "Nothing here goes against your rules."
-   }
-  },
-  {
-   "id": "reolink-e1-zoom.video-capture-from-camera-sensor",
-   "title": "Video capture from camera sensor",
-   "workbook_text": "Video capture from camera sensor",
-   "summary": "Stays in your home · security",
-   "summary_parts": {
-    "who": "Stays in your home",
-    "purpose": "security"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "pat:visualData",
-    "purpose": "ppd:security",
-    "action": "ppd:collection",
-    "source": "pat:cameraSensor",
-    "handling_context": "ppd:householdContext",
-    "constraints": []
-   },
-   "display": {
-    "what": "Video or photos",
-    "why": "Security",
-    "what_happens": "Collected",
-    "comes_from": "The camera",
-    "handled_by": "Your household",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-dcd0db95",
-    "label": "Content (video, audio, photos) collected at home"
-   },
-   "control": {
-    "type": "user_setting",
-    "type_label": "Change in settings",
-    "necessity": "required_for_feature",
-    "note": "You can turn on Privacy Mode in the camera's settings in the Reolink App to stop video capture, alerts and recording."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": "r4",
-    "reason": "Covered by “Data a device needs to work”."
-   }
-  },
-  {
-   "id": "reolink-e1-zoom.audio-capture-from-built-in-microphone",
-   "title": "Audio capture from built-in microphone",
-   "workbook_text": "Audio capture from built-in microphone",
-   "summary": "Stays in your home · security",
-   "summary_parts": {
-    "who": "Stays in your home",
-    "purpose": "security"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "pat:audioData",
-    "purpose": "ppd:security",
-    "action": "ppd:collection",
-    "source": "pat:microphone",
-    "handling_context": "ppd:householdContext",
-    "constraints": []
-   },
-   "display": {
-    "what": "Sound from the microphone",
-    "why": "Security",
-    "what_happens": "Collected",
-    "comes_from": "The microphone",
-    "handled_by": "Your household",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-dcd0db95",
-    "label": "Content (video, audio, photos) collected at home"
-   },
-   "control": {
-    "type": "user_setting",
-    "type_label": "Change in settings",
-    "necessity": "optional",
-    "note": "You can turn on Privacy Mode in the camera's settings in the Reolink App to stop audio capture, alerts and recording."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": null,
-    "reason": "Nothing here goes against your rules."
-   }
-  },
-  {
-   "id": "reolink-e1-zoom.ambient-light-daylight-sensing-for-camera-operation",
-   "title": "Ambient-light / daylight sensing for camera operation",
-   "workbook_text": "Ambient-light / daylight sensing for camera operation",
-   "summary": "Stays in your home · camera",
-   "summary_parts": {
-    "who": "Stays in your home",
-    "purpose": "camera"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "pat:environmentData",
-    "purpose": "pat:cameraAdaptation",
-    "action": "ppd:collection",
-    "source": "pat:daylightSensor",
-    "handling_context": "ppd:householdContext",
-    "constraints": []
-   },
-   "display": {
-    "what": "Temperature, humidity or light readings",
-    "why": "Adjusting the camera",
-    "what_happens": "Collected",
-    "comes_from": "The daylight sensor",
-    "handled_by": "Your household",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-42c4986b",
-    "label": "Sensor readings collected at home"
-   },
-   "control": {
-    "type": "user_setting",
-    "type_label": "Change in settings",
-    "necessity": "optional",
-    "note": "You can set the day/night mode to Color or Black & White instead of Auto in the Reolink App."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": null,
-    "reason": "Nothing here goes against your rules."
-   }
-  },
-  {
-   "id": "reolink-e1-zoom.ptz-auto-tracking-uses-detection-results-to-follow",
-   "title": "PTZ auto-tracking uses detection results to follow subject",
-   "workbook_text": "PTZ auto-tracking uses detection results to follow subject",
-   "summary": "Stays in your home · security",
-   "summary_parts": {
-    "who": "Stays in your home",
-    "purpose": "security"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "pat:presenceData",
-    "purpose": "ppd:security",
-    "action": "ppd:use",
-    "source": "ppd:derivedFromPriorData",
-    "handling_context": "ppd:householdContext",
-    "constraints": []
-   },
-   "display": {
-    "what": "Whether someone is there",
-    "why": "Security",
-    "what_happens": "Used",
-    "comes_from": "Worked out from earlier data",
-    "handled_by": "Your household",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-44cb07c3",
-    "label": "Sensor readings used at home"
-   },
-   "control": {
-    "type": "user_setting",
-    "type_label": "Change in settings",
-    "necessity": "optional",
-    "note": "You can turn Auto Tracking on or off in the camera's Smart Detection settings."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": null,
-    "reason": "Nothing here goes against your rules."
-   }
-  },
-  {
-   "id": "reolink-e1-zoom.local-microsd-video-recording-playback",
-   "title": "Local microSD video recording / playback",
-   "workbook_text": "Local microSD video recording / playback",
-   "summary": "Stays in your home · security",
-   "summary_parts": {
-    "who": "Stays in your home",
-    "purpose": "security"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "pat:visualData",
-    "purpose": "ppd:security",
-    "action": "ppd:use",
-    "source": "ppd:derivedFromPriorData",
-    "handling_context": "ppd:householdContext",
-    "constraints": []
-   },
-   "display": {
-    "what": "Video or photos",
-    "why": "Security",
-    "what_happens": "Used",
-    "comes_from": "Worked out from earlier data",
-    "handled_by": "Your household",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-58bc1761",
-    "label": "Content (video, audio, photos) used at home"
-   },
-   "control": {
-    "type": "user_setting",
-    "type_label": "Change in settings",
-    "necessity": "optional",
-    "note": "You can turn on Privacy Mode to stop capture, alerts and recording."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": null,
-    "reason": "Nothing here goes against your rules."
-   }
-  },
-  {
-   "id": "reolink-e1-zoom.local-microsd-audio-recording-playback",
-   "title": "Local microSD audio recording / playback",
-   "workbook_text": "Local microSD audio recording / playback",
-   "summary": "Stays in your home · security",
-   "summary_parts": {
-    "who": "Stays in your home",
-    "purpose": "security"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "pat:audioData",
-    "purpose": "ppd:security",
-    "action": "ppd:use",
-    "source": "ppd:derivedFromPriorData",
-    "handling_context": "ppd:householdContext",
-    "constraints": []
-   },
-   "display": {
-    "what": "Sound from the microphone",
-    "why": "Security",
-    "what_happens": "Used",
-    "comes_from": "Worked out from earlier data",
-    "handled_by": "Your household",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-58bc1761",
-    "label": "Content (video, audio, photos) used at home"
-   },
-   "control": {
-    "type": "user_setting",
-    "type_label": "Change in settings",
-    "necessity": "optional",
-    "note": "You can use the Record Audio setting in the Reolink App to choose whether audio is recorded, and Privacy Mode stops all audio recording."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": null,
-    "reason": "Nothing here goes against your rules."
-   }
-  },
-  {
-   "id": "reolink-e1-zoom.video-transferred-to-local-nvr-home-hub-ftp",
-   "title": "Video transferred to local NVR / Home Hub / FTP / NAS",
-   "workbook_text": "Video transferred to local NVR / Home Hub / FTP / NAS",
-   "summary": "Stays in your home · security",
-   "summary_parts": {
-    "who": "Stays in your home",
-    "purpose": "security"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "pat:visualData",
-    "purpose": "ppd:security",
-    "action": "ppd:transfer",
-    "source": "ppd:participantGenerated",
-    "handling_context": "ppd:householdContext",
-    "constraints": []
-   },
-   "display": {
-    "what": "Video or photos",
-    "why": "Security",
-    "what_happens": "Sent within your home",
-    "comes_from": "The device",
-    "handled_by": "Your household",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-3b938702",
-    "label": "Content (video, audio, photos) sent within your home"
-   },
-   "control": {
-    "type": "user_setting",
-    "type_label": "Change in settings",
-    "necessity": "optional",
-    "note": "This happens only if you set up FTP/NAS upload or connect the camera to a Reolink NVR yourself."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": null,
-    "reason": "Nothing here goes against your rules."
-   }
-  },
-  {
-   "id": "reolink-e1-zoom.two-way-audio-from-remote-user-delivered-to",
-   "title": "Two-way audio from remote user delivered to camera speaker",
-   "workbook_text": "Two-way audio from remote user delivered to camera speaker",
-   "summary": "Stays in your home · two-way audio",
-   "summary_parts": {
-    "who": "Stays in your home",
-    "purpose": "two-way audio"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "pat:audioData",
-    "purpose": "pat:twoWayAudio",
-    "action": "ppd:collection",
-    "source": "ppd:vendorProvided",
-    "handling_context": "ppd:householdContext",
-    "constraints": []
-   },
-   "display": {
-    "what": "Sound from the microphone",
-    "why": "Talking through the camera",
-    "what_happens": "Collected",
-    "comes_from": "The vendor",
-    "handled_by": "Your household",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-7552e333",
-    "label": "Content (video, audio, photos) collected at home"
-   },
-   "control": {
-    "type": "user_initiated",
-    "type_label": "Happens only when you do it",
-    "necessity": "optional",
-    "note": "Audio from the Reolink App is played on the camera's speaker only when you tap Talk during live view."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": null,
-    "reason": "Nothing here goes against your rules."
-   }
-  },
-  {
-   "id": "reolink-e1-zoom.device-uid-sent-to-reolink-for-device-binding",
-   "title": "Device UID sent to Reolink for device binding",
-   "workbook_text": "Device UID sent to Reolink for device binding",
-   "summary": "Goes to Reolink · setup",
+   "id": "reolink-e1-zoom.optional-reolink-app-usage-analytics-experience-program-telemetry",
+   "title": "App analytics",
+   "workbook_text": "Optional Reolink App usage analytics / experience-program telemetry",
+   "summary": "Goes to Reolink · product use",
    "summary_parts": {
     "who": "Goes to Reolink",
-    "purpose": "setup"
+    "purpose": "product use"
    },
-   "phase": "setup",
+   "phase": "runtime",
    "taxonomy": {
-    "data_type": "ppd:identifierData",
-    "purpose": "pat:deviceSetup",
+    "data_type": "ppd:usageData",
+    "purpose": "pat:usageEfficiency",
     "action": "ppd:transfer",
     "source": "ppd:participantGenerated",
     "handling_context": "pat:reolinkService",
     "constraints": []
    },
    "display": {
-    "what": "Names, accounts or device IDs",
-    "why": "Setting up the device",
+    "what": "How you use the device",
+    "why": "Product use",
     "what_happens": "Sent to another party",
     "comes_from": "The device",
     "handled_by": "Reolink",
@@ -1157,20 +1207,22 @@
     "limit": null
    },
    "core_group": {
-    "id": "ck-7c56cc04",
-    "label": "Identifiers and accounts sent to a vendor"
+    "id": "ck-976049b7",
+    "label": "Usage data sent to a vendor"
    },
    "control": {
-    "type": "setup_step",
-    "type_label": "Provided during setup",
-    "necessity": "required_for_feature",
-    "note": "You scan the camera's QR code or enter its UID in the Reolink App during setup to add the camera."
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "You can join or leave the User Experience Program in the Reolink App's settings."
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": "r4",
-    "reason": "Covered by “Data a device needs to work”."
+   "core": {
+    "data_type": "ppd:usageData",
+    "purpose": "ppd:analyticsAndImprovement",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext"
    }
   }
  ]

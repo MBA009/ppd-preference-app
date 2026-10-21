@@ -17,14 +17,7 @@
     "statements": 21
    },
    "declaration_id_example": "aqara-w200-01",
-   "flow_count": 22,
-   "verdict_counts": {
-    "unsatisfiable": 2,
-    "decision_required": 6,
-    "indeterminate": 1,
-    "conditionally_satisfiable": 1,
-    "compatible": 12
-   }
+   "flow_count": 22
   },
   {
    "id": "level-lock",
@@ -37,12 +30,7 @@
    "source": "advisory",
    "declaration": null,
    "declaration_id_example": "level-lock-01",
-   "flow_count": 21,
-   "verdict_counts": {
-    "decision_required": 7,
-    "indeterminate": 1,
-    "compatible": 13
-   }
+   "flow_count": 21
   },
   {
    "id": "lg-oled65c6pua-c6",
@@ -55,14 +43,7 @@
    "source": "advisory",
    "declaration": null,
    "declaration_id_example": "lg-oled65c6pua-c6-01",
-   "flow_count": 19,
-   "verdict_counts": {
-    "unsatisfiable": 6,
-    "decision_required": 3,
-    "indeterminate": 3,
-    "conditionally_satisfiable": 1,
-    "compatible": 6
-   }
+   "flow_count": 19
   },
   {
    "id": "reolink-e1-zoom",
@@ -81,13 +62,7 @@
     "statements": 24
    },
    "declaration_id_example": "reolink-e1-zoom-01",
-   "flow_count": 26,
-   "verdict_counts": {
-    "decision_required": 6,
-    "indeterminate": 3,
-    "conditionally_satisfiable": 5,
-    "compatible": 12
-   }
+   "flow_count": 26
   }
  ]
 }

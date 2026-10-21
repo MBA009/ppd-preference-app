@@ -1,4 +1,4 @@
-import type { DeclarationState, DeviceSummary, Rule } from '../api'
+import type { DeclarationState, DeviceSummary } from '../api'
 
 export const STATE_LABEL: Record<DeclarationState, string> = {
   advisory: 'Advisory only · from our library',
@@ -11,11 +11,6 @@ export const STATE_LABEL: Record<DeclarationState, string> = {
 
 export function stateLabel(d: DeviceSummary) {
   return STATE_LABEL[d.declaration?.state ?? 'advisory']
-}
-
-/** Rules that apply to a device (a rule can be about all devices or a few). */
-export function rulesFor(rules: Rule[], deviceId: string) {
-  return rules.filter((r) => r.applies_to === 'all' || r.applies_to.includes(deviceId))
 }
 
 export function vendorOf(d: DeviceSummary) {

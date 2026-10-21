@@ -7,9 +7,10 @@ The app never reads the workbook directly. It reads the JSON written here throug
 src/api/mockClient.ts, so a real backend only has to serve the same shapes
 (documented in src/api/types.ts).
 
-IMPORTANT: the verdicts in these fixtures come from a deliberately simple stand-in
-engine (evaluate() below) so every UI state has data. They are NOT a claim about what
-the PPD protocol would return. The real comparison belongs to the backend.
+The fixtures hold each flow's taxonomy fields (fine-grained and core), plain-language labels and
+control. They do NOT hold verdicts: a verdict compares a flow with the household's rules, which the
+person creates in the app. The mock client (src/api/mockEngine.ts) computes them on read; the real
+backend will own that comparison.
 """
 import json, os, re, sys, collections
 import openpyxl
@@ -71,7 +72,7 @@ PURPOSE = {
     "autoUnlock": ("Unlocking when you arrive", "auto unlock"),
     "cameraAdaptation": ("Adjusting the camera", "camera"),
     "cloudStorage": ("Cloud storage", "cloud storage"),
-    "contentRecognition": ("Recognising what is on screen", "recognition"),
+    "contentRecognition": ("Recognizing what is on screen", "recognition"),
     "customerSupport": ("Customer support", "support"),
     "deviceDiscovery": ("Finding connected devices", "discovery"),
     "deviceSetup": ("Setting up the device", "setup"),
@@ -160,44 +161,6 @@ def title_for(dev, text):
         t = t[:78].rsplit(" ", 1)[0] + "…"
     return t[:1].upper() + t[1:]
 
-# ---------------------------------------------------------------- stand-in verdict engine
-RULES = [
-    {"id": "r1", "title": "Never use my data for advertising", "effect": "dont_allow", "applies_to": "all"},
-    {"id": "r2", "title": "Camera and microphone data stays in my home", "effect": "dont_allow", "applies_to": ["reolink-e1-zoom", "lg-oled65c6pua-c6", "aqara-w200"]},
-    {"id": "r3", "title": "Don’t share my precise location", "effect": "dont_allow", "applies_to": "all"},
-    {"id": "r4", "title": "Data a device needs to work", "effect": "allow", "applies_to": "all"},
-]
-RULE_TITLE = {r["id"]: r["title"] for r in RULES}
-
-def evaluate(f, core, did):
-    dt, pur, act, hc = local(f["data_type"]), local(f["purpose"]), local(f["action"]), local(f["handling_context"])
-    leaves_home = hc != "householdContext"
-    cons = f["Constraints"] or ""
-    if f["Evidence"] == "needs_source":
-        return "indeterminate", None, "We could not find a source for this flow yet, so we cannot compare it with your rules."
-    is_location = dt in ("locationData", "geofenceState", "nearbyWifiData")
-    if pur in ("audienceMeasurement", "advertisingAndMarketing", "locationBasedMarketing") or (core["purpose"] == "advertisingAndMarketing" and not is_location):
-        return "unsatisfiable", "r1", "Your rule “%s” says no to this." % RULE_TITLE["r1"]
-    if is_location and pur != "deviceSetup" and leaves_home:
-        return "decision_required", "r3", "Your rule “%s” doesn’t settle this." % RULE_TITLE["r3"]
-    if dt in ("visualData", "audioData") and leaves_home and did in RULES[1]["applies_to"]:
-        return "decision_required", "r2", "Your rule “%s” doesn’t settle this." % RULE_TITLE["r2"]
-    if act == "transfer" and leaves_home and f["Necessity"] != "required_for_feature":
-        return "decision_required", None, "None of your rules covers this."
-    if "indefinite" in cons and leaves_home:
-        return "decision_required", None, "None of your rules says how long this can be kept."
-    if "onDeviceOnly" in cons:
-        return "conditionally_satisfiable", "r2" if dt in ("visualData", "audioData", "presenceData") else None, "Fine only because it stays on the device."
-    if "inHomeOnly" in cons:
-        return "conditionally_satisfiable", "r2" if dt in ("visualData", "audioData") else None, "Fine only because it stays in your home."
-    if "ephemeral" in cons:
-        return "conditionally_satisfiable", None, "Fine only because it is not kept."
-    if f["Necessity"] == "required_for_feature":
-        return "compatible", "r4", "Covered by “%s”." % RULE_TITLE["r4"]
-    return "compatible", None, "Nothing here goes against your rules."
-
-SEVERITY = {"unsatisfiable": 0, "decision_required": 1, "indeterminate": 2, "conditionally_satisfiable": 3, "compatible": 4}
-
 # ---------------------------------------------------------------- devices (app-level facts the workbook does not hold)
 DEVICE_META = {
     "aqara-w200":        {"short": "Aqara Thermostat Hub W200", "icon": "thermostat", "matter": True,  "source": "declared", "state": "waiting_for_renewal"},
@@ -218,7 +181,7 @@ def main():
     for r in grows[1:]:
         if r[0]:
             g = dict(zip(gh, r))
-            groups[g["Core rule group"]] = {k: local(g[k]) for k in ("data_type", "purpose", "action", "source", "handling_context")}
+            groups[g["Core rule group"]] = {k: g[k] for k in ("data_type", "purpose", "action", "source", "handling_context")}
     drows = list(wb["Devices"].iter_rows(values_only=True))
     dh = drows[0]
     devices = [dict(zip(dh, r)) for r in drows[1:] if r[0]]
@@ -241,7 +204,6 @@ def main():
                 if "=" in c:
                     k, v = c.strip().split("=")
                     cons[k] = local(v)
-            verdict, rule_id, reason = evaluate(f, core, did)
             kept = {"indefinite": "Until deleted", "ephemeral": "Not kept"}.get(cons.get("retention"), "Not stated")
             limit = {"onDeviceOnly": "Stays on the device", "inHomeOnly": "Stays in your home"}.get(cons.get("processing_boundary"))
             handler_label, handler_short = HANDLER[hc]
@@ -251,7 +213,7 @@ def main():
             verb = {"transfer": "Goes to", "collection": "Collected by", "use": "Used by", "inference": "Worked out by"}[act]
             who = "Stays in your home" if hc == "householdContext" else "%s %s" % (verb, handler_short)
             summary = who + " · " + PURPOSE[pur][1]
-            gl = "%s %s" % (CORE_DT.get(core["data_type"], words(core["data_type"])), CORE_ACTION_HANDLER.get((core["action"], core["handling_context"]), ""))
+            gl = "%s %s" % (CORE_DT.get(local(core["data_type"]), words(core["data_type"])), CORE_ACTION_HANDLER.get((local(core["action"]), local(core["handling_context"])), ""))
             out_flows.append({
                 "id": f["Flow ID"],
                 "title": title_for(did, f["Dataflow"]),
@@ -267,12 +229,8 @@ def main():
                 "control": {"type": f["Control type"], "type_label": CONTROL_TYPE[f["Control type"]],
                             "necessity": f["Necessity"], "note": f["Control note (draft)"]},
                 "evidence": f["Evidence"],
-                "evaluation": {"verdict": verdict, "rule_id": rule_id, "reason": reason},
-                "_order": i,
+                "core": core,
             })
-        out_flows.sort(key=lambda x: (SEVERITY[x["evaluation"]["verdict"]], x["_order"]))
-        for x in out_flows:
-            del x["_order"]
         decl_id = d["Declaration device_id (example)"]
         declaration = None
         if meta["source"] == "declared":
@@ -283,22 +241,18 @@ def main():
                "category_label": d["Category"], "icon": meta["icon"], "matter": meta["matter"], "source": meta["source"],
                "declaration": declaration, "declaration_id_example": decl_id, "flow_count": len(out_flows), "flows": out_flows}
         json.dump(dev, open(os.path.join(OUT, "devices", did + ".json"), "w"), indent=1, ensure_ascii=False)
-        lib = {k: v for k, v in dev.items() if k != "flows"}
-        lib["verdict_counts"] = dict(collections.Counter(x["evaluation"]["verdict"] for x in out_flows))
-        library.append(lib)
+        library.append({k: v for k, v in dev.items() if k != "flows"})
         codes["https://ppd.example/d/" + decl_id] = did
 
-    # rules (counts of which devices they apply to are computed in the client)
-    json.dump({"rules": RULES}, open(os.path.join(OUT, "rules.json"), "w"), indent=1, ensure_ascii=False)
     json.dump({"devices": library}, open(os.path.join(OUT, "library.json"), "w"), indent=1, ensure_ascii=False)
     json.dump({"codes": codes,
                "note": "Placeholder privacy-code payloads. A real code would point at the device's declaration endpoint."},
               open(os.path.join(OUT, "codes.json"), "w"), indent=1)
-    json.dump({"devices": [{"device_id": d, "added_at": "2026-10-14T09:15:00Z"} for d in SEED_HOME],
-               "decisions": {}}, open(os.path.join(OUT, "household.json"), "w"), indent=1)
+    json.dump({"devices": [{"device_id": d, "added_at": "2026-10-14T09:15:00Z"} for d in SEED_HOME]},
+              open(os.path.join(OUT, "household.json"), "w"), indent=1)
 
     print("wrote", len(library), "devices,", sum(d["flow_count"] for d in library), "flows")
     for l in library:
-        print("  %-20s %s" % (l["short_name"], l["verdict_counts"]))
+        print("  %-26s %d flows" % (l["short_name"], l["flow_count"]))
 
 main()

@@ -2,7 +2,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { AppBar, Cell, DeviceTile, ErrorBox, Group, Loading, SectionHeader } from '../components/ui'
 import { AttentionList, ProvenanceCard } from '../components/DeviceReport'
 import { useDevice, useHousehold, useRules } from '../state/data'
-import { rulesFor, STATE_LABEL, subtitle, timeAgo } from '../lib/device'
+import { STATE_LABEL, subtitle, timeAgo } from '../lib/device'
 import { decidedCount } from '../lib/verdicts'
 
 /** Screen 3c. */
@@ -11,14 +11,14 @@ export default function DeviceDetail() {
   const nav = useNavigate()
   const { household, removeDevice, addDevice, toast } = useHousehold()
   const dev = useDevice(id)
-  const rules = useRules()
+  const rules = useRules(true)
 
   if (dev.error) return <><AppBar title="Device" back="/" /><ErrorBox error={dev.error} /></>
   const d = dev.data
   if (!d || !household) return <><AppBar title="Device" back="/" /><Loading /></>
 
   const inHome = household.devices.some((h) => h.device_id === d.id)
-  const ruleCount = rulesFor(rules.data ?? [], d.id).length
+  const ruleCount = rules.length
   const decided = decidedCount(d, household)
   const decl = d.declaration
 

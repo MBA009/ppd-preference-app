@@ -12,580 +12,6 @@
  "flow_count": 19,
  "flows": [
   {
-   "id": "lg-oled65c6pua-c6.viewing-information-derived-through-acr",
-   "title": "Viewing information derived through ACR",
-   "workbook_text": "Viewing information derived through ACR",
-   "summary": "Worked out by LG's recognition service · audience measurement",
-   "summary_parts": {
-    "who": "Worked out by LG's recognition service",
-    "purpose": "audience measurement"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "ppd:usageData",
-    "purpose": "pat:audienceMeasurement",
-    "action": "ppd:inference",
-    "source": "ppd:derivedFromPriorData",
-    "handling_context": "pat:acrService",
-    "constraints": []
-   },
-   "display": {
-    "what": "How you use the device",
-    "why": "Measuring who watches",
-    "what_happens": "Worked out from other data",
-    "comes_from": "Worked out from earlier data",
-    "handled_by": "LG's viewing-recognition service",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-bb9073e6",
-    "label": "Usage data worked out by a vendor"
-   },
-   "control": {
-    "type": "user_setting",
-    "type_label": "Change in settings",
-    "necessity": "optional",
-    "note": "You can choose whether to use ACR; it is off by default and you can disable it through TV settings."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "unsatisfiable",
-    "rule_id": "r1",
-    "reason": "Your rule “Never use my data for advertising” says no to this."
-   }
-  },
-  {
-   "id": "lg-oled65c6pua-c6.audience-segment-viewing-trend-analysis-derived-from-acr",
-   "title": "Audience segment / viewing-trend analysis derived from ACR data",
-   "workbook_text": "Audience segment / viewing-trend analysis derived from ACR data",
-   "summary": "Worked out by an ad service · audience measurement",
-   "summary_parts": {
-    "who": "Worked out by an ad service",
-    "purpose": "audience measurement"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "pat:audienceSegment",
-    "purpose": "pat:audienceMeasurement",
-    "action": "ppd:inference",
-    "source": "ppd:derivedFromPriorData",
-    "handling_context": "pat:advertisingService",
-    "constraints": []
-   },
-   "display": {
-    "what": "The audience group you are placed in",
-    "why": "Measuring who watches",
-    "what_happens": "Worked out from other data",
-    "comes_from": "Worked out from earlier data",
-    "handled_by": "An advertising service",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-a57f3818",
-    "label": "Profile information worked out by a vendor"
-   },
-   "control": {
-    "type": "user_setting",
-    "type_label": "Change in settings",
-    "necessity": "optional",
-    "note": "You can choose whether to use ACR, and audience analysis based on it applies only if you turn ACR on."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "unsatisfiable",
-    "rule_id": "r1",
-    "reason": "Your rule “Never use my data for advertising” says no to this."
-   }
-  },
-  {
-   "id": "lg-oled65c6pua-c6.acr-viewing-information-shared-with-lg-ad-solutions",
-   "title": "ACR viewing information shared with LG Ad Solutions for measurement",
-   "workbook_text": "ACR viewing information shared with LG Ad Solutions for measurement",
-   "summary": "Goes to an ad service · audience measurement",
-   "summary_parts": {
-    "who": "Goes to an ad service",
-    "purpose": "audience measurement"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "ppd:usageData",
-    "purpose": "pat:audienceMeasurement",
-    "action": "ppd:transfer",
-    "source": "ppd:participantGenerated",
-    "handling_context": "pat:advertisingService",
-    "constraints": []
-   },
-   "display": {
-    "what": "How you use the device",
-    "why": "Measuring who watches",
-    "what_happens": "Sent to another party",
-    "comes_from": "The device",
-    "handled_by": "An advertising service",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-976049b7",
-    "label": "Usage data sent to a vendor"
-   },
-   "control": {
-    "type": "user_setting",
-    "type_label": "Change in settings",
-    "necessity": "optional",
-    "note": "You can choose whether to use ACR, and ACR viewing information can be shared with LG Ad Solutions only if you turn it on."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "unsatisfiable",
-    "rule_id": "r1",
-    "reason": "Your rule “Never use my data for advertising” says no to this."
-   }
-  },
-  {
-   "id": "lg-oled65c6pua-c6.acr-audience-data-used-for-interest-based-advertising",
-   "title": "ACR / audience data used for interest-based advertising when separately…",
-   "workbook_text": "ACR / audience data used for interest-based advertising when separately consented",
-   "summary": "Used by an ad service · advertising",
-   "summary_parts": {
-    "who": "Used by an ad service",
-    "purpose": "advertising"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "pat:audienceSegment",
-    "purpose": "ppd:advertisingAndMarketing",
-    "action": "ppd:use",
-    "source": "ppd:derivedFromPriorData",
-    "handling_context": "pat:advertisingService",
-    "constraints": []
-   },
-   "display": {
-    "what": "The audience group you are placed in",
-    "why": "Advertising and marketing",
-    "what_happens": "Used",
-    "comes_from": "Worked out from earlier data",
-    "handled_by": "An advertising service",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-b2882118",
-    "label": "Profile information used by a vendor"
-   },
-   "control": {
-    "type": "user_setting",
-    "type_label": "Change in settings",
-    "necessity": "optional",
-    "note": "ACR data is used for interest-based advertising only if you opt in to both the Viewing Information and the Interest-Based and Cross-Device Advertising agreements."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "unsatisfiable",
-    "rule_id": "r1",
-    "reason": "Your rule “Never use my data for advertising” says no to this."
-   }
-  },
-  {
-   "id": "lg-oled65c6pua-c6.acr-related-viewing-data-shared-with-advertiser-for",
-   "title": "Viewing data shared with advertisers",
-   "workbook_text": "ACR-related viewing data shared with advertiser for cross-device advertising when separately consented",
-   "summary": "Goes to advertisers · advertising",
-   "summary_parts": {
-    "who": "Goes to advertisers",
-    "purpose": "advertising"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "ppd:usageData",
-    "purpose": "ppd:advertisingAndMarketing",
-    "action": "ppd:transfer",
-    "source": "ppd:vendorProvided",
-    "handling_context": "pat:advertiser",
-    "constraints": []
-   },
-   "display": {
-    "what": "How you use the device",
-    "why": "Advertising and marketing",
-    "what_happens": "Sent to another party",
-    "comes_from": "The vendor",
-    "handled_by": "Advertisers",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-826b5cda",
-    "label": "Usage data sent to a third party"
-   },
-   "control": {
-    "type": "user_setting",
-    "type_label": "Change in settings",
-    "necessity": "optional",
-    "note": "ACR-related viewing data is shared with an advertiser for cross-device advertising only if you separately consent."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "unsatisfiable",
-    "rule_id": "r1",
-    "reason": "Your rule “Never use my data for advertising” says no to this."
-   }
-  },
-  {
-   "id": "lg-oled65c6pua-c6.hdmi-connected-device-information-used-for-audience-advertising",
-   "title": "HDMI-connected device information used for audience / advertising purposes…",
-   "workbook_text": "HDMI-connected device information used for audience / advertising purposes when separately consented",
-   "summary": "Used by an ad service · advertising",
-   "summary_parts": {
-    "who": "Used by an ad service",
-    "purpose": "advertising"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "pat:hdmiDeviceInfo",
-    "purpose": "ppd:advertisingAndMarketing",
-    "action": "ppd:use",
-    "source": "ppd:derivedFromPriorData",
-    "handling_context": "pat:advertisingService",
-    "constraints": []
-   },
-   "display": {
-    "what": "Devices connected by HDMI",
-    "why": "Advertising and marketing",
-    "what_happens": "Used",
-    "comes_from": "Worked out from earlier data",
-    "handled_by": "An advertising service",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-91b67c10",
-    "label": "Device and network details used by a vendor"
-   },
-   "control": {
-    "type": "user_setting",
-    "type_label": "Change in settings",
-    "necessity": "optional",
-    "note": "HDMI-connected device information is used for audience segmentation or advertising only if you accept the applicable advertising agreements."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "unsatisfiable",
-    "rule_id": "r1",
-    "reason": "Your rule “Never use my data for advertising” says no to this."
-   }
-  },
-  {
-   "id": "lg-oled65c6pua-c6.voice-audio-transferred-for-speech-recognition-when-enabled",
-   "title": "Voice recordings sent for recognition",
-   "workbook_text": "Voice audio transferred for speech recognition when enabled",
-   "summary": "Goes to a voice service · voice control",
-   "summary_parts": {
-    "who": "Goes to a voice service",
-    "purpose": "voice control"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "pat:audioData",
-    "purpose": "pat:voiceControl",
-    "action": "ppd:transfer",
-    "source": "ppd:participantObserved",
-    "handling_context": "pat:voiceRecognitionService",
-    "constraints": []
-   },
-   "display": {
-    "what": "Sound from the microphone",
-    "why": "Voice control",
-    "what_happens": "Sent to another party",
-    "comes_from": "Observed by the device",
-    "handled_by": "A voice-recognition service",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-8e68d5b6",
-    "label": "Content (video, audio, photos) sent to a vendor"
-   },
-   "control": {
-    "type": "user_setting",
-    "type_label": "Change in settings",
-    "necessity": "optional",
-    "note": "You can keep voice recognition turned off, and voice audio is processed only if you enable it and activate a voice interaction."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "decision_required",
-    "rule_id": "r2",
-    "reason": "Your rule “Camera and microphone data stays in my home” doesn’t settle this."
-   }
-  },
-  {
-   "id": "lg-oled65c6pua-c6.nearby-wi-fi-access-point-signal-data-collected",
-   "title": "Nearby Wi-Fi access-point / signal data collected for approximate-location…",
-   "workbook_text": "Nearby Wi-Fi access-point / signal data collected for approximate-location support of ACR",
-   "summary": "Collected by LG's recognition service · location",
-   "summary_parts": {
-    "who": "Collected by LG's recognition service",
-    "purpose": "location"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "pat:nearbyWifiData",
-    "purpose": "pat:acrLocationSupport",
-    "action": "ppd:collection",
-    "source": "ppd:participantObserved",
-    "handling_context": "pat:acrService",
-    "constraints": []
-   },
-   "display": {
-    "what": "Nearby Wi-Fi networks",
-    "why": "Supporting viewing recognition with location",
-    "what_happens": "Collected",
-    "comes_from": "Observed by the device",
-    "handled_by": "LG's viewing-recognition service",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-0603317f",
-    "label": "Device and network details collected by a vendor"
-   },
-   "control": {
-    "type": "user_setting",
-    "type_label": "Change in settings",
-    "necessity": "optional",
-    "note": "This happens only after you accept the relevant ACR agreements, and you can disable ACR through TV settings."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "decision_required",
-    "rule_id": "r3",
-    "reason": "Your rule “Don’t share my precise location” doesn’t settle this."
-   }
-  },
-  {
-   "id": "lg-oled65c6pua-c6.approximate-tv-location-inferred-from-nearby-wi-fi",
-   "title": "Approximate TV location inferred from nearby Wi-Fi information for ACR",
-   "workbook_text": "Approximate TV location inferred from nearby Wi-Fi information for ACR",
-   "summary": "Worked out by LG's recognition service · location",
-   "summary_parts": {
-    "who": "Worked out by LG's recognition service",
-    "purpose": "location"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "ppd:locationData",
-    "purpose": "pat:acrLocationSupport",
-    "action": "ppd:inference",
-    "source": "ppd:derivedFromPriorData",
-    "handling_context": "pat:acrService",
-    "constraints": []
-   },
-   "display": {
-    "what": "Location",
-    "why": "Supporting viewing recognition with location",
-    "what_happens": "Worked out from other data",
-    "comes_from": "Worked out from earlier data",
-    "handled_by": "LG's viewing-recognition service",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-ea948f82",
-    "label": "Location worked out by a vendor"
-   },
-   "control": {
-    "type": "user_setting",
-    "type_label": "Change in settings",
-    "necessity": "optional",
-    "note": "This happens only where ACR is available and enabled, and you can disable ACR through TV settings."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "decision_required",
-    "rule_id": "r3",
-    "reason": "Your rule “Don’t share my precise location” doesn’t settle this."
-   }
-  },
-  {
-   "id": "lg-oled65c6pua-c6.voice-related-technical-logs-generated-sent-for-operation",
-   "title": "Voice-related technical logs generated / sent for operation and diagnostics",
-   "workbook_text": "Voice-related technical logs generated / sent for operation and diagnostics",
-   "summary": "Goes to a voice service · diagnostics",
-   "summary_parts": {
-    "who": "Goes to a voice service",
-    "purpose": "diagnostics"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "pat:voiceTechnicalLog",
-    "purpose": "ppd:diagnosticsAndMaintenance",
-    "action": "ppd:transfer",
-    "source": "ppd:participantGenerated",
-    "handling_context": "pat:voiceRecognitionService",
-    "constraints": []
-   },
-   "display": {
-    "what": "Logs from the voice feature",
-    "why": "Diagnostics and maintenance",
-    "what_happens": "Sent to another party",
-    "comes_from": "The device",
-    "handled_by": "A voice-recognition service",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-d0fc350e",
-    "label": "Device and network details sent to a vendor"
-   },
-   "control": {
-    "type": "user_initiated",
-    "type_label": "Happens only when you do it",
-    "necessity": "optional",
-    "note": "Voice-related technical logs are generated only as part of processing a voice command that you activate."
-   },
-   "evidence": "needs_source",
-   "evaluation": {
-    "verdict": "indeterminate",
-    "rule_id": null,
-    "reason": "We could not find a source for this flow yet, so we cannot compare it with your rules."
-   }
-  },
-  {
-   "id": "lg-oled65c6pua-c6.google-gemini-prompt-query-sent-to-third-party",
-   "title": "Google Gemini prompt / query sent to third-party AI service when feature is…",
-   "workbook_text": "Google Gemini prompt / query sent to third-party AI service when feature is used",
-   "summary": "Goes to partners · AI assistant",
-   "summary_parts": {
-    "who": "Goes to partners",
-    "purpose": "AI assistant"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "pat:aiPromptData",
-    "purpose": "pat:aiAssistant",
-    "action": "ppd:transfer",
-    "source": "ppd:userProvided",
-    "handling_context": "pat:thirdPartyServiceProvider",
-    "constraints": []
-   },
-   "display": {
-    "what": "Questions you ask the AI assistant",
-    "why": "AI assistant",
-    "what_happens": "Sent to another party",
-    "comes_from": "You",
-    "handled_by": "A third-party service",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-a9cedba6",
-    "label": "Content (video, audio, photos) sent to a third party"
-   },
-   "control": {
-    "type": "user_initiated",
-    "type_label": "Happens only when you do it",
-    "necessity": "optional",
-    "note": "This happens only when you use the TV's AI Search to ask Google Gemini a question."
-   },
-   "evidence": "needs_source",
-   "evaluation": {
-    "verdict": "indeterminate",
-    "rule_id": null,
-    "reason": "We could not find a source for this flow yet, so we cannot compare it with your rules."
-   }
-  },
-  {
-   "id": "lg-oled65c6pua-c6.smart-tv-device-software-network-telemetry-for-service",
-   "title": "TV diagnostics sent to LG",
-   "workbook_text": "Smart-TV device / software / network telemetry for service operation and diagnostics",
-   "summary": "Goes to LG · diagnostics",
-   "summary_parts": {
-    "who": "Goes to LG",
-    "purpose": "diagnostics"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "pat:diagnosticData",
-    "purpose": "ppd:diagnosticsAndMaintenance",
-    "action": "ppd:transfer",
-    "source": "ppd:participantGenerated",
-    "handling_context": "pat:lgService",
-    "constraints": []
-   },
-   "display": {
-    "what": "Device logs and status",
-    "why": "Diagnostics and maintenance",
-    "what_happens": "Sent to another party",
-    "comes_from": "The device",
-    "handled_by": "LG",
-    "kept": "Not stated",
-    "limit": null
-   },
-   "core_group": {
-    "id": "ck-d0fc350e",
-    "label": "Device and network details sent to a vendor"
-   },
-   "control": {
-    "type": "unknown",
-    "type_label": "Not checked, or sources silent",
-    "necessity": "unknown",
-    "note": null
-   },
-   "evidence": "needs_source",
-   "evaluation": {
-    "verdict": "indeterminate",
-    "rule_id": null,
-    "reason": "We could not find a source for this flow yet, so we cannot compare it with your rules."
-   }
-  },
-  {
-   "id": "lg-oled65c6pua-c6.acr-audio-fingerprint-derived-from-program-audio-when",
-   "title": "ACR audio fingerprint derived from program audio when ACR is enabled",
-   "workbook_text": "ACR audio fingerprint derived from program audio when ACR is enabled",
-   "summary": "Stays in your home · recognition",
-   "summary_parts": {
-    "who": "Stays in your home",
-    "purpose": "recognition"
-   },
-   "phase": "runtime",
-   "taxonomy": {
-    "data_type": "pat:audioFingerprint",
-    "purpose": "pat:contentRecognition",
-    "action": "ppd:inference",
-    "source": "ppd:derivedFromPriorData",
-    "handling_context": "ppd:householdContext",
-    "constraints": [
-     "processing_boundary=ppd:onDeviceOnly"
-    ]
-   },
-   "display": {
-    "what": "A pattern of the sound that is playing",
-    "why": "Recognising what is on screen",
-    "what_happens": "Worked out from other data",
-    "comes_from": "Worked out from earlier data",
-    "handled_by": "Your household",
-    "kept": "Not stated",
-    "limit": "Stays on the device"
-   },
-   "core_group": {
-    "id": "ck-7e4be6c3",
-    "label": "Content (video, audio, photos) worked out at home"
-   },
-   "control": {
-    "type": "user_setting",
-    "type_label": "Change in settings",
-    "necessity": "optional",
-    "note": "This happens only if you accept LG's Viewing Information Agreement to turn on ACR, which is off by default, and you can disable it through TV settings."
-   },
-   "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "conditionally_satisfiable",
-    "rule_id": null,
-    "reason": "Fine only because it stays on the device."
-   }
-  },
-  {
    "id": "lg-oled65c6pua-c6.setup-wi-fi-network-credential-entered-during-tv",
    "title": "Wi-Fi network credential entered during TV network setup",
    "workbook_text": "Setup: Wi-Fi network credential entered during TV network setup",
@@ -623,10 +49,12 @@
     "note": "You enter your Wi-Fi password when setting up the TV's network."
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": "r4",
-    "reason": "Covered by “Data a device needs to work”."
+   "core": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:householdContext"
    }
   },
   {
@@ -667,10 +95,12 @@
     "note": "You need an LG account to use the TV's network-based smart services such as apps."
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": "r4",
-    "reason": "Covered by “Data a device needs to work”."
+   "core": {
+    "data_type": "ppd:identifierData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:vendorContext"
    }
   },
   {
@@ -711,10 +141,12 @@
     "note": "You can set Energy Saving to Off so the TV no longer adjusts screen brightness automatically from its ambient-light sensor."
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": null,
-    "reason": "Nothing here goes against your rules."
+   "core": {
+    "data_type": "ppd:sensorData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:participantObserved",
+    "handling_context": "ppd:householdContext"
    }
   },
   {
@@ -755,10 +187,58 @@
     "note": "This happens only when you activate a voice interaction, and voice recognition is off by default."
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": null,
-    "reason": "Nothing here goes against your rules."
+   "core": {
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:householdContext"
+   }
+  },
+  {
+   "id": "lg-oled65c6pua-c6.voice-audio-transferred-for-speech-recognition-when-enabled",
+   "title": "Voice recordings sent for recognition",
+   "workbook_text": "Voice audio transferred for speech recognition when enabled",
+   "summary": "Goes to a voice service · voice control",
+   "summary_parts": {
+    "who": "Goes to a voice service",
+    "purpose": "voice control"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:audioData",
+    "purpose": "pat:voiceControl",
+    "action": "ppd:transfer",
+    "source": "ppd:participantObserved",
+    "handling_context": "pat:voiceRecognitionService",
+    "constraints": []
+   },
+   "display": {
+    "what": "Sound from the microphone",
+    "why": "Voice control",
+    "what_happens": "Sent to another party",
+    "comes_from": "Observed by the device",
+    "handled_by": "A voice-recognition service",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-8e68d5b6",
+    "label": "Content (video, audio, photos) sent to a vendor"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "You can keep voice recognition turned off, and voice audio is processed only if you enable it and activate a voice interaction."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:transfer",
+    "source": "ppd:participantObserved",
+    "handling_context": "ppd:vendorContext"
    }
   },
   {
@@ -799,10 +279,428 @@
     "note": "This happens only when you activate a voice command; LG says the records do not indicate continuous recording."
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": null,
-    "reason": "Nothing here goes against your rules."
+   "core": {
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:inference",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "lg-oled65c6pua-c6.voice-related-technical-logs-generated-sent-for-operation",
+   "title": "Voice-related technical logs generated / sent for operation and diagnostics",
+   "workbook_text": "Voice-related technical logs generated / sent for operation and diagnostics",
+   "summary": "Goes to a voice service · diagnostics",
+   "summary_parts": {
+    "who": "Goes to a voice service",
+    "purpose": "diagnostics"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:voiceTechnicalLog",
+    "purpose": "ppd:diagnosticsAndMaintenance",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "pat:voiceRecognitionService",
+    "constraints": []
+   },
+   "display": {
+    "what": "Logs from the voice feature",
+    "why": "Diagnostics and maintenance",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "A voice-recognition service",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-d0fc350e",
+    "label": "Device and network details sent to a vendor"
+   },
+   "control": {
+    "type": "user_initiated",
+    "type_label": "Happens only when you do it",
+    "necessity": "optional",
+    "note": "Voice-related technical logs are generated only as part of processing a voice command that you activate."
+   },
+   "evidence": "needs_source",
+   "core": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:diagnosticsAndMaintenance",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "lg-oled65c6pua-c6.acr-audio-fingerprint-derived-from-program-audio-when",
+   "title": "ACR audio fingerprint derived from program audio when ACR is enabled",
+   "workbook_text": "ACR audio fingerprint derived from program audio when ACR is enabled",
+   "summary": "Stays in your home · recognition",
+   "summary_parts": {
+    "who": "Stays in your home",
+    "purpose": "recognition"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:audioFingerprint",
+    "purpose": "pat:contentRecognition",
+    "action": "ppd:inference",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "ppd:householdContext",
+    "constraints": [
+     "processing_boundary=ppd:onDeviceOnly"
+    ]
+   },
+   "display": {
+    "what": "A pattern of the sound that is playing",
+    "why": "Recognizing what is on screen",
+    "what_happens": "Worked out from other data",
+    "comes_from": "Worked out from earlier data",
+    "handled_by": "Your household",
+    "kept": "Not stated",
+    "limit": "Stays on the device"
+   },
+   "core_group": {
+    "id": "ck-7e4be6c3",
+    "label": "Content (video, audio, photos) worked out at home"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "This happens only if you accept LG's Viewing Information Agreement to turn on ACR, which is off by default, and you can disable it through TV settings."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:analyticsAndImprovement",
+    "action": "ppd:inference",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "ppd:householdContext"
+   }
+  },
+  {
+   "id": "lg-oled65c6pua-c6.viewing-information-derived-through-acr",
+   "title": "Viewing information derived through ACR",
+   "workbook_text": "Viewing information derived through ACR",
+   "summary": "Worked out by LG's recognition service · audience measurement",
+   "summary_parts": {
+    "who": "Worked out by LG's recognition service",
+    "purpose": "audience measurement"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:usageData",
+    "purpose": "pat:audienceMeasurement",
+    "action": "ppd:inference",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "pat:acrService",
+    "constraints": []
+   },
+   "display": {
+    "what": "How you use the device",
+    "why": "Measuring who watches",
+    "what_happens": "Worked out from other data",
+    "comes_from": "Worked out from earlier data",
+    "handled_by": "LG's viewing-recognition service",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-bb9073e6",
+    "label": "Usage data worked out by a vendor"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "You can choose whether to use ACR; it is off by default and you can disable it through TV settings."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:usageData",
+    "purpose": "ppd:analyticsAndImprovement",
+    "action": "ppd:inference",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "lg-oled65c6pua-c6.audience-segment-viewing-trend-analysis-derived-from-acr",
+   "title": "Audience segment / viewing-trend analysis derived from ACR data",
+   "workbook_text": "Audience segment / viewing-trend analysis derived from ACR data",
+   "summary": "Worked out by an ad service · audience measurement",
+   "summary_parts": {
+    "who": "Worked out by an ad service",
+    "purpose": "audience measurement"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:audienceSegment",
+    "purpose": "pat:audienceMeasurement",
+    "action": "ppd:inference",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "pat:advertisingService",
+    "constraints": []
+   },
+   "display": {
+    "what": "The audience group you are placed in",
+    "why": "Measuring who watches",
+    "what_happens": "Worked out from other data",
+    "comes_from": "Worked out from earlier data",
+    "handled_by": "An advertising service",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-a57f3818",
+    "label": "Profile information worked out by a vendor"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "You can choose whether to use ACR, and audience analysis based on it applies only if you turn ACR on."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:profileData",
+    "purpose": "ppd:analyticsAndImprovement",
+    "action": "ppd:inference",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "lg-oled65c6pua-c6.acr-viewing-information-shared-with-lg-ad-solutions",
+   "title": "ACR viewing information shared with LG Ad Solutions for measurement",
+   "workbook_text": "ACR viewing information shared with LG Ad Solutions for measurement",
+   "summary": "Goes to an ad service · audience measurement",
+   "summary_parts": {
+    "who": "Goes to an ad service",
+    "purpose": "audience measurement"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:usageData",
+    "purpose": "pat:audienceMeasurement",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "pat:advertisingService",
+    "constraints": []
+   },
+   "display": {
+    "what": "How you use the device",
+    "why": "Measuring who watches",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "An advertising service",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-976049b7",
+    "label": "Usage data sent to a vendor"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "You can choose whether to use ACR, and ACR viewing information can be shared with LG Ad Solutions only if you turn it on."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:usageData",
+    "purpose": "ppd:analyticsAndImprovement",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "lg-oled65c6pua-c6.acr-audience-data-used-for-interest-based-advertising",
+   "title": "ACR / audience data used for interest-based advertising when separately…",
+   "workbook_text": "ACR / audience data used for interest-based advertising when separately consented",
+   "summary": "Used by an ad service · advertising",
+   "summary_parts": {
+    "who": "Used by an ad service",
+    "purpose": "advertising"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:audienceSegment",
+    "purpose": "ppd:advertisingAndMarketing",
+    "action": "ppd:use",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "pat:advertisingService",
+    "constraints": []
+   },
+   "display": {
+    "what": "The audience group you are placed in",
+    "why": "Advertising and marketing",
+    "what_happens": "Used",
+    "comes_from": "Worked out from earlier data",
+    "handled_by": "An advertising service",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-b2882118",
+    "label": "Profile information used by a vendor"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "ACR data is used for interest-based advertising only if you opt in to both the Viewing Information and the Interest-Based and Cross-Device Advertising agreements."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:profileData",
+    "purpose": "ppd:advertisingAndMarketing",
+    "action": "ppd:use",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "lg-oled65c6pua-c6.acr-related-viewing-data-shared-with-advertiser-for",
+   "title": "Viewing data shared with advertisers",
+   "workbook_text": "ACR-related viewing data shared with advertiser for cross-device advertising when separately consented",
+   "summary": "Goes to advertisers · advertising",
+   "summary_parts": {
+    "who": "Goes to advertisers",
+    "purpose": "advertising"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:usageData",
+    "purpose": "ppd:advertisingAndMarketing",
+    "action": "ppd:transfer",
+    "source": "ppd:vendorProvided",
+    "handling_context": "pat:advertiser",
+    "constraints": []
+   },
+   "display": {
+    "what": "How you use the device",
+    "why": "Advertising and marketing",
+    "what_happens": "Sent to another party",
+    "comes_from": "The vendor",
+    "handled_by": "Advertisers",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-826b5cda",
+    "label": "Usage data sent to a third party"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "ACR-related viewing data is shared with an advertiser for cross-device advertising only if you separately consent."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:usageData",
+    "purpose": "ppd:advertisingAndMarketing",
+    "action": "ppd:transfer",
+    "source": "ppd:vendorProvided",
+    "handling_context": "ppd:thirdPartyContext"
+   }
+  },
+  {
+   "id": "lg-oled65c6pua-c6.nearby-wi-fi-access-point-signal-data-collected",
+   "title": "Nearby Wi-Fi access-point / signal data collected for approximate-location…",
+   "workbook_text": "Nearby Wi-Fi access-point / signal data collected for approximate-location support of ACR",
+   "summary": "Collected by LG's recognition service · location",
+   "summary_parts": {
+    "who": "Collected by LG's recognition service",
+    "purpose": "location"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:nearbyWifiData",
+    "purpose": "pat:acrLocationSupport",
+    "action": "ppd:collection",
+    "source": "ppd:participantObserved",
+    "handling_context": "pat:acrService",
+    "constraints": []
+   },
+   "display": {
+    "what": "Nearby Wi-Fi networks",
+    "why": "Supporting viewing recognition with location",
+    "what_happens": "Collected",
+    "comes_from": "Observed by the device",
+    "handled_by": "LG's viewing-recognition service",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-0603317f",
+    "label": "Device and network details collected by a vendor"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "This happens only after you accept the relevant ACR agreements, and you can disable ACR through TV settings."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:advertisingAndMarketing",
+    "action": "ppd:collection",
+    "source": "ppd:participantObserved",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "lg-oled65c6pua-c6.approximate-tv-location-inferred-from-nearby-wi-fi",
+   "title": "Approximate TV location inferred from nearby Wi-Fi information for ACR",
+   "workbook_text": "Approximate TV location inferred from nearby Wi-Fi information for ACR",
+   "summary": "Worked out by LG's recognition service · location",
+   "summary_parts": {
+    "who": "Worked out by LG's recognition service",
+    "purpose": "location"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:locationData",
+    "purpose": "pat:acrLocationSupport",
+    "action": "ppd:inference",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "pat:acrService",
+    "constraints": []
+   },
+   "display": {
+    "what": "Location",
+    "why": "Supporting viewing recognition with location",
+    "what_happens": "Worked out from other data",
+    "comes_from": "Worked out from earlier data",
+    "handled_by": "LG's viewing-recognition service",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-ea948f82",
+    "label": "Location worked out by a vendor"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "This happens only where ACR is available and enabled, and you can disable ACR through TV settings."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:locationData",
+    "purpose": "ppd:advertisingAndMarketing",
+    "action": "ppd:inference",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "ppd:vendorContext"
    }
   },
   {
@@ -843,10 +741,150 @@
     "note": null
    },
    "evidence": "source_linked",
-   "evaluation": {
-    "verdict": "compatible",
-    "rule_id": null,
-    "reason": "Nothing here goes against your rules."
+   "core": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:participantObserved",
+    "handling_context": "ppd:householdContext"
+   }
+  },
+  {
+   "id": "lg-oled65c6pua-c6.hdmi-connected-device-information-used-for-audience-advertising",
+   "title": "HDMI-connected device information used for audience / advertising purposes…",
+   "workbook_text": "HDMI-connected device information used for audience / advertising purposes when separately consented",
+   "summary": "Used by an ad service · advertising",
+   "summary_parts": {
+    "who": "Used by an ad service",
+    "purpose": "advertising"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:hdmiDeviceInfo",
+    "purpose": "ppd:advertisingAndMarketing",
+    "action": "ppd:use",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "pat:advertisingService",
+    "constraints": []
+   },
+   "display": {
+    "what": "Devices connected by HDMI",
+    "why": "Advertising and marketing",
+    "what_happens": "Used",
+    "comes_from": "Worked out from earlier data",
+    "handled_by": "An advertising service",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-91b67c10",
+    "label": "Device and network details used by a vendor"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "HDMI-connected device information is used for audience segmentation or advertising only if you accept the applicable advertising agreements."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:advertisingAndMarketing",
+    "action": "ppd:use",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "lg-oled65c6pua-c6.google-gemini-prompt-query-sent-to-third-party",
+   "title": "Google Gemini prompt / query sent to third-party AI service when feature is…",
+   "workbook_text": "Google Gemini prompt / query sent to third-party AI service when feature is used",
+   "summary": "Goes to partners · AI assistant",
+   "summary_parts": {
+    "who": "Goes to partners",
+    "purpose": "AI assistant"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:aiPromptData",
+    "purpose": "pat:aiAssistant",
+    "action": "ppd:transfer",
+    "source": "ppd:userProvided",
+    "handling_context": "pat:thirdPartyServiceProvider",
+    "constraints": []
+   },
+   "display": {
+    "what": "Questions you ask the AI assistant",
+    "why": "AI assistant",
+    "what_happens": "Sent to another party",
+    "comes_from": "You",
+    "handled_by": "A third-party service",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-a9cedba6",
+    "label": "Content (video, audio, photos) sent to a third party"
+   },
+   "control": {
+    "type": "user_initiated",
+    "type_label": "Happens only when you do it",
+    "necessity": "optional",
+    "note": "This happens only when you use the TV's AI Search to ask Google Gemini a question."
+   },
+   "evidence": "needs_source",
+   "core": {
+    "data_type": "ppd:contentData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:transfer",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:thirdPartyContext"
+   }
+  },
+  {
+   "id": "lg-oled65c6pua-c6.smart-tv-device-software-network-telemetry-for-service",
+   "title": "TV diagnostics sent to LG",
+   "workbook_text": "Smart-TV device / software / network telemetry for service operation and diagnostics",
+   "summary": "Goes to LG · diagnostics",
+   "summary_parts": {
+    "who": "Goes to LG",
+    "purpose": "diagnostics"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "pat:diagnosticData",
+    "purpose": "ppd:diagnosticsAndMaintenance",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "pat:lgService",
+    "constraints": []
+   },
+   "display": {
+    "what": "Device logs and status",
+    "why": "Diagnostics and maintenance",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "LG",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-d0fc350e",
+    "label": "Device and network details sent to a vendor"
+   },
+   "control": {
+    "type": "unknown",
+    "type_label": "Not checked, or sources silent",
+    "necessity": "unknown",
+    "note": null
+   },
+   "evidence": "needs_source",
+   "core": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:diagnosticsAndMaintenance",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext"
    }
   }
  ]

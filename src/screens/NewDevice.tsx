@@ -5,14 +5,14 @@ import { FlowRow, ProvenanceCard, flowPath, nounOf } from '../components/DeviceR
 import { Icon } from '../components/icons'
 import { useDevice, useHousehold, useRules } from '../state/data'
 import { pendingFlows } from '../lib/verdicts'
-import { rulesFor, timeAgo } from '../lib/device'
+import { timeAgo } from '../lib/device'
 
 /** Screen 2a: a device that supports PPD joined the home and sent its declaration. */
 export default function NewDevice() {
   const { id } = useParams()
   const { household, markJoinedSeen } = useHousehold()
   const dev = useDevice(id)
-  const rules = useRules()
+  const rules = useRules(true)
   const entry = household?.devices.find((h) => h.device_id === id)
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export default function NewDevice() {
   const pending = pendingFlows(d, household)
   const rest = pending.slice(3)
   const others = d.flows.length - pending.length
-  const ruleCount = rulesFor(rules.data ?? [], d.id).length
+  const ruleCount = rules.length
 
   return (
     <div className="screen">
