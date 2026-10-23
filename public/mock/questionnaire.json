@@ -142,9 +142,9 @@
     },
     {
       "id": "q3_purposes",
-      "short": "What companies may use data for",
+      "short": "What device manufacturers may use data for",
       "type": "matrix",
-      "prompt": "What may companies use your data for?",
+      "prompt": "What may device manufacturers use your data for?",
       "help": "This applies to data that has already left your home.",
       "why": "Why data is used matters. People were more willing to allow collection for uses that benefit them. In the label studies, purpose was something consumers said mattered, and a purpose of \"device function\" was often not trusted on its own.",
       "sources": ["naeini2017", "naeini2020", "naeini2021"],
@@ -228,7 +228,7 @@
       "id": "q4_sharing",
       "short": "Sharing with other companies",
       "type": "single",
-      "prompt": "May a device's maker pass your data to other companies?",
+      "prompt": "Should a device's manufacturer share your data with other companies?",
       "help": "This includes selling it. Your smart-home app, like Alexa or Google, counts as another company.",
       "why": "In the 2021 study, sharing and selling moved people the most. Learning that data is not shared with third parties had the strongest positive effect on willingness to buy, and data sold to third parties raised perceived risk the most. All 15 interviewed consumers were concerned about sharing or selling, and sharing lowered comfort in the 2017 study.",
       "sources": ["naeini2017", "naeini2020", "naeini2021"],
@@ -263,7 +263,7 @@
       "id": "q5_inference",
       "short": "Working things out about you",
       "type": "single",
-      "prompt": "May companies work out extra things about you from your data?",
+      "prompt": "Should companies use your data to infer things about you?",
       "help": "For example, guessing when you are away, your daily routine, or what kind of viewer you are.",
       "why": "Working out extra information about people lowered comfort in the 2017 study. Inference was also one of the attributes tested in 2021 and sits on the label's detailed layer.",
       "sources": ["naeini2017", "naeini2020", "naeini2021"],
@@ -297,7 +297,7 @@
       "id": "q6_retention",
       "short": "How long data is kept",
       "type": "single",
-      "prompt": "How long may companies keep your data?",
+      "prompt": "How long should companies keep your data?",
       "help": "We can only check this when a device says how long it keeps data.",
       "why": "In 2017 only short retention (a week, or deleting right away) clearly raised comfort. In 2021, keeping no data in the cloud lowered perceived risk the most, and the authors recommended moving retention to the label's first layer.",
       "sources": ["naeini2017", "naeini2021"],
@@ -306,7 +306,7 @@
       "options": [
         {
           "id": "briefly",
-          "label": "Only briefly, never forever",
+          "label": "Only briefly",
           "rules": [
             { "id": "q6_retention.indefinite.never", "effect": "dont_allow", "scope": { "handling_context": ["ppd:vendorContext", "ppd:thirdPartyContext"], "constraints": ["retention=ppd:indefinite"] }, "title": "Companies may not keep my data forever" }
           ]
