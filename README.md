@@ -201,8 +201,9 @@ and are not user-tested.
 ## Deploying
 
 `Dockerfile.web` (Nginx serving the build and forwarding `/api`) and `server/Dockerfile` (app-api) build from the repository
-root. `deploy/compose.example.yaml` shows the four services together with the gateway and repository images from the
-`habanero-ppd-gateway` fork.
+root; `.github/workflows/images.yml` builds both and pushes them to ghcr.io. `deploy/compose.example.yaml` runs the four
+services on Coolify together with the gateway and repository images from the `habanero-ppd-gateway` fork, and
+`scripts/make-cloud-tls.sh` makes the household CA and certificates. Step by step: [`docs/deploy-coolify.md`](docs/deploy-coolify.md).
 
 ## Project map
 
