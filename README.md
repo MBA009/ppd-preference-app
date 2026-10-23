@@ -33,7 +33,9 @@ demo device simulator, and the web app on http://localhost:5173. A real ESP32 bu
 
 **Demo devices** (http://localhost:5173/#/demo-devices, also in the side rail) is the presenter's page. *Connect* makes a
 simulated device (Aqara hub, Reolink camera, Level lock) join the network and run the PPD lifecycle against the gateway
-(register, declare, fetch the policy, acknowledge, renew); *Unplug* stops it renewing. *Join network* puts the LG TV on the
+(register, declare, fetch the policy, acknowledge, renew); *Unplug* stops it renewing and takes it off the network: it moves to "Need attention" in My home and goes stale
+after the gateway's freshness interval (2 minutes), and then *Forget this device* on its page deletes it from the gateway
+(`POST /ppd/v1/device/forget/{id}`, an operator route in the gateway fork) and the household. *Join network* puts the LG TV on the
 network without PPD, so it shows under "On your network, no PPD" in My home and as Unmanaged on the CableLabs dashboard
 (`http://<this machine>:8080/ppd/v1/status`). The simulator writes a DHCP lease file that the gateway reads in place of a real
 router's, which is how the gateway "sees" devices on the network.
