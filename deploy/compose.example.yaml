@@ -71,6 +71,8 @@ services:
       PPD_REPOSITORY_AUTH_TOKEN: ${REPOSITORY_TOKEN}
       PPD_OPERATOR_TOKEN: ${OPERATOR_TOKEN}
       PPD_TAXONOMY_PROFILE: core-only
+      # Devices renew at 80% of this, so a policy change reaches them within ~1.5 minutes (default 15m).
+      PPD_ASSOCIATION_FRESHNESS: ${ASSOCIATION_FRESHNESS:-2m}
       PPD_TLS_CERT_FILE: /run/ppd-tls/gateway-cert.pem
       PPD_TLS_KEY_FILE: /run/ppd-tls/gateway-key.pem
       PPD_TLS_CLIENT_CA_FILE: /run/ppd-tls/gateway-ca.pem
