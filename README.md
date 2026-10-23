@@ -1,4 +1,4 @@
-# Privacy Preferences — PWA frontend
+# Privacy Preferences PWA frontend
 
 A phone-first progressive web app for the privacy preference authoring tool: scan a device's privacy code, see what the
 device says it does with your data compared with your household rules, and decide on the flows that need you.
