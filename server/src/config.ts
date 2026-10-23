@@ -18,7 +18,20 @@ export interface Config {
   auth: { teamDomain: string; audience: string; operatorEmails: string[] }
   /** Show the gateway's router-only checks (DHCP, ARP, Wi-Fi) on System status. Off for the cloud gateway. */
   routerChecks: boolean
+  simulator: SimulatorConfig
   logLevel: string
+}
+
+/** The demo device simulator (server/src/simulator). Off unless SIMULATOR=1. */
+export interface SimulatorConfig {
+  enabled: boolean
+  /** Where simulated devices reach the gateway, exactly like real ones. Defaults to GATEWAY_URL. */
+  gatewayUrl: string
+  /** The DHCP lease file the gateway reads (its PPD_DHCP_LEASES_FILE); the simulator writes its devices there. */
+  leasesFile: string
+  /** Mutual TLS for simulated devices: <device_id>-cert.pem and <device_id>-key.pem in certDir, signed by the household CA. */
+  certDir: string
+  caFile: string
 }
 
 export interface GatewayConfig {
@@ -66,6 +79,13 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     internalServiceToken: secret(env, 'INTERNAL_SERVICE_TOKEN'),
     auth: { teamDomain: (env.CF_ACCESS_TEAM_DOMAIN ?? '').replace(/^https?:\/\//, '').replace(/\/+$/, ''), audience: env.CF_ACCESS_AUD ?? '', operatorEmails: list(env.OPERATOR_EMAILS) },
     routerChecks: env.ROUTER_CHECKS === '1',
+    simulator: {
+      enabled: env.SIMULATOR === '1',
+      gatewayUrl: (env.SIMULATOR_GATEWAY_URL ?? env.GATEWAY_URL ?? 'http://127.0.0.1:8080').replace(/\/+$/, ''),
+      leasesFile: env.SIMULATOR_LEASES_FILE ?? repoPath('server/data/sim-dhcp.leases'),
+      certDir: env.SIMULATOR_CERT_DIR ?? '',
+      caFile: env.SIMULATOR_CA_FILE ?? env.GATEWAY_CA_FILE ?? '',
+    },
     logLevel: env.LOG_LEVEL ?? 'info',
   }
 }

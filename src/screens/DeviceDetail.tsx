@@ -4,7 +4,7 @@ import { AppBar, Cell, DeviceTile, ErrorBox, Group, Loading, SectionHeader } fro
 import { AttentionList, ProvenanceCard } from '../components/DeviceReport'
 import { AssociationCard, DemoControls, IdentityAndNetwork, LifecycleSteps, PolicyReceipt, ReportedBehavior, TelemetryCard } from '../components/LiveDevice'
 import { useDevice, useHousehold, useMe, useRules } from '../state/data'
-import { STATE_LABEL, kindLabel, subtitle, timeAgo } from '../lib/device'
+import { STATE_LABEL, isConnected, kindLabel, subtitle, timeAgo } from '../lib/device'
 import { decidedCount } from '../lib/verdicts'
 
 /** Screen 3c. For a device the PPD gateway knows, it also shows the gateway's live view of it. */
@@ -46,7 +46,7 @@ export default function DeviceDetail() {
           <DeviceTile device={d} size="hero" />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 18, lineHeight: '24px', fontWeight: 500 }}>{d.short_name}</div>
-            <div className="sub">{subtitle(d, live ? kindLabel(d) : decl ? 'Gets your rules' : 'Advisory only')}</div>
+            <div className="sub">{subtitle(d, live ? kindLabel(d) : d.kind === 'research' ? 'Advisory · not connected' : decl ? 'Gets your rules' : 'Advisory only')}</div>
           </div>
         </Cell>
       </Group>
@@ -73,7 +73,7 @@ export default function DeviceDetail() {
           <IdentityAndNetwork live={live} />
         </>
       ) : (
-        decl && (
+        decl && d.kind !== 'research' && (
           <>
             <SectionHeader>About this declaration</SectionHeader>
             <Group>
@@ -94,7 +94,7 @@ export default function DeviceDetail() {
             <div className="cb" style={{ padding: '12px 0' }}><span className="ttl" style={{ color: '#0066CC' }}>Ask the device to reconnect</span><span className="sub">Its association ends until it confirms your rules again</span></div>
           </Cell>
         )}
-        {inHome ? (
+        {isConnected(d) ? null : inHome ? (
           <Cell className="t" chevron={false} onClick={async () => { if (window.confirm(`Remove ${d.short_name} from your home?`)) { await removeDevice(d.id); toast('Removed from your home'); nav('/') } }}>
             <div className="cb" style={{ padding: '12px 0' }}><span className="ttl" style={{ color: '#D70015' }}>Remove from my home</span></div>
           </Cell>

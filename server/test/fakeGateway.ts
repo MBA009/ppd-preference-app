@@ -11,6 +11,8 @@ export class FakeGateway {
   devices: GatewayDevice[] = []
   policy: Policy = { policy_id: 'home-default-v4', taxonomy: { release: 'ppd-core-2026-05' }, scope: 'home', rules: [] }
   disassociated: string[] = []
+  /** Participant calls seen, as "METHOD path". */
+  participantCalls: string[] = []
   puts: Policy[] = []
   readonly token = 'test-operator-token'
   private server = http.createServer((req, res) => this.handle(req, res))
@@ -42,6 +44,29 @@ export class FakeGateway {
       return this.send(res, 200, { service_base_uri: `http://${req.headers.host}/ppd/v1/`, protocol_version: 'ppd-http-v1', declaration_supported: true, ack_supported: true, security_profile: 'prototype-compatibility' })
     }
     if (path === '/ppd/v1/health') return this.send(res, 200, { status: 'ok' })
+    // Participant routes (no operator token): enough of -04 for the simulator's lifecycle.
+    if (path.startsWith('/ppd/v1/device/') || path.startsWith('/ppd/v1/policy/effective/')) {
+      this.participantCalls.push(`${req.method} ${path}`)
+      if (path === '/ppd/v1/device/register') {
+        this.devices = this.devices.filter((d) => d.device_id !== body.device_id)
+        this.devices.push({ ...body, registered: true, known_to_gateway: true, registered_at: new Date().toISOString(), declared: false, policy_retrieved: false, acknowledged: false, associated: false, association_status: 'not_associated' })
+        return this.send(res, 200, { device_id: body.device_id })
+      }
+      const device = this.devices.find((d) => d.device_id === (body?.device_id ?? decodeURIComponent(path.split('/').pop()!)))
+      if (!device) return this.send(res, 404, { title: 'Not found', status: 404 })
+      if (path === '/ppd/v1/device/declaration') {
+        Object.assign(device, { declared: true, declaration_id: body.declaration_id, declaration_statements: body.statements })
+        return this.send(res, 200, { status: 'stored' })
+      }
+      if (path.startsWith('/ppd/v1/policy/effective/')) {
+        device.policy_retrieved = true
+        return this.send(res, 200, { policy_id: 'effective-' + device.device_id, policy_hash: 'sha256:1', renewal_interval: 6, rules: [] })
+      }
+      if (path === '/ppd/v1/device/ack') {
+        Object.assign(device, { acknowledged: true, associated: true, association_status: 'associated' })
+        return this.send(res, 200, { association_status: 'associated', renewal_interval: 6 })
+      }
+    }
     if (req.headers.authorization !== `Bearer ${this.token}`) {
       return this.send(res, 401, { type: 'about:blank', title: 'Operator authorization required', status: 401 }, 'application/problem+json')
     }

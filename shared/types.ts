@@ -269,9 +269,11 @@ export interface LiveState {
 /* ---------- operator views ---------- */
 export interface Overview {
   gateway: { reachable: boolean; security: string; mutual_tls_required: boolean; tls_enabled: boolean; freshness_interval: string | null; error: string | null }
+  /** The gateway's counts. `known`, `associated`, `unmanaged` and `need_attention` are the CableLabs dashboard's four cards. */
   counts: {
     known: number; registered: number; declared: number; policy_retrieved: number; acknowledged: number; associated: number
     needs_reassociation: number; stale: number; broken: number; policy_conflict: number; overrides: number; authenticated: number; compatibility_mode: number
+    network_observed: number; unmanaged: number; need_attention: number
   }
   household_policy: { policy_id: string | null; updated_at: string | null; published_by_app: boolean }
   updated_at: string
@@ -280,7 +282,46 @@ export interface Overview {
 export interface HealthCheck { id: string; group: 'gateway' | 'repository' | 'app'; label: string; status: 'pass' | 'warn' | 'fail'; detail: string }
 export interface SystemStatus { checks: HealthCheck[]; updated_at: string }
 
-export interface Me { email: string; role: 'operator' | 'viewer' }
+export interface Me { email: string; role: 'operator' | 'viewer'; simulator: boolean }
+
+/**
+ * A device the home router sees on the network that never registered with PPD ("unmanaged" on the
+ * CableLabs dashboard; architecture-11 section 7.6). It cannot receive the household rules.
+ */
+export interface UnmanagedDevice {
+  id: string
+  hostname: string | null
+  ip_address: string | null
+  mac_address: string | null
+  /** The gateway's guess from the network name and probes. */
+  likely_type: string | null
+  likely_vendor: string | null
+  last_seen: string | null
+  /** A research library entry that looks like this device. */
+  research_match: { id: string; short_name: string } | null
+  simulated: boolean
+}
+
+/* ---------- demo simulator ---------- */
+export type SimMode = 'ppd' | 'network'
+export interface SimDevice {
+  id: string
+  name: string
+  short_name: string
+  icon: DeviceIcon
+  /** 'ppd' devices join through PPD; 'network' devices only appear on the network (unmanaged). */
+  mode: SimMode
+  /** What the presenter asked for. */
+  wanted: 'off' | 'connected' | 'disconnected' | 'on_network'
+  /** What the simulated device is doing right now. */
+  state: 'off' | 'joining' | 'associated' | 'paused' | 'on_network' | 'error'
+  hostname: string
+  ip_address: string
+  mac_address: string
+  last_event: string | null
+  last_event_at: string | null
+  last_error: string | null
+}
 
 /** One atomic rule the compiler wants to publish, and why. */
 export interface CompiledRule extends PolicyRule {
@@ -350,4 +391,13 @@ export interface PpdApi {
   listCommands(deviceId: string): Promise<Command[]>
   sendCommand(deviceId: string, action: CommandAction, value?: string): Promise<Command>
   getTelemetry(deviceId: string): Promise<Telemetry>
+  /** Devices on the network that do not speak PPD. */
+  listUnmanaged(): Promise<UnmanagedDevice[]>
+
+  /* Demo simulator (only when app-api runs with SIMULATOR=1). */
+  listSimDevices(): Promise<SimDevice[]>
+  simConnect(id: string): Promise<SimDevice>
+  simDisconnect(id: string): Promise<SimDevice>
+  simNetwork(id: string, present: boolean): Promise<SimDevice>
+  simReset(): Promise<SimDevice[]>
 }

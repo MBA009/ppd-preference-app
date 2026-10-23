@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { api, type Answers, type Command, type Decision, type Device, type DeviceSummary, type Household, type Me, type Overview, type Policy, type Preset, type Profile, type PublishPreview, type Questionnaire, type Rule, type SystemStatus, type Telemetry } from '../api'
+import { api, type Answers, type Command, type Decision, type Device, type DeviceSummary, type Household, type Me, type Overview, type Policy, type Preset, type Profile, type PublishPreview, type Questionnaire, type Rule, type SimDevice, type SystemStatus, type Telemetry, type UnmanagedDevice } from '../api'
 
 /* ---------- tiny async hook ---------- */
 export interface Async<T> { data: T | undefined; error: Error | undefined; loading: boolean; reload: () => void }
@@ -40,6 +40,8 @@ export const useOverview = () => useAsync<Overview>(() => api.getOverview(), [],
 export const useSystemStatus = () => useAsync<SystemStatus>(() => api.getSystemStatus(), [], LIVE_POLL_MS * 2)
 export const usePresets = () => useAsync<Preset[]>(() => api.listPresets(), [])
 export const useCommands = (id: string | undefined) => useAsync<Command[]>(() => (id ? api.listCommands(id) : Promise.resolve([])), [id], 3000)
+export const useUnmanaged = () => useAsync<UnmanagedDevice[]>(() => api.listUnmanaged(), [], LIVE_POLL_MS)
+export const useSimDevices = () => useAsync<SimDevice[]>(() => api.listSimDevices(), [], 2000)
 export const useTelemetry = (id: string | undefined) => useAsync<Telemetry>(() => (id ? api.getTelemetry(id) : Promise.resolve({ samples: [], by_purpose: [] })), [id], LIVE_POLL_MS)
 
 /** Changes whenever the household's rules change, so device data (whose verdicts depend on the rules) is fetched again. */

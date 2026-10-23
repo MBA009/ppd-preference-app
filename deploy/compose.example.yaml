@@ -17,6 +17,11 @@
 #   client-ca.pem                      CA that signs device and operator client certificates
 #   gateway-ca.pem                     CA that signed the gateway certificate (for app-api)
 #   operator-cert.pem, operator-key.pem  app-api's own client certificate
+#   sim/<device_id>-cert.pem, -key.pem   one client certificate per simulated device (aqara-w200-01,
+#                                        reolink-e1-zoom-01, level-lock-01)
+#
+# The demo device simulator runs inside app-api (SIMULATOR=1). It writes a DHCP lease file to the shared
+# sim-network volume, which the gateway reads as its "home network", so only demo devices show up there.
 
 services:
   web:
@@ -41,8 +46,12 @@ services:
       CF_ACCESS_TEAM_DOMAIN: ${CF_ACCESS_TEAM_DOMAIN}
       CF_ACCESS_AUD: ${CF_ACCESS_AUD}
       OPERATOR_EMAILS: ${OPERATOR_EMAILS}
+      SIMULATOR: "1"
+      SIMULATOR_LEASES_FILE: /sim-network/dhcp.leases
+      SIMULATOR_CERT_DIR: /run/ppd-tls/sim
     volumes:
       - app-data:/data
+      - sim-network:/sim-network
       - ./tls:/run/ppd-tls:ro
     networks: [backend]
 
@@ -60,13 +69,15 @@ services:
       PPD_TLS_CLIENT_CA_FILE: /run/ppd-tls/client-ca.pem
       PPD_DEMO_APP_API_URL: http://app-api:3000
       PPD_DEMO_APP_API_TOKEN: ${DEMO_TOKEN}
-      # Router-only observation sources do not exist in the cloud.
-      PPD_DHCP_LEASES_FILE: /dev/null
+      # There is no real home network in the cloud: the gateway reads the simulator's lease file instead.
+      PPD_DHCP_LEASES_FILE: /sim-network/dhcp.leases
       PPD_ARP_TABLE_FILE: /dev/null
+      PPD_FINGERPRINT_TIMEOUT: 100ms
     ports:
       - "8443:8080"
     volumes:
       - gateway-data:/data
+      - sim-network:/sim-network:ro
       - ./tls:/run/ppd-tls:ro
     depends_on: [repository]
     networks: [backend]
@@ -85,6 +96,7 @@ volumes:
   app-data:
   gateway-data:
   repository-data:
+  sim-network:
 
 networks:
   backend:

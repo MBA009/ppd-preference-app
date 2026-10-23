@@ -21,10 +21,10 @@ export default function Library() {
   const shown = matching.filter((d) => d.kind !== 'real' && d.kind !== 'simulated')
   const inHome = (d: DeviceSummary) => household.devices.some((h) => h.device_id === d.id)
 
+  // Research entries are advice only: adding one lists it in My home, nothing connects to anything.
   const add = async (d: DeviceSummary) => {
-    const declared = d.source === 'declared'
-    await addDevice(d.id, { joined: declared })
-    nav(declared ? `/device/${d.id}/joined` : `/device/${d.id}`)
+    await addDevice(d.id)
+    nav(`/device/${d.id}`)
   }
 
   return (

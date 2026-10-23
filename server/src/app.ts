@@ -8,6 +8,8 @@ import { LiveDirectory, loadRegistry } from './live'
 import { demoRoutes } from './routes/demo'
 import { householdRoutes } from './routes/household'
 import { operatorRoutes } from './routes/operator'
+import { simulatorRoutes } from './routes/simulator'
+import { Simulator } from './simulator'
 import type { HouseholdStore } from './store'
 
 /**
@@ -60,5 +62,13 @@ export function buildApp(config: Config, fixtures: Fixtures, store: HouseholdSto
   householdRoutes(app, ctx)
   operatorRoutes(app, ctx)
   demoRoutes(app, ctx)
+
+  if (config.simulator.enabled) {
+    const sim = new Simulator(config.simulator, fixtures, ctx.live.registry, store, ctx.live, config.gateway.tlsServerName)
+    ctx.simulator = sim
+    simulatorRoutes(app, ctx, sim)
+    app.addHook('onReady', async () => sim.restore())
+    app.addHook('onClose', async () => sim.close())
+  }
   return app
 }

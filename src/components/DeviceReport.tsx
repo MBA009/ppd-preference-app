@@ -17,12 +17,13 @@ export function ProvenanceCard({ device, household, ruleCount, sub, stacked }: {
   const counts = countVerdicts(device, household)
   const checked = `${device.flows.length} flows checked against your ${ruleCount} ${ruleCount === 1 ? 'rule' : 'rules'}`
   const declared = device.source === 'declared'
+  const example = declared && device.kind === 'research'
   return (
     <Group>
       <Cell className="t" chevron={false}>
-        <Tile tone={declared ? 'green' : 'grey'}>{declared ? <ShieldCheck /> : <DocIcon />}</Tile>
+        <Tile tone={declared && !example ? 'green' : 'grey'}>{declared && !example ? <ShieldCheck /> : <DocIcon />}</Tile>
         <div className="cb">
-          <span className="ttl">{declared ? 'Declared by the device' : `Not declared by ${vendorOf(device)}`}</span>
+          <span className="ttl">{example ? 'Example declaration from our research' : declared ? 'Declared by the device' : `Not declared by ${vendorOf(device)}`}</span>
           <span className="sub">
             {sub ??
               (declared

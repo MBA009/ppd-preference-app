@@ -1,41 +1,52 @@
 import { Link } from 'react-router-dom'
-import { AppBar, Cell, DeviceTile, Group, SectionHeader, Tile, VerdictChip, VerdictChips, Loading, ErrorBox } from '../components/ui'
+import { AppBar, Cell, DeviceTile, Footnote, Group, SectionHeader, Tile, VerdictChip, VerdictChips, Loading, ErrorBox } from '../components/ui'
 import { DashedCircle, Icon, SmallCheck } from '../components/icons'
-import { useDevices, useHousehold, useOverview } from '../state/data'
+import { useDevices, useHousehold, useOverview, useUnmanaged } from '../state/data'
 import { countVerdicts, pendingFlows, plural } from '../lib/verdicts'
-import { stateLabel } from '../lib/device'
-import type { Overview } from '../api'
+import { isConnected, stateLabel } from '../lib/device'
+import type { Device, Household, Overview, UnmanagedDevice } from '../api'
 
+/**
+ * Screen 3a. Three kinds of device, kept apart:
+ * - connected through PPD: registered with the home gateway, they get the household rules;
+ * - on the network without PPD: the router sees them ("unmanaged"), they can't get the rules;
+ * - advisory devices the household added from the research library: advice only.
+ */
 export default function Home() {
   const { household, error } = useHousehold()
   const ids = household?.devices.map((d) => d.device_id) ?? []
   const { data: devices, error: loadError, loading } = useDevices(ids, true)
   const { data: overview } = useOverview()
+  const { data: unmanaged } = useUnmanaged()
 
   if (error || (loadError && !devices)) return <><AppBar title="My home" /><ErrorBox error={(error ?? loadError)!} /></>
   if (!household || (loading && ids.length > 0 && !devices)) return <><AppBar title="My home" /><Loading /></>
 
   const list = devices ?? []
+  const connected = list.filter(isConnected)
+  const advisory = list.filter((d) => !isConnected(d))
   const waiting = list.map((d) => ({ d, n: pendingFlows(d, household).length })).filter((x) => x.n > 0)
   const totalWaiting = waiting.reduce((s, x) => s + x.n, 0)
-  const updating = list.filter((d) => d.declaration?.state === 'waiting_for_renewal' || d.live?.publication === 'waiting').length
-  const unseen = household.devices.find((h) => h.joined_seen === false)
+  const updating = connected.filter((d) => d.live?.publication === 'waiting').length
+  const unseen = household.devices.find((h) => h.joined_seen === false && connected.some((d) => d.id === h.device_id))
   const first = waiting[0]?.d
 
-  const bannerTo = unseen && list.some((d) => d.id === unseen.device_id) ? `/device/${unseen.device_id}/joined` : first ? `/device/${first.id}` : undefined
-  const bannerSub = [first ? first.short_name + (waiting.length > 1 ? ` and ${waiting.length - 1} more` : '') : null, updating ? `${plural(updating, 'device is', 'devices are')} picking up a rule change` : null].filter(Boolean).join(' · ')
+  const bannerTo = unseen ? `/device/${unseen.device_id}/joined` : first ? `/device/${first.id}` : undefined
+  const joinedName = unseen ? connected.find((d) => d.id === unseen.device_id)?.short_name : undefined
+  const bannerTitle = joinedName ? `${joinedName} joined your home` : totalWaiting > 0 ? `${plural(totalWaiting, 'decision')} waiting` : 'Rules are updating'
+  const bannerSub = [first ? first.short_name + (waiting.length > 1 ? ` and ${waiting.length - 1} more` : '') + ' · decisions waiting' : null, updating ? `${plural(updating, 'device is', 'devices are')} picking up a rule change` : null].filter(Boolean).join(' · ')
 
   return (
     <div className="screen">
       <AppBar title="My home" right={<Link to="/library" className="ntr" aria-label="Add a device"><Icon name="plus" /></Link>} />
 
-      {(totalWaiting > 0 || updating > 0) && (
+      {(unseen || totalWaiting > 0 || updating > 0) && (
         <Group style={{ marginTop: 4 }}>
           <Cell className="t" to={bannerTo} chevron={!!bannerTo}>
-            <Tile tone="orange"><DecisionGlyph /></Tile>
+            <Tile tone={unseen ? 'blue' : 'orange'}>{unseen ? <Icon name="plus" size={18} /> : <DecisionGlyph />}</Tile>
             <div className="cb">
-              <span className="ttl" style={{ fontWeight: 500 }}>{totalWaiting > 0 ? `${plural(totalWaiting, 'decision')} waiting` : 'Rules are updating'}</span>
-              <span className="sub">{bannerSub}</span>
+              <span className="ttl" style={{ fontWeight: 500 }}>{bannerTitle}</span>
+              <span className="sub">{bannerSub || 'See what it does with your data'}</span>
             </div>
           </Cell>
         </Group>
@@ -43,33 +54,31 @@ export default function Home() {
 
       {overview && <Readiness overview={overview} />}
 
-      <SectionHeader>Devices · {list.length}</SectionHeader>
-      {list.length > 0 ? (
-        <Group>
-          {list.map((d) => {
-            const counts = countVerdicts(d, household)
-            const attention = (['unsatisfiable', 'decision_required', 'indeterminate'] as const).some((v) => counts[v])
-            return (
-              <Cell key={d.id} className="d" to={`/device/${d.id}`}>
-                <DeviceTile device={d} />
-                <div className="cb">
-                  <span className="ttl">{d.short_name}{d.kind === 'simulated' && <span className="tag" style={{ marginLeft: 8 }}>Simulated</span>}</span>
-                  <span className="st">
-                    {d.declaration?.state === 'rules_confirmed' ? <SmallCheck /> : <DashedCircle />}
-                    <span>{stateLabel(d)}</span>
-                  </span>
-                  <span className="ln">
-                    {attention ? <VerdictChips counts={counts} order={['unsatisfiable', 'decision_required', 'indeterminate']} /> : <VerdictChip verdict="compatible" n={(counts.compatible ?? 0) + (counts.conditionally_satisfiable ?? 0)} />}
-                  </span>
-                </div>
-              </Cell>
-            )
-          })}
-        </Group>
+      <SectionHeader>Connected through PPD · {connected.length}</SectionHeader>
+      {connected.length > 0 ? (
+        <Group>{connected.map((d) => <DeviceRow key={d.id} device={d} household={household} />)}</Group>
       ) : (
-        <Group>
-          <div className="empty">No devices yet. Scan the box of a device, or pick one from the library.</div>
-        </Group>
+        <Group><div className="empty">No device has connected yet. Devices that support PPD join by themselves when they connect to your network.</div></Group>
+      )}
+
+      {overview?.gateway.reachable && (
+        <>
+          <SectionHeader>On your network, no PPD · {unmanaged?.length ?? 0}</SectionHeader>
+          {unmanaged && unmanaged.length > 0 ? (
+            <Group>{unmanaged.map((u) => <UnmanagedRow key={u.id} device={u} />)}</Group>
+          ) : (
+            <Group><div className="empty" style={{ padding: 20 }}>Your home gateway hasn’t seen any device that doesn’t support PPD.</div></Group>
+          )}
+          <Footnote>These devices are on your home network but don’t support PPD, so your rules can’t reach them.</Footnote>
+        </>
+      )}
+
+      {advisory.length > 0 && (
+        <>
+          <SectionHeader>Advisory devices you added · {advisory.length}</SectionHeader>
+          <Group>{advisory.map((d) => <DeviceRow key={d.id} device={d} household={household} />)}</Group>
+          <Footnote>From our research. Nothing is sent to these devices.</Footnote>
+        </>
       )}
 
       <div className="gap" />
@@ -78,16 +87,52 @@ export default function Home() {
           <Tile tone="blue"><Icon name="plus" size={18} /></Tile>
           <div className="cb">
             <span className="ttl" style={{ color: '#0066CC' }}>Add a device</span>
-            <span className="sub">Pick from library or connect to a new device</span>
+            <span className="sub">Scan its code or pick it from our research library</span>
           </div>
         </Cell>
       </Group>
+      <Footnote>Devices that support PPD join by themselves when they connect to your network.</Footnote>
       <div className="spacer" />
     </div>
   )
 }
 
-/** The gateway's readiness summary (the CableLabs dashboard's "Network Privacy Readiness"). */
+function DeviceRow({ device: d, household }: { device: Device; household: Household }) {
+  const counts = countVerdicts(d, household)
+  const attention = (['unsatisfiable', 'decision_required', 'indeterminate'] as const).some((v) => counts[v])
+  return (
+    <Cell className="d" to={`/device/${d.id}`}>
+      <DeviceTile device={d} />
+      <div className="cb">
+        <span className="ttl">{d.short_name}{d.kind === 'simulated' && <span className="tag" style={{ marginLeft: 8 }}>Simulated</span>}</span>
+        <span className="st">
+          {d.declaration?.state === 'rules_confirmed' && isConnected(d) ? <SmallCheck /> : <DashedCircle />}
+          <span>{stateLabel(d)}</span>
+        </span>
+        <span className="ln">
+          {attention ? <VerdictChips counts={counts} order={['unsatisfiable', 'decision_required', 'indeterminate']} /> : <VerdictChip verdict="compatible" n={(counts.compatible ?? 0) + (counts.conditionally_satisfiable ?? 0)} />}
+        </span>
+      </div>
+    </Cell>
+  )
+}
+
+function UnmanagedRow({ device: u }: { device: UnmanagedDevice }) {
+  const guess = [u.likely_vendor, u.likely_type].filter(Boolean).join(' ')
+  const inner = (
+    <>
+      <Tile tone="grey" size="device"><Icon name="status" size={20} /></Tile>
+      <div className="cb">
+        <span className="ttl">{u.hostname ?? 'Unnamed device'}{u.simulated && <span className="tag" style={{ marginLeft: 8 }}>Simulated</span>}</span>
+        <span className="sub">{[u.ip_address, guess || null].filter(Boolean).join(' · ')}</span>
+        <span className="sub" style={{ fontSize: 13 }}>{u.research_match ? `Looks like ${u.research_match.short_name} · see what it does` : 'Doesn’t support PPD · doesn’t get your rules'}</span>
+      </div>
+    </>
+  )
+  return u.research_match ? <Cell className="d" to={`/device/${encodeURIComponent(u.research_match.id)}`}>{inner}</Cell> : <Cell className="d" chevron={false}>{inner}</Cell>
+}
+
+/** The CableLabs dashboard's four counts, in plain words and computed the same way. */
 function Readiness({ overview: o }: { overview: Overview }) {
   const c = o.counts
   if (!o.gateway.reachable) {
@@ -100,12 +145,11 @@ function Readiness({ overview: o }: { overview: Overview }) {
       </Group>
     )
   }
-  const attention = c.needs_reassociation + c.stale + c.broken + c.policy_conflict
-  const stats: [string, number, string?][] = [
-    ['Connected', c.known],
-    ['Confirmed your rules', c.associated, 'ok'],
-    ['Need attention', attention, attention ? 'dec' : undefined],
-    ['With device exceptions', c.overrides],
+  const stats: [string, number, string | undefined][] = [
+    ['On your network', c.known, undefined],
+    ['Have your rules', c.associated, 'ok'],
+    ['Don’t support PPD', c.unmanaged, undefined],
+    ['Need attention', c.need_attention, c.need_attention ? 'dec' : undefined],
   ]
   return (
     <>
@@ -135,4 +179,3 @@ export function DecisionGlyph() {
     </svg>
   )
 }
-

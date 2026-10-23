@@ -68,6 +68,12 @@ export interface GatewayDevice {
   ip_address?: string
   hostname?: string
   network_observed?: boolean
+  /** False for devices the router sees but that never registered with PPD (unmanaged). */
+  known_to_gateway?: boolean
+  network_identifier?: string
+  likely_device_type?: string
+  likely_device_vendor?: string
+  last_network_observed_at?: string
   last_policy_retrieved?: string
   last_acknowledged_at?: string
 }
@@ -91,6 +97,8 @@ export interface GatewaySummary {
   override_devices?: number
   authenticated_devices?: number
   compatibility_mode_devices?: number
+  network_observed_devices?: number
+  unmanaged_devices?: number
 }
 
 export interface GatewayCheck { check_id: string; name: string; category: string; status: 'pass' | 'warn' | 'fail'; detail: string }

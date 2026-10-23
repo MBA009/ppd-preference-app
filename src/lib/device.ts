@@ -11,7 +11,12 @@ export const STATE_LABEL: Record<DeclarationState, string> = {
   broken: 'Gets your rules · Receipt does not match',
 }
 
+/** True for devices that talk to the PPD gateway (real or simulated); research entries never do. */
+export const isConnected = (d: DeviceSummary) => d.kind === 'real' || d.kind === 'simulated'
+
+/** A device's rules status. Research entries are never connected, whatever their example declaration says. */
 export function stateLabel(d: DeviceSummary) {
+  if (d.kind === 'research') return d.source === 'declared' ? 'Example declaration · not connected' : 'Advisory · not connected'
   return STATE_LABEL[d.declaration?.state ?? 'advisory']
 }
 

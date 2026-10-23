@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { evaluateDevice } from '../../shared/engine'
 import { FIELDS, PROCESSING_BOUNDARY, RETENTION, termLabel, type Constraints } from '../../shared/taxonomy'
-import type { AssociationStatus, DeclarationState, Device, DeviceIcon, DeviceSummary, Flow, LiveState, Rule, Tone } from '../../shared/types'
+import type { AssociationStatus, DeclarationState, Device, DeviceIcon, DeviceSummary, Flow, LiveState, Rule, Tone, UnmanagedDevice } from '../../shared/types'
 import type { Fixtures } from './fixtures'
 import type { GatewayClient, GatewayDevice, GatewaySummary } from './gateway'
 
@@ -13,10 +13,13 @@ import type { GatewayClient, GatewayDevice, GatewaySummary } from './gateway'
  */
 
 interface StatementPresentation { title?: string; what?: string }
+/** How the demo simulator plays this device (server/src/simulator). */
+export interface SimulatorEntry { mode: 'ppd' | 'network'; mac: string; ip: string; hostname: string }
 export interface RegistryEntry {
   device_id: string
   kind: 'real' | 'simulated'
   fixture?: string
+  simulator?: SimulatorEntry
   match_manufacturer?: string
   name?: string
   short_name?: string
@@ -63,7 +66,8 @@ export function tupleKey(f: Record<(typeof FIELDS)[number], string>): string {
 }
 const groupId = (key: string) => 'core-' + createHash('sha256').update(key).digest('hex').slice(0, 8)
 
-export interface GatewaySnapshot { devices: GatewayDevice[]; summary: GatewaySummary }
+/** `devices` registered with PPD; `unmanaged` seen on the network only (network_observed && !known_to_gateway). */
+export interface GatewaySnapshot { devices: GatewayDevice[]; unmanaged: GatewayDevice[]; summary: GatewaySummary }
 
 export class LiveDirectory {
   private cache: ({ at: number } & GatewaySnapshot) | null = null
@@ -76,7 +80,7 @@ export class LiveDirectory {
     if (this.cache && Date.now() - this.cache.at < this.ttlMs) return this.cache
     this.inflight ??= Promise.all([this.gateway.devices(), this.gateway.summary()]).then(
       ([devices, summary]) => {
-        this.cache = { at: Date.now(), devices: devices.filter((d) => d.registered), summary }
+        this.cache = { at: Date.now(), devices: devices.filter((d) => d.registered), unmanaged: devices.filter((d) => d.network_observed && !d.known_to_gateway), summary }
         this.inflight = null
         return this.cache
       },
@@ -96,9 +100,43 @@ export class LiveDirectory {
     this.cache = null
   }
 
-  /** Fixture ids that a simulated participant stands in for. */
+  /** Fixture ids that a simulated device stands in for. */
   simulatedFixtureIds(): Set<string> {
     return new Set(this.registry.filter((r) => r.kind === 'simulated' && r.fixture).map((r) => r.fixture!))
+  }
+
+  /** Fixture ids represented by a device registered at the gateway right now (so the library shows it once). */
+  connectedFixtureIds(devices: GatewayDevice[]): Set<string> {
+    return new Set(devices.map((d) => this.entryFor(d)?.fixture).filter((f): f is string => !!f))
+  }
+
+  /** Devices on the network that never registered with PPD, with a research entry that looks like them. */
+  unmanaged(devices: GatewayDevice[]): UnmanagedDevice[] {
+    return devices.map((d) => {
+      const sim = this.registry.find((r) => r.simulator && r.simulator.mac.toLowerCase() === (d.mac_address ?? '').toLowerCase())
+      const fixture = (sim?.fixture && this.fixtures.devices.get(sim.fixture)) || this.researchMatch(d)
+      return {
+        id: d.device_id,
+        hostname: d.hostname || null,
+        ip_address: d.ip_address || null,
+        mac_address: d.mac_address || null,
+        likely_type: d.likely_device_type || null,
+        likely_vendor: d.likely_device_vendor || null,
+        last_seen: d.last_network_observed_at || null,
+        research_match: fixture ? { id: fixture.id, short_name: fixture.short_name } : null,
+        simulated: !!sim,
+      }
+    })
+  }
+
+  /** A research entry whose vendor appears in the device's network name or the gateway's vendor guess. */
+  private researchMatch(d: GatewayDevice) {
+    const text = `${d.hostname ?? ''} ${d.likely_device_vendor ?? ''}`.toLowerCase()
+    if (!text.trim()) return undefined
+    return [...this.fixtures.devices.values()].find((f) => {
+      const vendor = f.name.split(' ')[0].toLowerCase()
+      return vendor.length > 1 && new RegExp(`(^|[^a-z])${vendor}([^a-z]|$)`).test(text)
+    })
   }
 
   entryFor(d: Pick<GatewayDevice, 'device_id' | 'manufacturer'>): RegistryEntry | undefined {

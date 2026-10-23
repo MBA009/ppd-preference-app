@@ -21,17 +21,22 @@ Needs Node 24 or later (app-api uses Node's built-in SQLite).
 
 ### The whole demo stack (recommended)
 
-With the two CableLabs repositories (`habanero-ppd-gateway`, `habanero-ppd-clients`) checked out next to this one,
-and Go and Python 3 installed:
+With the `habanero-ppd-gateway` repository checked out next to this one, and Go installed:
 
 ```bash
 scripts/dev-stack.sh
 ```
 
-It builds and starts the PPD preference repository and gateway (configured like the cloud: operator token on operator
-routes, demo extensions relayed to app-api), app-api, the web app on http://localhost:5173, and two simulated PPD
-participants (the Aqara and Reolink research devices, sent by the CableLabs host stub). A real ESP32 bulb provisioned
-with `http://<this machine>:8080` joins too. Logs go to `.dev-stack/logs`; Ctrl-C stops everything.
+It builds and starts the PPD preference repository and gateway (demo extensions relayed to app-api), app-api with the
+demo device simulator, and the web app on http://localhost:5173. A real ESP32 bulb provisioned with
+`http://<this machine>:8080` joins too. Logs go to `.dev-stack/logs`; Ctrl-C stops everything.
+
+**Demo devices** (http://localhost:5173/#/demo-devices, also in the side rail) is the presenter's page. *Connect* makes a
+simulated device (Aqara hub, Reolink camera, Level lock) join the network and run the PPD lifecycle against the gateway
+(register, declare, fetch the policy, acknowledge, renew); *Unplug* stops it renewing. *Join network* puts the LG TV on the
+network without PPD, so it shows under "On your network, no PPD" in My home and as Unmanaged on the CableLabs dashboard
+(`http://<this machine>:8080/ppd/v1/status`). The simulator writes a DHCP lease file that the gateway reads in place of a real
+router's, which is how the gateway "sees" devices on the network.
 
 ### Pieces on their own
 
@@ -121,7 +126,8 @@ Both clients use the same code from `shared/` for what happens to the household 
   `X-PPD-Client` header, and marks every response `no-store`.
 
 Settings are in `server/.env.example`; `server/config/devices.json` says which gateway devices are real hardware or
-simulated participants and how to present them.
+simulated, and gives each simulated device its network identity (MAC, IP, hostname) and mode (`ppd` or `network`).
+With `SIMULATOR=1`, app-api also runs those simulated devices (`server/src/simulator/`).
 
 ### Taxonomy
 
@@ -139,8 +145,8 @@ npm run mock         # or: python3 tools/build_mock.py path/to/workbook.xlsx
 ```
 
 Each flow carries its taxonomy (core `ppd:` terms, constraints as an object), plain-language labels, control type and
-note from the workbook. `python3 tools/build_simulated_devices.py` turns the declared research devices into
-registrations and declarations for the simulated participants (`simulated/`).
+note from the workbook. A simulated device declares its research fixture's flows (only those the fixture marks as
+declared by the device).
 
 **The verdicts are this project's comparison, not the PPD protocol's.** app-api computes them with `shared/engine.ts` from the
 household's current rules (a stricter rule wins: Never, then Ask me first, then Allowed; no matching rule and the flow leaves
@@ -188,7 +194,7 @@ root. `deploy/compose.example.yaml` shows the four services together with the ga
 
 ```
 shared/            used by the app and app-api: the contract (types.ts), core taxonomy, household changes, verdict engine, rule matching
-server/            app-api: routes (src/routes/), policy compiler, gateway client, live devices, SQLite store, sign-in, tests
+server/            app-api: routes (src/routes/), policy compiler, gateway client, live devices, demo simulator, SQLite store, sign-in, tests
 deploy/            compose.example.yaml for the cloud deployment (Coolify)
 scripts/           dev-stack.sh: the whole demo stack on one machine
 src/api/           app-api client, offline mock client, the switch between them (index.ts)

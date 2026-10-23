@@ -15,6 +15,7 @@ import Questionnaire from './screens/Questionnaire'
 import Sources from './screens/Sources'
 import Dev from './screens/Dev'
 import SystemStatus from './screens/SystemStatus'
+import DemoDevices from './screens/DemoDevices'
 
 /** Until the household has answered the questions, the only screens are the questions themselves and the test tools. */
 function OnboardingGate() {
@@ -82,6 +83,7 @@ export default function App() {
                 <Route path="preview/:id" element={<Preview />} />
                 <Route path="library" element={<Library />} />
                 <Route path="status" element={<SystemStatus />} />
+                <Route path="demo-devices" element={<DemoDevices />} />
                 <Route path="device/:id" element={<Split mode="detail" list={<Home />} detail={<DeviceDetail />} />} />
                 <Route path="device/:id/joined" element={<NewDevice />} />
                 <Route path="device/:id/flow/:flowId" element={<FlowDetail />} />

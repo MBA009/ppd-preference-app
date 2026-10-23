@@ -3,6 +3,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom'
 import type { DeviceSummary, Verdict } from '../api'
 import { VERDICTS } from '../lib/verdicts'
 import { ChevronDown, ChevronRight, ChipGlyph, DeviceGlyph, Icon, RowGlyph } from './icons'
+import { useMe } from '../state/data'
 
 /* ---------- app bars ---------- */
 export function AppBar({ title, subtitle, back, right }: { title: string; subtitle?: string; back?: string | true | (() => void); right?: ReactNode }) {
@@ -47,12 +48,14 @@ export function BottomNav() {
 
 /** The desktop navigation rail (hidden on phones, where BottomNav is used). */
 export function SideRail() {
+  const { data: me } = useMe()
   const items = [
     { to: '/', icon: 'home', label: 'My home', end: true },
     { to: '/scan', icon: 'scan', label: 'Scan', end: false },
     { to: '/rules', icon: 'rules', label: 'Household rules', end: false },
     { to: '/library', icon: 'plus', label: 'Device library', end: false },
     { to: '/status', icon: 'status', label: 'System status', end: false },
+    ...(me?.simulator ? [{ to: '/demo-devices', icon: 'bulb', label: 'Demo devices', end: false }] : []),
   ] as const
   return (
     <nav className="rail" aria-label="Main">

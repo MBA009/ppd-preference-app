@@ -57,8 +57,9 @@ describe('household (fixtures)', () => {
   test('first read returns the seeded household at first launch', async () => {
     const h = await json<Household>('GET', '/api/household')
     assert.equal(h.answers, null)
-    // The simulated participants stand in for these two researched fixtures, so they are not seeded.
-    assert.deepEqual(h.devices.map((d) => d.device_id).sort(), ['level-lock', 'lg-oled65c6pua-c6'])
+    // Every researched fixture has a simulated stand-in, so first launch starts with no research devices:
+    // devices join from the gateway, or are added from the library.
+    assert.deepEqual(h.devices.map((d) => d.device_id), [])
   })
 
   test('fixture flows use only core terms and object constraints', async () => {

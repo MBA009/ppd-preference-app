@@ -72,6 +72,11 @@ export class HouseholdStore {
         PRIMARY KEY (device_id, sample_id)
       );
       CREATE INDEX IF NOT EXISTS telemetry_recent ON telemetry_sample (device_id, received_at);
+      CREATE TABLE IF NOT EXISTS sim_device (
+        device_id TEXT PRIMARY KEY,
+        wanted TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );
     `)
     // Older databases predate the actor column.
     const columns = this.db.prepare('PRAGMA table_info(audit_log)').all() as { name: string }[]
@@ -206,6 +211,20 @@ export class HouseholdStore {
     return this.db
       .prepare('SELECT purpose, COUNT(*) AS count, MAX(received_at) AS last_at FROM telemetry_sample WHERE device_id = ? GROUP BY purpose ORDER BY purpose')
       .all(deviceId) as unknown as { purpose: string; count: number; last_at: string | null }[]
+  }
+
+  /* ---------- demo simulator ---------- */
+
+  /** What the presenter last asked each simulated device to do, so a restart restores it. */
+  simWanted(): Map<string, string> {
+    const rows = this.db.prepare('SELECT device_id, wanted FROM sim_device').all() as { device_id: string; wanted: string }[]
+    return new Map(rows.map((r) => [r.device_id, r.wanted]))
+  }
+
+  setSimWanted(deviceId: string, wanted: string): void {
+    this.db
+      .prepare('INSERT INTO sim_device (device_id, wanted, updated_at) VALUES (?, ?, ?) ON CONFLICT(device_id) DO UPDATE SET wanted = excluded.wanted, updated_at = excluded.updated_at')
+      .run(deviceId, wanted, new Date().toISOString())
   }
 
   /* ---------- plumbing ---------- */

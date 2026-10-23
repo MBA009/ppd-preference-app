@@ -8,6 +8,7 @@ import type { Fixtures } from './fixtures'
 import type { GatewayClient } from './gateway'
 import type { LiveDirectory } from './live'
 import type { HouseholdStore } from './store'
+import type { Simulator } from './simulator'
 
 declare module 'fastify' {
   interface FastifyRequest {
@@ -25,6 +26,9 @@ export class AppContext {
     readonly live: LiveDirectory,
     readonly auth: Authenticator,
   ) {}
+
+  /** The demo simulator, when app-api runs with SIMULATOR=1. */
+  simulator: Simulator | null = null
 
   /** The first-launch household: the fixture devices, except those a simulated participant stands in for. */
   seed = (): Household => {
@@ -66,15 +70,20 @@ export class AppContext {
     )
   }
 
-  /** The library: devices the gateway knows first, then the researched fixtures. */
+  /**
+   * The library: devices registered with the gateway first, then the researched fixtures. A research entry
+   * that a connected device stands in for (a simulated Aqara) is left out, so each product appears once.
+   */
   async library(): Promise<DeviceSummary[]> {
-    let live: DeviceSummary[] = []
+    let devices: Awaited<ReturnType<LiveDirectory['gatewayDevices']>> = []
     try {
-      live = (await this.live.gatewayDevices()).map((d) => this.live.summary(d))
+      devices = await this.live.gatewayDevices()
     } catch {
       /* gateway unreachable */
     }
-    return [...live, ...this.fixtures.library.map((d) => ({ ...d, kind: 'research' as const }))]
+    const represented = this.live.connectedFixtureIds(devices)
+    const research = this.fixtures.library.filter((d) => !represented.has(d.id)).map((d) => ({ ...d, kind: 'research' as const }))
+    return [...devices.map((d) => this.live.summary(d)), ...research]
   }
 
   /** One device with its verdicts, from the gateway or the fixtures; undefined when unknown. */

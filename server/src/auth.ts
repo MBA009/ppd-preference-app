@@ -8,7 +8,8 @@ import type { Config } from './config'
  * issuer, audience and expiry itself rather than trusting an email header. Missing or invalid tokens
  * fail closed. In development a fixed local operator is used.
  */
-export type Identity = Me
+/** The signed-in person. /api/me adds whether the demo simulator is on. */
+export type Identity = Pick<Me, 'email' | 'role'>
 
 interface Jwks { keys: (JsonWebKey & { kid?: string })[] }
 
