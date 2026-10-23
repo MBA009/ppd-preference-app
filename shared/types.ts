@@ -388,6 +388,8 @@ export interface PpdApi {
   listPresets(): Promise<Preset[]>
   applyPreset(name: string): Promise<Policy>
   disassociate(deviceId: string): Promise<void>
+  /** Deletes a device that has left the home from the gateway and the household. Refused while associated or on the network. */
+  forgetDevice(deviceId: string): Promise<Household>
   listCommands(deviceId: string): Promise<Command[]>
   sendCommand(deviceId: string, action: CommandAction, value?: string): Promise<Command>
   getTelemetry(deviceId: string): Promise<Telemetry>

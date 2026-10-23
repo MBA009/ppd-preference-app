@@ -1,4 +1,4 @@
-import type { DeclarationState, DeviceSummary } from '../api'
+import type { DeclarationState, Device, DeviceSummary } from '../api'
 
 export const STATE_LABEL: Record<DeclarationState, string> = {
   advisory: 'Advisory only · from our library',
@@ -13,6 +13,17 @@ export const STATE_LABEL: Record<DeclarationState, string> = {
 
 /** True for devices that talk to the PPD gateway (real or simulated); research entries never do. */
 export const isConnected = (d: DeviceSummary) => d.kind === 'real' || d.kind === 'simulated'
+
+/** A connected device that currently holds the household rules: associated, and not reporting behaviour against them. */
+export const hasRules = (d: Device) => d.live?.association.status === 'associated' && !d.live.runtime.conflict_active
+
+/** Why a connected device can't be forgotten yet, or null when it can (it has gone stale and left the network). */
+export function forgetBlocker(d: Device): string | null {
+  if (!d.live) return 'Only devices that connected through PPD can be forgotten.'
+  if (d.live.network.observed) return 'It is still on your home network. Unplug it first.'
+  if (d.live.association.status === 'associated') return 'It still has your rules. You can forget it once it goes stale.'
+  return null
+}
 
 /** A device's rules status. Research entries are never connected, whatever their example declaration says. */
 export function stateLabel(d: DeviceSummary) {

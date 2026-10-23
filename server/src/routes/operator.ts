@@ -4,6 +4,7 @@ import { compileHouseholdPolicy, newPolicyId } from '../compiler'
 import { httpError, requireOperator, type AppContext } from '../context'
 import { GatewayError } from '../gateway'
 import { tupleKey } from '../live'
+import * as hh from '../../../shared/household'
 import { idParams } from './household'
 
 /**
@@ -139,5 +140,23 @@ export function operatorRoutes(app: FastifyInstance, ctx: AppContext): void {
     ctx.store.audit('disassociate', req.params.id, req.identity?.email)
     ctx.live.invalidate()
     reply.status(204)
+  })
+
+  /**
+   * Forgets a device that has left the home: the gateway deletes its records, and it leaves the household with its
+   * saved decisions. The gateway refuses while the device is associated or still on the network. If it comes back,
+   * it registers again and joins as new.
+   */
+  app.post<{ Params: { id: string } }>('/api/devices/:id/forget', { schema: { params: idParams } }, async (req) => {
+    requireOperator(req)
+    await ctx.gateway.forget(req.params.id).catch((e: unknown) => {
+      if (e instanceof GatewayError && e.status === 409) {
+        throw httpError(409, /home network/.test(e.message) ? 'It is still on your home network. Unplug it first.' : 'It still has your rules. It can be forgotten once it goes stale.')
+      }
+      if (e instanceof GatewayError && e.status === 404) return // already gone from the gateway: just remove it here
+      unavailable(e)
+    })
+    ctx.live.invalidate()
+    return ctx.change(req, 'forget_device', (h) => hh.removeDevice(h, req.params.id), req.params.id)
   })
 }

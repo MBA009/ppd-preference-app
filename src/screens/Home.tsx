@@ -3,12 +3,13 @@ import { AppBar, Cell, DeviceTile, Footnote, Group, SectionHeader, Tile, Verdict
 import { DashedCircle, Icon, SmallCheck } from '../components/icons'
 import { useDevices, useHousehold, useOverview, useUnmanaged } from '../state/data'
 import { countVerdicts, pendingFlows, plural } from '../lib/verdicts'
-import { isConnected, stateLabel } from '../lib/device'
+import { hasRules, isConnected, stateLabel } from '../lib/device'
 import type { Device, Household, Overview, UnmanagedDevice } from '../api'
 
 /**
  * Screen 3a. Three kinds of device, kept apart:
- * - connected through PPD: registered with the home gateway, they get the household rules;
+ * - connected through PPD: registered with the home gateway, they get the household rules. Split into those that
+ *   hold the rules now and those that need attention (not confirmed, stale, unplugged, reconnecting, conflicting);
  * - on the network without PPD: the router sees them ("unmanaged"), they can't get the rules;
  * - advisory devices the household added from the research library: advice only.
  */
@@ -25,6 +26,8 @@ export default function Home() {
   const list = devices ?? []
   const connected = list.filter(isConnected)
   const advisory = list.filter((d) => !isConnected(d))
+  const withRules = connected.filter(hasRules)
+  const attentionDevices = connected.filter((d) => !hasRules(d))
   const waiting = list.map((d) => ({ d, n: pendingFlows(d, household).length })).filter((x) => x.n > 0)
   const totalWaiting = waiting.reduce((s, x) => s + x.n, 0)
   const updating = connected.filter((d) => d.live?.publication === 'waiting').length
@@ -54,11 +57,26 @@ export default function Home() {
 
       {overview && <Readiness overview={overview} />}
 
-      <SectionHeader>Connected through PPD · {connected.length}</SectionHeader>
-      {connected.length > 0 ? (
-        <Group>{connected.map((d) => <DeviceRow key={d.id} device={d} household={household} />)}</Group>
-      ) : (
-        <Group><div className="empty">No device has connected yet. Devices that support PPD join by themselves when they connect to your network.</div></Group>
+      {connected.length === 0 && (
+        <>
+          <SectionHeader>Connected through PPD · 0</SectionHeader>
+          <Group><div className="empty">No device has connected yet. Devices that support PPD join by themselves when they connect to your network.</div></Group>
+        </>
+      )}
+
+      {attentionDevices.length > 0 && (
+        <>
+          <SectionHeader>Need attention · {attentionDevices.length}</SectionHeader>
+          <Group>{attentionDevices.map((d) => <DeviceRow key={d.id} device={d} household={household} />)}</Group>
+          <Footnote>These devices connected through PPD but don’t hold your current rules: they haven’t confirmed them yet, stopped renewing, or need to reconnect. A device that has left for good can be forgotten from its page.</Footnote>
+        </>
+      )}
+
+      {withRules.length > 0 && (
+        <>
+          <SectionHeader>Have your rules · {withRules.length}</SectionHeader>
+          <Group>{withRules.map((d) => <DeviceRow key={d.id} device={d} household={household} />)}</Group>
+        </>
       )}
 
       {overview?.gateway.reachable && (
@@ -106,8 +124,8 @@ function DeviceRow({ device: d, household }: { device: Device; household: Househ
       <div className="cb">
         <span className="ttl">{d.short_name}{d.kind === 'simulated' && <span className="tag" style={{ marginLeft: 8 }}>Simulated</span>}</span>
         <span className="st">
-          {d.declaration?.state === 'rules_confirmed' && isConnected(d) ? <SmallCheck /> : <DashedCircle />}
-          <span>{stateLabel(d)}</span>
+          {hasRules(d) ? <SmallCheck /> : <DashedCircle />}
+          <span>{d.live && !hasRules(d) ? d.live.association.label : stateLabel(d)}</span>
         </span>
         <span className="ln">
           {attention ? <VerdictChips counts={counts} order={['unsatisfiable', 'decision_required', 'indeterminate']} /> : <VerdictChip verdict="compatible" n={(counts.compatible ?? 0) + (counts.conditionally_satisfiable ?? 0)} />}

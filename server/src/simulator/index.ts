@@ -71,7 +71,7 @@ export class Simulator {
     return this.view(slot)
   }
 
-  /** Stops renewing but stays on the network, like an unplugged device the router still remembers. */
+  /** Unplugged: stops renewing and leaves the network. The gateway keeps its record, which goes stale. */
   disconnect(id: string): SimDevice {
     const slot = this.slot(id, 'ppd')
     slot.participant?.stop()
@@ -198,7 +198,7 @@ export class Simulator {
   private writeLeases(): void {
     const expires = Math.floor(Date.now() / 1000) + 24 * 3600
     const lines = [...this.slots.values()]
-      .filter((s) => s.wanted !== 'off')
+      .filter((s) => s.wanted === 'connected' || s.wanted === 'on_network')
       .map((s) => `${expires} ${s.entry.simulator.mac} ${s.entry.simulator.ip} ${s.entry.simulator.hostname} *`)
     mkdirSync(path.dirname(this.config.leasesFile), { recursive: true })
     const tmp = `${this.config.leasesFile}.tmp`

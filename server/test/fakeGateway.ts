@@ -93,6 +93,15 @@ export class FakeGateway {
       this.policy = { policy_id: 'home-demo-privacy-tightened-v3', scope: 'home', rules: [] }
       return this.send(res, 200, { status: 'updated' })
     }
+    if (path.startsWith('/ppd/v1/device/forget/')) {
+      const id = decodeURIComponent(path.split('/').pop()!)
+      const d = this.devices.find((x) => x.device_id === id)
+      if (!d) return this.send(res, 404, { title: 'Not found', status: 404 })
+      if (d.network_observed) return this.send(res, 409, { title: 'device is still on the home network', status: 409 })
+      if (d.associated) return this.send(res, 409, { title: 'device is still associated', status: 409 })
+      this.devices = this.devices.filter((x) => x !== d)
+      return this.send(res, 200, { status: 'forgotten', device_id: id })
+    }
     if (path.startsWith('/ppd/v1/device/disassociate/')) {
       this.disassociated.push(decodeURIComponent(path.split('/').pop()!))
       return this.send(res, 200, { status: 'needs_reassociation' })

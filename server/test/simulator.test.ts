@@ -78,6 +78,22 @@ describe('network view and CableLabs cards', () => {
     assert.equal(typeof o.counts.unmanaged, 'number')
   })
 
+  test('forget refuses a device that is associated or on the network, then removes it everywhere', async () => {
+    gateway.devices = [bulb(), bulb({ device_id: 'old-lamp', associated: false, association_status: 'stale_association', network_observed: false })]
+    await json<Household>('GET', '/api/household')
+    const refused = await app.inject({ method: 'POST', url: '/api/devices/superduperlight-bulb-esp32/forget', headers: { 'x-ppd-client': 'web' } })
+    assert.equal(refused.statusCode, 409)
+    gateway.devices[0].network_observed = true
+    gateway.devices[0].associated = false
+    const present = await app.inject({ method: 'POST', url: '/api/devices/superduperlight-bulb-esp32/forget', headers: { 'x-ppd-client': 'web' } })
+    assert.equal(present.statusCode, 409)
+    assert.match(present.json().message, /home network/)
+
+    const h = await json<Household>('POST', '/api/devices/old-lamp/forget')
+    assert.ok(!h.devices.some((d) => d.device_id === 'old-lamp'))
+    assert.ok(!gateway.devices.some((d) => d.device_id === 'old-lamp'))
+  })
+
   test('/api/me says the simulator is on', async () => {
     assert.equal((await json<{ simulator: boolean }>('GET', '/api/me')).simulator, true)
   })
@@ -118,13 +134,13 @@ describe('simulator', () => {
     assert.ok(!lib.some((d) => d.id === 'level-lock'))
   })
 
-  test('disconnect stops renewing but keeps the network lease', async () => {
+  test('disconnect stops renewing and leaves the network', async () => {
     const d = await json<SimDevice>('POST', '/api/simulator/devices/level-lock-01/disconnect')
     assert.equal(d.state, 'paused')
     const calls = gateway.participantCalls.length
     await new Promise((r) => setTimeout(r, 300))
     assert.equal(gateway.participantCalls.length, calls)
-    assert.match(leases(), /level-lock/)
+    assert.doesNotMatch(leases(), /level-lock/)
   })
 
   test('network-only devices join and leave the network, and use the right button', async () => {

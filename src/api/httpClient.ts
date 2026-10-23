@@ -64,6 +64,7 @@ export const httpClient: PpdApi = {
   listPresets: () => call<Preset[]>('GET', '/presets'),
   applyPreset: (name) => call<Policy>('POST', `/presets/${id(name)}/apply`, {}),
   disassociate: async (deviceId) => { await call<null>('POST', `/devices/${id(deviceId)}/disassociate`, {}) },
+  forgetDevice: (deviceId) => call<Household>('POST', `/devices/${id(deviceId)}/forget`, {}),
   listCommands: (deviceId) => call<Command[]>('GET', `/devices/${id(deviceId)}/commands`),
   sendCommand: (deviceId, action, value) => call<Command>('POST', `/devices/${id(deviceId)}/commands`, value === undefined ? { action } : { action, value }),
   getTelemetry: (deviceId) => call<Telemetry>('GET', `/devices/${id(deviceId)}/telemetry`),

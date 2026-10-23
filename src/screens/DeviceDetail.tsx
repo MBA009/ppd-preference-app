@@ -4,14 +4,14 @@ import { AppBar, Cell, DeviceTile, ErrorBox, Group, Loading, SectionHeader } fro
 import { AttentionList, ProvenanceCard } from '../components/DeviceReport'
 import { AssociationCard, DemoControls, IdentityAndNetwork, LifecycleSteps, PolicyReceipt, ReportedBehavior, TelemetryCard } from '../components/LiveDevice'
 import { useDevice, useHousehold, useMe, useRules } from '../state/data'
-import { STATE_LABEL, isConnected, kindLabel, subtitle, timeAgo } from '../lib/device'
+import { STATE_LABEL, forgetBlocker, isConnected, kindLabel, subtitle, timeAgo } from '../lib/device'
 import { decidedCount } from '../lib/verdicts'
 
 /** Screen 3c. For a device the PPD gateway knows, it also shows the gateway's live view of it. */
 export default function DeviceDetail() {
   const { id } = useParams()
   const nav = useNavigate()
-  const { household, removeDevice, addDevice, toast } = useHousehold()
+  const { household, removeDevice, addDevice, toast, reload } = useHousehold()
   const dev = useDevice(id, true)
   const rules = useRules(true)
   const { data: me } = useMe()
@@ -33,6 +33,19 @@ export default function DeviceDetail() {
       await api.disassociate(d.id)
       toast('The device will reconnect.')
       dev.reload()
+    } catch (e) {
+      toast((e as Error).message)
+    }
+  }
+
+  const blocker = forgetBlocker(d)
+  const forget = async () => {
+    if (!window.confirm(`Forget ${d.short_name}? The home gateway deletes its records and your decisions for it. If it comes back, it joins as a new device.`)) return
+    try {
+      await api.forgetDevice(d.id)
+      reload()
+      toast(`${d.short_name} was forgotten.`)
+      nav('/')
     } catch (e) {
       toast((e as Error).message)
     }
@@ -92,6 +105,14 @@ export default function DeviceDetail() {
         {live && operator && (
           <Cell className="t" chevron={false} onClick={disassociate}>
             <div className="cb" style={{ padding: '12px 0' }}><span className="ttl" style={{ color: '#0066CC' }}>Ask the device to reconnect</span><span className="sub">Its association ends until it confirms your rules again</span></div>
+          </Cell>
+        )}
+        {live && operator && (
+          <Cell className="t" chevron={false} onClick={blocker ? undefined : forget} aria-disabled={!!blocker}>
+            <div className="cb" style={{ padding: '12px 0' }}>
+              <span className="ttl" style={{ color: blocker ? '#9AA0A6' : '#D70015' }}>Forget this device</span>
+              <span className="sub">{blocker ?? 'It has left your network. Delete it from the home gateway and your home.'}</span>
+            </div>
           </Cell>
         )}
         {isConnected(d) ? null : inHome ? (

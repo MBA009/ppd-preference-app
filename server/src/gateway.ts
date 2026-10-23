@@ -174,6 +174,8 @@ export class GatewayClient {
   applyExample = (name: string) => this.call<{ policy_id: string }>('POST', `policy/default/example/${encodeURIComponent(name)}`)
   effectivePreview = (deviceId: string) => this.call<Policy & { policy_hash: string }>('GET', `policy/effective-preview/${encodeURIComponent(deviceId)}`)
   disassociate = (deviceId: string, reason: string) => this.call<unknown>('POST', `device/disassociate/${encodeURIComponent(deviceId)}`, { reason })
+  /** Deletes a device that has left the home (our gateway fork's operator extension). 409 while associated or on the network. */
+  forget = (deviceId: string) => this.call<unknown>('POST', `device/forget/${encodeURIComponent(deviceId)}`)
 
   /** Calls a reference relative to service_base_uri with the operator token. */
   async call<T>(method: string, reference: string, body?: unknown): Promise<T> {

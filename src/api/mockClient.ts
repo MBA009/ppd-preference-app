@@ -126,6 +126,7 @@ export const mockClient: PpdApi = {
   listPresets: async () => [],
   applyPreset: offline,
   disassociate: offline,
+  forgetDevice: offline,
   listCommands: async () => [],
   sendCommand: offline,
   getTelemetry: async () => ({ samples: [], by_purpose: [] }),
