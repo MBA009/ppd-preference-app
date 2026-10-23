@@ -8,7 +8,7 @@ import { checkDataflow, constraintKeys } from './taxonomy'
  *
  * Order of decisions for one flow:
  *   1. No source for the flow yet, or a term that is not
- *      a core ppd: term                                   -> indeterminate ("Can't tell")
+ *      a core ppd: term                                   -> indeterminate (shown, never asked about)
  *   2. A matching rule says never                         -> unsatisfiable ("Conflicts")
  *   3. A matching rule says ask                           -> decision_required ("Needs your decision")
  *   4. The flow itself declares a limit (on-device only,

@@ -134,6 +134,17 @@ describe('simulator', () => {
     assert.ok(!lib.some((d) => d.id === 'level-lock'))
   })
 
+  test('a rejected declaration does not stop the device acknowledging the household policy', async () => {
+    gateway.rejectDeclarations = true
+    gateway.participantCalls = []
+    await json<SimDevice>('POST', '/api/simulator/devices/reolink-e1-zoom-01/connect')
+    await until(async () => (await json<SimDevice[]>('GET', '/api/simulator/devices')).find((d) => d.id === 'reolink-e1-zoom-01')!.state === 'associated')
+    assert.ok(gateway.participantCalls.includes('POST /ppd/v1/device/ack'))
+    assert.equal(gateway.devices.find((d) => d.device_id === 'reolink-e1-zoom-01')?.declared, false)
+    gateway.rejectDeclarations = false
+    await json<SimDevice>('POST', '/api/simulator/devices/reolink-e1-zoom-01/disconnect')
+  })
+
   test('disconnect stops renewing and leaves the network', async () => {
     const d = await json<SimDevice>('POST', '/api/simulator/devices/level-lock-01/disconnect')
     assert.equal(d.state, 'paused')

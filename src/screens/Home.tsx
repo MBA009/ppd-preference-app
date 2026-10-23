@@ -117,7 +117,7 @@ export default function Home() {
 
 function DeviceRow({ device: d, household }: { device: Device; household: Household }) {
   const counts = countVerdicts(d, household)
-  const attention = (['unsatisfiable', 'decision_required', 'indeterminate'] as const).some((v) => counts[v])
+  const attention = (['unsatisfiable', 'decision_required'] as const).some((v) => counts[v])
   return (
     <Cell className="d" to={`/device/${d.id}`}>
       <DeviceTile device={d} />
@@ -128,7 +128,7 @@ function DeviceRow({ device: d, household }: { device: Device; household: Househ
           <span>{d.live && !hasRules(d) ? d.live.association.label : stateLabel(d)}</span>
         </span>
         <span className="ln">
-          {attention ? <VerdictChips counts={counts} order={['unsatisfiable', 'decision_required', 'indeterminate']} /> : <VerdictChip verdict="compatible" n={(counts.compatible ?? 0) + (counts.conditionally_satisfiable ?? 0)} />}
+          {attention ? <VerdictChips counts={counts} order={['unsatisfiable', 'decision_required']} /> : <VerdictChip verdict="compatible" n={(counts.compatible ?? 0) + (counts.conditionally_satisfiable ?? 0)} />}
         </span>
       </div>
     </Cell>

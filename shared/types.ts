@@ -13,7 +13,7 @@ export type Verdict =
   | 'conditionally_satisfiable' //  "With limits"
   | 'decision_required' //          "Needs your decision"
   | 'unsatisfiable' //              "Conflicts with your rules"
-  | 'indeterminate' //              "Can't tell": no source for the flow, or a term the comparison cannot resolve
+  | 'indeterminate' //              not readable: no source for the flow, or a term the comparison cannot resolve (never asked about)
 
 /**
  * Where a device stands with the household's rules. For devices known to the gateway these follow the

@@ -153,7 +153,7 @@ function Detail({ device, flow }: { device: Device; flow: Flow }) {
         <Footnote>Your rules say no to this. Devices that get your rules are asked to follow them, but we can’t check that they do.</Footnote>
       )}
       {verdict === 'indeterminate' && (
-        <Footnote>We will compare this flow once a source is found or the device declares it.</Footnote>
+        <Footnote>This flow isn’t described in terms we can read, so we assume nothing about it and there is nothing for you to do. Your household rules still apply to the device.</Footnote>
       )}
       {flow.evaluation.rule_id && (
         <Footnote>This comes from one of your household rules. <Link to={`/rules/${encodeURIComponent(flow.evaluation.rule_id)}`} className="link">View the rule</Link></Footnote>

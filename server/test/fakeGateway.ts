@@ -13,6 +13,8 @@ export class FakeGateway {
   disassociated: string[] = []
   /** Participant calls seen, as "METHOD path". */
   participantCalls: string[] = []
+  /** Answer every declaration with 422, like a gateway rejecting vendor terms. */
+  rejectDeclarations = false
   puts: Policy[] = []
   readonly token = 'test-operator-token'
   private server = http.createServer((req, res) => this.handle(req, res))
@@ -55,6 +57,7 @@ export class FakeGateway {
       const device = this.devices.find((d) => d.device_id === (body?.device_id ?? decodeURIComponent(path.split('/').pop()!)))
       if (!device) return this.send(res, 404, { title: 'Not found', status: 404 })
       if (path === '/ppd/v1/device/declaration') {
+        if (this.rejectDeclarations) return this.send(res, 422, { type: 'https://iana.org/assignments/http-problem-types#ppd-unsupported-taxonomy-term', title: 'Unsupported taxonomy term', status: 422 }, 'application/problem+json')
         Object.assign(device, { declared: true, declaration_id: body.declaration_id, declaration_statements: body.statements })
         return this.send(res, 200, { status: 'stored' })
       }

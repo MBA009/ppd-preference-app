@@ -73,8 +73,15 @@ export class Participant {
         const base = await this.discover()
         await this.request('POST', base + 'device/register', this.identity.registration)
         this.event('joining', 'Registered')
-        await this.request('POST', base + 'device/declaration', this.identity.declaration)
-        this.event('joining', `Declared ${this.identity.declaration.statements.length} data flows`)
+        // Describing itself is optional (protocol-04); acknowledging the household policy is not. A rejected
+        // declaration is the vendor's error: carry on and still fetch and acknowledge the policy.
+        try {
+          await this.request('POST', base + 'device/declaration', this.identity.declaration)
+          this.event('joining', `Declared ${this.identity.declaration.statements.length} data flows`)
+        } catch (e) {
+          if (!(e instanceof RequestError) || (e.status !== 400 && e.status !== 422)) throw e
+          this.event('joining', 'Declaration rejected by the gateway; continuing without it', e.message)
+        }
         while (this.running) {
           const policy = (await this.request('GET', base + 'policy/effective/' + encodeURIComponent(this.identity.deviceId))) as { policy_id: string; policy_hash: string; renewal_interval?: number }
           const ack = (await this.request('POST', base + 'device/ack', { device_id: this.identity.deviceId, policy_id: policy.policy_id, policy_hash: policy.policy_hash })) as { association_status?: string; renewal_interval?: number }

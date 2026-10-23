@@ -13,7 +13,7 @@ export interface VerdictMeta {
 export const VERDICTS: Record<Verdict, VerdictMeta> = {
   unsatisfiable: { cls: 'bad', label: 'Conflicts with your rules', tile: 'red', chip: (n) => `${n} ${n === 1 ? 'conflict' : 'conflicts'}` },
   decision_required: { cls: 'dec', label: 'Needs your decision', tile: 'orange', chip: (n) => `${n} ${n === 1 ? 'needs' : 'need'} a decision` },
-  indeterminate: { cls: 'unk', label: 'Can’t tell', tile: 'grey', chip: (n) => `${n} can’t tell` },
+  indeterminate: { cls: 'unk', label: 'Not described in terms we can read', tile: 'grey', chip: (n) => `${n} not readable` },
   conditionally_satisfiable: { cls: 'lim', label: 'With limits', tile: 'blue', chip: (n) => `${n} with limits` },
   compatible: { cls: 'ok', label: 'Matches your rules', tile: 'green', chip: (n) => `${n} ${n === 1 ? 'matches' : 'match'}` },
 }
@@ -29,10 +29,14 @@ export function decisionFor(flow: Flow, h: Household | null) {
 export const isPending = (flow: Flow, h: Household | null) =>
   flow.evaluation.verdict === 'decision_required' && !decisionFor(flow, h)
 
-/** Flows that need the person's attention: conflicts, undecided decisions, and flows we can't tell about. */
+/**
+ * Flows that need the person's attention: conflicts and undecided decisions. A flow we can't read
+ * (indeterminate) is never one of them: describing it correctly is the vendor's job, we assume nothing about
+ * it, and the household is never asked (CableLabs guidance, docs/cablelabs-guidance-vendor-terms-plan.md).
+ */
 export function needsAttention(flow: Flow, h: Household | null) {
   const v = flow.evaluation.verdict
-  return v === 'unsatisfiable' || v === 'indeterminate' || isPending(flow, h)
+  return v === 'unsatisfiable' || isPending(flow, h)
 }
 
 /**
