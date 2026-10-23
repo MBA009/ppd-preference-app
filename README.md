@@ -40,6 +40,16 @@ network without PPD, so it shows under "On your network, no PPD" in My home and 
 (`http://<this machine>:8080/ppd/v1/status`). The simulator writes a DHCP lease file that the gateway reads in place of a real
 router's, which is how the gateway "sees" devices on the network.
 
+**With certificates (`MTLS=1 scripts/dev-stack.sh`).** The first run makes a development household CA in
+`.dev-stack/tls` with CableLabs' `generate-dev-tls`: a gateway certificate, app-api's operator certificate, and one client
+certificate per device (the ESP32 bulb's `device-cert.pem`, and `<device_id>-cert.pem` for each simulated device). The gateway
+then serves HTTPS and accepts only clients with a certificate from that CA whose name matches the `device_id` they claim
+(the PPD `direct-certificate` profile). System status shows "Devices prove who they are with certificates". A browser has
+no certificate, so the CableLabs dashboard opens only after importing `.dev-stack/tls/operator.p12` (empty password). Gateway
+state is kept separately in this mode. For the ESP32, put `gateway-ca.pem`, `device-cert.pem` and `device-key.pem` in
+`ppd_config.h`, and add the address it uses to the gateway certificate with `GATEWAY_SANS` (delete `.dev-stack/tls` to
+make new certificates).
+
 ### Pieces on their own
 
 ```bash
