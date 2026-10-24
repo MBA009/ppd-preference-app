@@ -59,7 +59,9 @@ export function householdRoutes(app: FastifyInstance, ctx: AppContext): void {
     async (req) => {
       const preset = ctx.fixtures.presets.find((p) => p.id === req.body.preset_id)
       if (!preset) throw httpError(404, `Preset ${req.body.preset_id} not found.`)
-      return ctx.change(req, 'choose_preset', (h) => hh.choosePreset(h, preset, req.body.answers), preset.id)
+      const h = ctx.change(req, 'choose_preset', (h) => hh.choosePreset(h, preset, req.body.answers), preset.id)
+      await ctx.publisher.sync('preset chosen')
+      return h
     },
   )
 
@@ -69,12 +71,16 @@ export function householdRoutes(app: FastifyInstance, ctx: AppContext): void {
 
   app.put<{ Params: { id: string }; Body: Rule }>('/api/household/rules/:id', { schema: { params: idParams, body: ruleSchema } }, async (req) => {
     if (req.body.id !== req.params.id) throw httpError(400, 'The rule id in the body does not match the URL.')
-    return ctx.change(req, 'upsert_rule', (h) => hh.upsertRule(h, req.body), req.body.id)
+    const h = ctx.change(req, 'upsert_rule', (h) => hh.upsertRule(h, req.body), req.body.id)
+    await ctx.publisher.sync('rule saved')
+    return h
   })
 
-  app.delete<{ Params: { id: string } }>('/api/household/rules/:id', { schema: { params: idParams } }, async (req) =>
-    ctx.change(req, 'delete_rule', (h) => hh.deleteRule(h, req.params.id), req.params.id),
-  )
+  app.delete<{ Params: { id: string } }>('/api/household/rules/:id', { schema: { params: idParams } }, async (req) => {
+    const h = ctx.change(req, 'delete_rule', (h) => hh.deleteRule(h, req.params.id), req.params.id)
+    await ctx.publisher.sync('rule deleted')
+    return h
+  })
 
   app.post<{ Body: { device_id: string; joined?: boolean } }>('/api/household/devices', { schema: { body: deviceBody } }, async (req) => {
     await requireDevice(req.body.device_id)

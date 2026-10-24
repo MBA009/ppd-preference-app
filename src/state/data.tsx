@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { api, type Answers, type Command, type Device, type DeviceSummary, type Household, type HouseholdPreset, type Me, type Onboarding, type Overview, type Policy, type Preset, type Profile, type PublishPreview, type Rule, type SimDevice, type SystemStatus, type Telemetry, type UnmanagedDevice } from '../api'
+import { api, type Answers, type Command, type Device, type DeviceSummary, type Household, type HouseholdPreset, type Me, type Onboarding, type Overview, type Policy, type Profile, type PublishPreview, type Rule, type SimDevice, type SystemStatus, type Telemetry, type UnmanagedDevice } from '../api'
 
 /* ---------- tiny async hook ---------- */
 export interface Async<T> { data: T | undefined; error: Error | undefined; loading: boolean; reload: () => void }
@@ -39,7 +39,6 @@ export const useLibrary = () => useAsync<DeviceSummary[]>(() => api.listLibrary(
 export const useMe = () => useAsync<Me>(() => api.getMe(), [])
 export const useOverview = () => useAsync<Overview>(() => api.getOverview(), [], LIVE_POLL_MS)
 export const useSystemStatus = () => useAsync<SystemStatus>(() => api.getSystemStatus(), [], LIVE_POLL_MS * 2)
-export const usePresets = () => useAsync<Preset[]>(() => api.listPresets(), [])
 export const useCommands = (id: string | undefined) => useAsync<Command[]>(() => (id ? api.listCommands(id) : Promise.resolve([])), [id], 3000)
 export const useUnmanaged = () => useAsync<UnmanagedDevice[]>(() => api.listUnmanaged(), [], LIVE_POLL_MS)
 export const useSimDevices = () => useAsync<SimDevice[]>(() => api.listSimDevices(), [], 2000)
@@ -62,9 +61,9 @@ export const useDevices = (ids: string[], poll = false) => {
 
 /** The household policy the gateway serves now, and what publishing the current rules would send. */
 export const usePublished = () => useAsync<Policy | null>(() => api.getPublishedPolicy(), [], LIVE_POLL_MS * 2)
-export const usePreview = () => {
+export const usePreview = (pollMs?: number) => {
   const key = useRulesKey()
-  return useAsync<PublishPreview>(() => api.previewPublish(), [key])
+  return useAsync<PublishPreview>(() => api.previewPublish(), [key], pollMs)
 }
 
 /** The household's rules, in policy order. Pass `onlyOn` to leave out rules the person switched off. */

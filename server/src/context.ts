@@ -9,6 +9,7 @@ import type { GatewayClient } from './gateway'
 import type { LiveDirectory } from './live'
 import type { HouseholdStore } from './store'
 import type { Simulator } from './simulator'
+import type { AutoPublisher } from './autopublish'
 
 declare module 'fastify' {
   interface FastifyRequest {
@@ -29,6 +30,9 @@ export class AppContext {
 
   /** The demo simulator, when app-api runs with SIMULATOR=1. */
   simulator: Simulator | null = null
+
+  /** Sends the household policy whenever it changes (set by buildApp). */
+  publisher!: AutoPublisher
 
   /** The first-launch household: the fixture devices, except those a simulated participant stands in for. */
   seed = (): Household => {

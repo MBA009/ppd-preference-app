@@ -114,7 +114,7 @@ Everything the screens need goes through one interface, `PpdApi` in `shared/type
 | `getHousehold()`, `addDevice`, `removeDevice`, `saveForLater`, `markJoinedSeen` | the household's devices |
 | `getOverview()`, `getSystemStatus()`, `getMe()` | the gateway's readiness summary, service checks, and who is signed in |
 | `getPublishedPolicy()`, `previewPublish()`, `publish()` | the household policy the gateway serves, and sending a new one |
-| `listPresets()`, `applyPreset()` | the gateway's fixed example policies (operator testing; not household presets) |
+| `listPresets()`, `applyPreset()` | the gateway's fixed example policies (not shown in the app: automatic sending replaces them) |
 | `disassociate()`, `listCommands()`, `sendCommand()`, `getTelemetry()` | operator actions and guided-demo controls for connected devices |
 
 `src/api/httpClient.ts` implements it against app-api; each call is one route under `/api` (see `server/src/app.ts`). The browser
@@ -134,10 +134,13 @@ Both clients use the same code from `shared/` for what happens to the household 
   sends the operator token, and uses mutual TLS when certificate files are set;
 - shows devices the gateway knows: they join My home on their own, their flows are their declared statements, and their
   live state (association, delivered policy, receipt, identity) is what the CableLabs dashboard shows;
-- **publishes the household policy**: it compiles the rules into one PPD policy of atomic allow/deny rules, one per dataflow
-  a connected device declared (`server/src/compiler.ts`), sends it to the gateway, and reads it back. An *Allowed only if*
-  rule is sent as `allow` with its condition as constraints (protocol-04 section 7.12). Nothing is sent before the household
-  has a preset;
+- **sends the household policy on its own**: it compiles the rules into one PPD policy of atomic allow/deny rules, one per
+  dataflow a connected device declared (`server/src/compiler.ts`), sends it to the gateway, and reads it back. An *Allowed
+  only if* rule is sent as `allow` with its condition as constraints (protocol-04 section 7.12). There is no send button:
+  `server/src/autopublish.ts` sends after every rule or preset change, and checks every `AUTO_PUBLISH_INTERVAL_MS`
+  (default 10 s) for devices that joined or left, so the preset covers new devices without anyone acting. It sends only
+  when the compiled policy differs from the gateway's, and nothing before the household has a preset. Loading one of the
+  gateway's example policies (CableLabs dashboard) is therefore replaced by the household's within seconds;
 - relays the cloud demo extensions: devices upload telemetry and poll for guided-demo commands through the gateway, which
   authenticates them and calls `/internal/*` with a service token;
 - requires sign-in in production (it verifies Cloudflare Access tokens itself), refuses writes without the app's

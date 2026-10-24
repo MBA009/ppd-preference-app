@@ -328,8 +328,20 @@ export interface PublishPreview {
   base_policy_id: string | null
   rules: CompiledRule[]
   removed: PolicyRule[]
+  /** Automatic sending: changes listed above go out within seconds. */
+  sync?: SyncState
   warnings: string[]
   devices: number
+}
+
+/** app-api sends the household policy on its own (server/src/autopublish.ts); this is how that is going. */
+export interface SyncState {
+  /** When app-api last checked whether the gateway needs new rules. */
+  last_run_at: string | null
+  /** The last policy it sent. */
+  last_sent: { policy_id: string; rules: number; at: string } | null
+  /** Why the last attempt failed; cleared by the next success. */
+  last_error: string | null
 }
 
 export interface PublishResult { policy_id: string; rules: number; published_at: string; preview: PublishPreview }

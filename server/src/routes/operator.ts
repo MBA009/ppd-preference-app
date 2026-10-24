@@ -1,9 +1,9 @@
 import type { FastifyInstance } from 'fastify'
 import type { HealthCheck, Overview, Policy, Preset, PublishResult, SystemStatus, UnmanagedDevice } from '../../../shared/types'
-import { compileHouseholdPolicy, newPolicyId } from '../compiler'
+import { compileHouseholdPolicy } from '../compiler'
+import { publishHousehold } from '../autopublish'
 import { httpError, requireOperator, type AppContext } from '../context'
 import { GatewayError } from '../gateway'
-import { tupleKey } from '../live'
 import * as hh from '../../../shared/household'
 import { idParams } from './household'
 
@@ -94,23 +94,17 @@ export function operatorRoutes(app: FastifyInstance, ctx: AppContext): void {
 
   app.get('/api/household/preview', async () => {
     const [household, devices, published] = await Promise.all([ctx.household(), ctx.liveDevices().catch(unavailable), ctx.gateway.defaultPolicy().catch(unavailable)])
-    return compileHouseholdPolicy(household, devices, published).preview
+    return { ...compileHouseholdPolicy(household, devices, published).preview, sync: ctx.publisher.state }
   })
 
+  /** Sends now. The app does not need this (app-api sends on its own, see autopublish.ts); kept for operators and tests. */
   app.post('/api/household/publish', async (req): Promise<PublishResult> => {
     requireOperator(req)
-    const [household, devices, published] = await Promise.all([ctx.household(), ctx.liveDevices().catch(unavailable), ctx.gateway.defaultPolicy().catch(unavailable)])
-    const { preview, policy } = compileHouseholdPolicy(household, devices, published)
-    if (!household.preset_id) throw httpError(409, 'Answer the household questions first: your rules start from the preset they choose.')
-    const wire: Policy = { policy_id: newPolicyId(), ...policy }
-    await ctx.gateway.putDefaultPolicy(wire).catch(unavailable)
-    // Read back what the repository stored rather than assuming the write meant what we sent.
-    const stored = await ctx.gateway.defaultPolicy().catch(unavailable)
-    const same = stored?.policy_id === wire.policy_id && stored.rules.length === wire.rules.length && wire.rules.every((r) => stored.rules.some((s) => tupleKey(s) === tupleKey(r) && s.effect === r.effect))
-    if (!same) throw httpError(502, 'The gateway stored a different policy than the one sent. Nothing was recorded; try again.')
-    ctx.store.recordPublication(wire, ctx.store.revision(), req.identity?.email ?? 'unknown')
-    ctx.live.invalidate()
-    return { policy_id: wire.policy_id, rules: wire.rules.length, published_at: new Date().toISOString(), preview }
+    if (!(await ctx.household()).preset_id) throw httpError(409, 'Answer the household questions first: your rules start from the preset they choose.')
+    return publishHousehold(ctx, req.identity?.email ?? 'unknown').catch((e: unknown) => {
+      if (e instanceof Error && !(e instanceof GatewayError)) throw httpError(502, `${e.message} Nothing was recorded; try again.`)
+      return unavailable(e)
+    })
   })
 
   app.get('/api/presets', async (): Promise<Preset[]> => {

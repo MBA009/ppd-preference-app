@@ -16,6 +16,7 @@ const config: Config = {
   databasePath: ':memory:',
   logLevel: 'silent',
   internalServiceToken: 'test-service-token',
+  autoPublishIntervalMs: 0, // tests trigger sends themselves; one test runs the timer
   gateway: { ...baseConfig.gateway, url: gateway.url, operatorToken: gateway.token },
 }
 
@@ -245,6 +246,47 @@ describe('gateway devices', () => {
     const flow = d.flows.find((f) => f.id.endsWith('temperature-remote-monitoring-cloud'))!
     assert.equal(flow.evaluation.verdict, 'conditionally_satisfiable')
     assert.equal(flow.evaluation.rule_id, 'not-kept')
+  })
+
+  test('the household policy is sent automatically after a preset is chosen, and only when it changes', async () => {
+    const [preset] = await json<HouseholdPreset[]>('GET', '/api/household-presets')
+    // No preset yet: nothing is sent, even after a rule change.
+    await json<Household>('PUT', '/api/household/rules/r-x', rule('r-x', 'dont_allow', { purpose: ['ppd:advertisingAndMarketing'] }))
+    assert.equal(gateway.puts.length, 0)
+    await json<Household>('PUT', '/api/household/preset', { preset_id: preset.id, answers: {} })
+    assert.equal(gateway.puts.length, 1)
+    assert.equal(gateway.puts[0].rules.length, 3) // the test bulb's three distinct dataflows
+    // A rule that changes nothing the bulb does sends nothing.
+    await json<Household>('PUT', '/api/household/rules/r-y', rule('r-y', 'dont_allow', { purpose: ['ppd:advertisingAndMarketing'] }))
+    assert.equal(gateway.puts.length, 1)
+    // A rule that does change it is sent at once.
+    await json<Household>('PUT', '/api/household/rules/r-z', rule('r-z', 'dont_allow', { purpose: ['ppd:coreFunctionality'], handling_context: ['ppd:vendorContext'] }))
+    assert.equal(gateway.puts.length, 2)
+    const preview = await json<PublishPreview>('GET', '/api/household/preview')
+    assert.equal(preview.sync?.last_error, null)
+    assert.equal(preview.sync?.last_sent?.policy_id, gateway.puts[1].policy_id)
+  })
+
+  test('a device that joins is covered without anyone sending', async () => {
+    const timed = buildApp({ ...config, autoPublishIntervalMs: 50 }, await loadFixtures(config.fixturesDir), new HouseholdStore(':memory:'))
+    await timed.ready()
+    try {
+      const [preset] = (await timed.inject({ method: 'GET', url: '/api/household-presets' })).json() as HouseholdPreset[]
+      await timed.inject({ method: 'PUT', url: '/api/household/preset', payload: { preset_id: preset.id, answers: {} }, headers: { 'x-ppd-client': 'web' } })
+      assert.equal(gateway.puts.at(-1)!.rules.length, 3)
+      const base = bulb()
+      gateway.devices = [base, bulb({
+        device_id: 'lamp-2',
+        declaration_statements: [...base.declaration_statements!, { statement_id: 'usage-ads', data_type: 'ppd:usageData', purpose: 'ppd:advertisingAndMarketing', action: 'ppd:transfer', source: 'ppd:participantGenerated', handling_context: 'ppd:thirdPartyContext' }],
+      })]
+      const until = Date.now() + 5000
+      while (gateway.puts.at(-1)!.rules.length === 3 && Date.now() < until) await new Promise((r) => setTimeout(r, 100))
+      const sent = gateway.puts.at(-1)!
+      assert.equal(sent.rules.length, 4)
+      assert.equal(sent.rules.find((r) => r.purpose === 'ppd:advertisingAndMarketing')?.effect, 'deny')
+    } finally {
+      await timed.close()
+    }
   })
 
   test('presets and disassociation go through the gateway', async () => {

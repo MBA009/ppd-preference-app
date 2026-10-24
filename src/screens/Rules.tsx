@@ -9,7 +9,7 @@ import { kindOf, type RuleKind } from '../policy/choices'
 import { plural } from '../lib/verdicts'
 import Onboarding from './Onboarding'
 import { KIND } from '../components/PresetSummary'
-import { PublishCard, PublishedRules, Presets } from '../components/Publish'
+import { PublishCard, PublishedRules } from '../components/Publish'
 
 /**
  * The household policy page. On first launch (no preset yet) it asks the onboarding questions;
@@ -158,7 +158,6 @@ function Policy() {
       </Group>
 
       {!isNew && <PublishedRules />}
-      {!isNew && <Presets />}
 
       <SectionHeader>Keeping you posted</SectionHeader>
       <Group>
