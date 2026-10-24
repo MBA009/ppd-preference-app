@@ -5,7 +5,7 @@ import { Cell, Expander, Group, SectionHeader, Tile, VerdictChips, VerdictMark }
 import { PREFERENCE_LABEL, VERDICT_ORDER, countVerdicts, decisionFor, needsAttention } from '../lib/verdicts'
 import { vendorOf } from '../lib/device'
 
-const NOUN: Record<string, string> = { thermostat: 'the thermostat', lock: 'the lock', tv: 'the TV', camera: 'the camera' }
+const NOUN: Record<string, string> = { thermostat: 'the thermostat', lock: 'the lock', tv: 'the TV', camera: 'the camera', bulb: 'the bulb' }
 export const nounOf = (d: DeviceSummary) => NOUN[d.icon] ?? 'the device'
 
 export const flowPath = (deviceId: string, flowId: string) => `/device/${encodeURIComponent(deviceId)}/flow/${encodeURIComponent(flowId)}`
@@ -17,12 +17,13 @@ export function ProvenanceCard({ device, household, ruleCount, sub, stacked }: {
   const counts = countVerdicts(device, household)
   const checked = `${device.flows.length} flows checked against your ${ruleCount} ${ruleCount === 1 ? 'rule' : 'rules'}`
   const declared = device.source === 'declared'
+  const example = declared && device.kind === 'research'
   return (
     <Group>
       <Cell className="t" chevron={false}>
-        <Tile tone={declared ? 'green' : 'grey'}>{declared ? <ShieldCheck /> : <DocIcon />}</Tile>
+        <Tile tone={declared && !example ? 'green' : 'grey'}>{declared && !example ? <ShieldCheck /> : <DocIcon />}</Tile>
         <div className="cb">
-          <span className="ttl">{declared ? 'Declared by the device' : `Not declared by ${vendorOf(device)}`}</span>
+          <span className="ttl">{example ? 'Example declaration from our research' : declared ? 'Declared by the device' : `Not declared by ${vendorOf(device)}`}</span>
           <span className="sub">
             {sub ??
               (declared

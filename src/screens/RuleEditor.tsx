@@ -4,7 +4,7 @@ import type { Rule, RuleEffect, RuleScope } from '../api'
 import { ActionBar, AppBar, Cell, Footnote, Group, Loading, Pill, SectionHeader, Switch } from '../components/ui'
 import { useDevices, useHousehold } from '../state/data'
 import { matchesScope } from '../policy/scope'
-import { ACTION_CHOICES, DATA_CHOICES, EFFECT_LABEL, KEPT_FOREVER, PURPOSE_CHOICES, WHO_CHOICES, autoTitle, isOn, toggle, type Choice } from '../policy/choices'
+import { ACTION_CHOICES, DATA_CHOICES, EFFECT_LABEL, KEPT_FOREVER, PURPOSE_CHOICES, SOURCE_CHOICES, WHO_CHOICES, autoTitle, isOn, toggle, type Choice } from '../policy/choices'
 import { plural } from '../lib/verdicts'
 
 /** Add a rule (/rules/new) or change one (/rules/:ruleId). */
@@ -43,7 +43,7 @@ function Editor({ rule }: { rule: Rule | undefined }) {
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   const forever = !!scope.constraints?.includes(KEPT_FOREVER)
-  const empty = !scope.data_type?.length && !scope.purpose?.length && !scope.handling_context?.length && !scope.action?.length && !scope.constraints?.length
+  const empty = !scope.data_type?.length && !scope.purpose?.length && !scope.handling_context?.length && !scope.action?.length && !scope.source?.length && !scope.constraints?.length
   const shownTitle = title.trim() || autoTitle(effect, scope)
 
   const impact = useMemo(() => {
@@ -57,7 +57,7 @@ function Editor({ rule }: { rule: Rule | undefined }) {
     return { flows, devices: ds }
   }, [devices, scope])
 
-  const flip = (key: 'data_type' | 'purpose' | 'handling_context' | 'action', c: Choice) =>
+  const flip = (key: 'data_type' | 'purpose' | 'handling_context' | 'action' | 'source', c: Choice) =>
     setScope((s) => ({ ...s, [key]: toggle(s[key], c) }))
   const setForever = (on: boolean) =>
     setScope((s) => {
@@ -88,7 +88,7 @@ function Editor({ rule }: { rule: Rule | undefined }) {
     nav('/rules', { replace: true })
   }
 
-  const group = (heading: string, hint: string, key: 'data_type' | 'purpose' | 'handling_context' | 'action', choices: Choice[]) => (
+  const group = (heading: string, hint: string, key: 'data_type' | 'purpose' | 'handling_context' | 'action' | 'source', choices: Choice[]) => (
     <>
       <SectionHeader>{heading}</SectionHeader>
       <div className="pills" role="group" aria-label={heading}>
@@ -120,6 +120,7 @@ function Editor({ rule }: { rule: Rule | undefined }) {
       {group('For this reason', 'Leave all unpicked to cover every reason.', 'purpose', PURPOSE_CHOICES)}
       {group('Handled by', 'Leave all unpicked to cover everyone. “Other companies” means anyone besides the maker and its services.', 'handling_context', WHO_CHOICES)}
       {group('What happens to it', 'Leave all unpicked to cover every kind of handling.', 'action', ACTION_CHOICES)}
+      {group('Where the data comes from', 'Leave all unpicked to cover data from anywhere.', 'source', SOURCE_CHOICES)}
 
       <SectionHeader>Only if</SectionHeader>
       <div className="pills">

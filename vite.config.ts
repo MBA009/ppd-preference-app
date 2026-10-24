@@ -7,6 +7,13 @@ import basicSsl from '@vitejs/plugin-basic-ssl'
 // (GitHub Pages, Netlify, an S3 bucket) with no server rewrite rules.
 export default defineConfig({
   base: './',
+  // The app's backend is app-api (server/). In development it runs on its own port and Vite forwards /api to it.
+  server: {
+    proxy: { '/api': { target: process.env.API_PROXY_TARGET ?? 'http://127.0.0.1:3000', changeOrigin: false } },
+  },
+  preview: {
+    proxy: { '/api': { target: process.env.API_PROXY_TARGET ?? 'http://127.0.0.1:3000', changeOrigin: false } },
+  },
   plugins: [
     react(),
     // `npm run dev:https` serves a self-signed certificate so a phone on your Wi-Fi
@@ -37,6 +44,8 @@ export default defineConfig({
         // fetched network-first and cached for offline use instead of being baked into the build.
         globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'],
         navigateFallback: 'index.html',
+        // API responses are live household data: never served from the service worker.
+        navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
           {
             urlPattern: /\/mock\/.*\.json$/,

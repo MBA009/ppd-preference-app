@@ -1,0 +1,11 @@
+node_modules
+server/node_modules
+dist
+dev-dist
+server/dist
+server/data
+.dev-stack
+simulated
+*.local
+.git
+.cloud-tls

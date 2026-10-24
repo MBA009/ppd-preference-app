@@ -1,4 +1,4 @@
-import type { DeclarationState, DeviceSummary } from '../api'
+import type { DeclarationState, Device, DeviceSummary } from '../api'
 
 export const STATE_LABEL: Record<DeclarationState, string> = {
   advisory: 'Advisory only · from our library',
@@ -7,10 +7,33 @@ export const STATE_LABEL: Record<DeclarationState, string> = {
   waiting_for_renewal: 'Gets your rules · Updating',
   stale: 'Gets your rules · Out of date',
   needs_reassociation: 'Needs to reconnect',
+  not_associated: 'Gets your rules · Not confirmed yet',
+  broken: 'Gets your rules · Receipt does not match',
 }
 
+/** True for devices that talk to the PPD gateway (real or simulated); research entries never do. */
+export const isConnected = (d: DeviceSummary) => d.kind === 'real' || d.kind === 'simulated'
+
+/** A connected device that currently holds the household rules: associated, and not reporting behaviour against them. */
+export const hasRules = (d: Device) => d.live?.association.status === 'associated' && !d.live.runtime.conflict_active
+
+/** Why a connected device can't be forgotten yet, or null when it can (it has gone stale and left the network). */
+export function forgetBlocker(d: Device): string | null {
+  if (!d.live) return 'Only devices that connected through PPD can be forgotten.'
+  if (d.live.network.observed) return 'It is still on your home network. Unplug it first.'
+  if (d.live.association.status === 'associated') return 'It still has your rules. You can forget it once it goes stale.'
+  return null
+}
+
+/** A device's rules status. Research entries are never connected, whatever their example declaration says. */
 export function stateLabel(d: DeviceSummary) {
+  if (d.kind === 'research') return d.source === 'declared' ? 'Example declaration · not connected' : 'Advisory · not connected'
   return STATE_LABEL[d.declaration?.state ?? 'advisory']
+}
+
+/** "Connected device" or "Simulated participant" for devices the PPD gateway knows. */
+export function kindLabel(d: DeviceSummary) {
+  return d.kind === 'simulated' ? 'Simulated participant' : d.kind === 'real' ? 'Connected device' : 'From our library'
 }
 
 export function vendorOf(d: DeviceSummary) {

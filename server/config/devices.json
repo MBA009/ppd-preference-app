@@ -1,0 +1,90 @@
+{
+  "note": "How app-api presents devices that the PPD gateway knows, and the demo simulator's devices. 'real' is hardware. 'simulated' devices are played by app-api's simulator (SIMULATOR=1) from a research fixture: mode 'ppd' joins through PPD, mode 'network' only appears on the home network (unmanaged). Simulated addresses use the documentation range 192.0.2.0/24 and locally administered MACs. Devices not listed here are shown as real devices, named from their registration.",
+  "devices": [
+    {
+      "device_id": "superduperlight-bulb-esp32",
+      "kind": "real",
+      "match_manufacturer": "SuperDuperLight",
+      "name": "SuperDuperLight Bulb A19",
+      "short_name": "SuperDuperLight Bulb",
+      "category": "light",
+      "category_label": "Smart bulb",
+      "icon": "bulb",
+      "matter": false,
+      "statements": {
+        "power-control-local": {
+          "title": "Turning the bulb on and off",
+          "what": "Whether the bulb is on"
+        },
+        "brightness-control-local": {
+          "title": "Setting the brightness",
+          "what": "How bright the bulb is"
+        },
+        "local-input-local": {
+          "title": "Pressing the button on the bulb",
+          "what": "Button presses"
+        },
+        "temperature-remote-monitoring-cloud": {
+          "title": "Room temperature sent for remote monitoring",
+          "what": "Room temperature"
+        },
+        "humidity-remote-monitoring-cloud": {
+          "title": "Room humidity sent for remote monitoring",
+          "what": "Room humidity"
+        },
+        "temperature-analytics-cloud": {
+          "title": "Room temperature sent for product improvement",
+          "what": "Room temperature"
+        },
+        "humidity-analytics-cloud": {
+          "title": "Room humidity sent for product improvement",
+          "what": "Room humidity"
+        }
+      }
+    },
+    {
+      "device_id": "aqara-w200-01",
+      "kind": "simulated",
+      "fixture": "aqara-w200",
+      "simulator": {
+        "mode": "ppd",
+        "mac": "02:50:50:00:00:01",
+        "ip": "192.0.2.31",
+        "hostname": "aqara-hub-w200"
+      }
+    },
+    {
+      "device_id": "reolink-e1-zoom-01",
+      "kind": "simulated",
+      "fixture": "reolink-e1-zoom",
+      "simulator": {
+        "mode": "ppd",
+        "mac": "02:50:50:00:00:02",
+        "ip": "192.0.2.32",
+        "hostname": "reolink-e1-zoom"
+      }
+    },
+    {
+      "device_id": "level-lock-01",
+      "kind": "simulated",
+      "fixture": "level-lock",
+      "simulator": {
+        "mode": "ppd",
+        "mac": "02:50:50:00:00:03",
+        "ip": "192.0.2.33",
+        "hostname": "level-lock"
+      }
+    },
+    {
+      "device_id": "lg-oled65c6pua-c6-01",
+      "kind": "simulated",
+      "fixture": "lg-oled65c6pua-c6",
+      "simulator": {
+        "mode": "network",
+        "mac": "02:50:50:00:00:04",
+        "ip": "192.0.2.34",
+        "hostname": "LG-OLED65C6"
+      }
+    }
+  ]
+}

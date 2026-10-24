@@ -18,6 +18,9 @@ const PATHS: Record<string, { w: number; node: ReactNode }> = {
   lock: { w: 2, node: (<><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></>) },
   tv: { w: 2, node: (<><rect x="3" y="5" width="18" height="12" rx="2" /><path d="M9 20h6M12 17v3" /></>) },
   camera: { w: 2, node: (<><rect x="3" y="8" width="18" height="11" rx="2" /><circle cx="12" cy="13.5" r="3" /><path d="M8 8l1.5-2.5h5L16 8" /></>) },
+  bulb: { w: 2, node: (<><path d="M9 18h6M10 21h4" /><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z" /></>) },
+  status: { w: 2, node: <path d="M3 12h4l3-7 4 14 3-7h4" /> },
+  publish: { w: 2, node: (<><path d="M12 15V4M7 9l5-5 5 5" /><path d="M5 15v4a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-4" /></>) },
 }
 
 export function Icon({ name, size = 24, className }: P & { name: keyof typeof PATHS }) {

@@ -1,13 +1,14 @@
 import type { Device, Flow, Rule, Verdict } from './types'
-import { leavesHome, matchesScope } from '../policy/scope'
+import { leavesHome, matchesScope } from './scope'
+import { checkDataflow, constraintKeys } from './taxonomy'
 
 /**
- * STAND-IN for the backend's comparison of a flow with the household's rules.
- * It only exists so the app has real, changing verdicts to show. The real comparison belongs to
- * the backend; replace this file's use in mockClient.ts when that exists.
+ * The comparison of a flow with the household's rules. app-api runs it on every device read;
+ * mockClient.ts runs the same code in the browser when the app is offline.
  *
  * Order of decisions for one flow:
- *   1. No source for the flow yet                         -> indeterminate ("Can't tell")
+ *   1. No source for the flow yet, or a term that is not
+ *      a core ppd: term                                   -> indeterminate ("Can't tell")
  *   2. A matching rule says never                         -> unsatisfiable ("Conflicts")
  *   3. A matching rule says ask                           -> decision_required ("Needs your decision")
  *   4. The flow itself declares a limit (on-device only,
@@ -28,6 +29,10 @@ export function evaluateFlow(flow: Flow, rules: Rule[]): Flow['evaluation'] {
   if (flow.evidence === 'needs_source') {
     return { verdict: 'indeterminate', rule_id: null, reason: 'We could not find a source for this flow yet, so we cannot compare it with your rules.' }
   }
+  // An unresolvable term is not guessed at (draft-dsmullen-ppd-taxonomy-05 section 11).
+  if (checkDataflow(flow.id, flow.taxonomy).length) {
+    return { verdict: 'indeterminate', rule_id: null, reason: 'This flow uses terms outside the PPD core taxonomy, so we cannot compare it with your rules.' }
+  }
   const hits = rules.filter((r) => r.enabled && matchesScope(flow, r.scope))
   const first = (effect: Rule['effect']) => hits.find((r) => r.effect === effect)
 
@@ -35,7 +40,8 @@ export function evaluateFlow(flow: Flow, rules: Rule[]): Flow['evaluation'] {
   if (no) return { verdict: 'unsatisfiable', rule_id: no.id, reason: `Your rule “${no.title}” says no to this.` }
   const ask = first('ask')
   if (ask) return { verdict: 'decision_required', rule_id: ask.id, reason: `Your rule “${ask.title}” says to ask you.` }
-  const limit = LIMITS.find((l) => flow.taxonomy.constraints.includes(l))
+  const keys = constraintKeys(flow.taxonomy.constraints)
+  const limit = LIMITS.find((l) => keys.includes(l))
   if (limit) return { verdict: 'conditionally_satisfiable', rule_id: null, reason: LIMIT_TEXT[limit] }
   const yes = first('allow')
   if (yes) return { verdict: 'compatible', rule_id: yes.id, reason: `Your rule “${yes.title}” allows this.` }

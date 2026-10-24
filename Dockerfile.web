@@ -1,0 +1,14 @@
+# The web app: the Vite build served by Nginx, which also forwards /api to app-api.
+# Build from the repository root:  docker build -f Dockerfile.web -t ppd-web .
+FROM node:24.11-alpine AS build
+WORKDIR /src
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM nginx:1.27-alpine
+COPY config/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /src/dist /usr/share/nginx/html
+EXPOSE 80
+HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://127.0.0.1/ >/dev/null || exit 1

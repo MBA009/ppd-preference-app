@@ -16,13 +16,15 @@ export default function Library() {
   if (!lib.data || !household) return <><AppBar title="Device library" back="/" /><Loading /></>
 
   const term = q.trim().toLowerCase()
-  const shown = lib.data.filter((d) => !term || `${d.name} ${d.short_name} ${d.category_label}`.toLowerCase().includes(term))
+  const matching = lib.data.filter((d) => !term || `${d.name} ${d.short_name} ${d.category_label}`.toLowerCase().includes(term))
+  const connected = matching.filter((d) => d.kind === 'real' || d.kind === 'simulated')
+  const shown = matching.filter((d) => d.kind !== 'real' && d.kind !== 'simulated')
   const inHome = (d: DeviceSummary) => household.devices.some((h) => h.device_id === d.id)
 
+  // Research entries are advice only: adding one lists it in My home, nothing connects to anything.
   const add = async (d: DeviceSummary) => {
-    const declared = d.source === 'declared'
-    await addDevice(d.id, { joined: declared })
-    nav(declared ? `/device/${d.id}/joined` : `/device/${d.id}`)
+    await addDevice(d.id)
+    nav(`/device/${d.id}`)
   }
 
   return (
@@ -33,6 +35,28 @@ export default function Library() {
         <Icon name="search" size={20} />
         <input id="q" type="search" placeholder="Search by name or model" value={q} onChange={(e) => setQ(e.target.value)} autoComplete="off" />
       </div>
+      {connected.length > 0 && (
+        <>
+          <SectionHeader>Connected to your home gateway · {connected.length}</SectionHeader>
+          <div className="grp">
+            {connected.map((d) => (
+              <Link key={d.id} to={`/device/${encodeURIComponent(d.id)}`} className="cell d">
+                <DeviceTile device={d} />
+                <div className="cb">
+                  <span className="ttl">{d.short_name}</span>
+                  <span className="ln">
+                    <span className="sub">{d.category_label} · {d.flow_count} flows declared</span>
+                    {d.kind === 'simulated' && <span className="tag">Simulated</span>}
+                  </span>
+                </div>
+                {inHome(d) && <span className="tr"><span className="in"><SmallCheck />In your home</span></span>}
+              </Link>
+            ))}
+          </div>
+          <Footnote>These devices registered with your home gateway and declared what they do. Your rules are sent to them.</Footnote>
+        </>
+      )}
+
       <div className="sf" style={{ paddingTop: 10 }}><b>Library devices are advisory.</b> Verdicts come from our research of vendor sources, and nothing is sent to the device.</div>
 
       <SectionHeader>Researched devices · {shown.length}</SectionHeader>

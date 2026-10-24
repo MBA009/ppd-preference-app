@@ -1,0 +1,108 @@
+# The PPD demo as one Docker Compose application in Coolify (project "PPD Capstone", environment "demo",
+# resource "ppd-demo"). Paste it into a "Docker Compose Empty" resource; docs/deploy-coolify.md has the steps.
+#
+#   ppd.baktisatria.com       Cloudflare (proxied, Access sign-in) -> Coolify proxy :443 -> web -> /api -> app-api
+#   devices.baktisatria.com   DNS only -> server TCP 8443 (NOT through the Coolify proxy) -> gateway (mutual TLS)
+#
+# Images (GitHub Actions push them to ghcr.io; the server logs in once with a read-only token):
+#   ppd-web, ppd-app-api         MBA009/ppd-preference-app        .github/workflows/images.yml
+#   ppd-gateway, ppd-repository  baktistr/habanero-ppd-gateway    .github/workflows/images.yml
+# The *_TAG variables take a branch tag (feature-gateway-integration, capstone-cloud-demo) or, to pin a
+# deployment, sha-<commit>.
+#
+# Secrets (Coolify environment variables, never committed):
+#   OPERATOR_TOKEN, REPOSITORY_TOKEN, DEMO_TOKEN   long random strings (openssl rand -hex 32)
+#   CF_ACCESS_TEAM_DOMAIN, CF_ACCESS_AUD           from the Cloudflare Access application for ppd.baktisatria.com
+#   OPERATOR_EMAILS                                comma-separated; empty means every signed-in person
+#
+# Certificates: scripts/make-cloud-tls.sh makes them; copy its server/ folder to TLS_DIR on the server
+# (read-only mount). Files used here:
+#   gateway-cert.pem, gateway-key.pem        the gateway's certificate for DEVICES_HOST (and "gateway")
+#   gateway-ca.pem                           the household CA: devices and app-api trust it, the gateway
+#                                            accepts client certificates it signed
+#   operator-cert.pem, operator-key.pem      app-api's own client certificate
+#   <device_id>-cert.pem, <device_id>-key.pem  one per simulated device (aqara-w200-01, reolink-e1-zoom-01,
+#                                            level-lock-01)
+#
+# The demo simulator runs inside app-api (SIMULATOR=1). It writes a DHCP lease file to the shared
+# sim-network volume, which the gateway reads as its "home network", so only demo devices show up there.
+
+services:
+  web:
+    image: ghcr.io/mba009/ppd-web:${APP_TAG:-feature-gateway-integration}
+    restart: unless-stopped
+    depends_on: [app-api]
+    # Coolify routes the domain set on this service (https://ppd.baktisatria.com) to port 80.
+    expose: ["80"]
+
+  app-api:
+    image: ghcr.io/mba009/ppd-app-api:${APP_TAG:-feature-gateway-integration}
+    restart: unless-stopped
+    environment:
+      APP_ENV: production
+      DATABASE_PATH: /data/app.db
+      # Inside the stack app-api reaches the gateway by its service name; the certificate is checked
+      # against DEVICES_HOST, the name the devices use.
+      GATEWAY_URL: https://gateway:8080
+      GATEWAY_TLS_SERVER_NAME: ${DEVICES_HOST:-devices.baktisatria.com}
+      GATEWAY_CA_FILE: /run/ppd-tls/gateway-ca.pem
+      GATEWAY_CLIENT_CERT_FILE: /run/ppd-tls/operator-cert.pem
+      GATEWAY_CLIENT_KEY_FILE: /run/ppd-tls/operator-key.pem
+      GATEWAY_OPERATOR_TOKEN: ${OPERATOR_TOKEN}
+      INTERNAL_SERVICE_TOKEN: ${DEMO_TOKEN}
+      CF_ACCESS_TEAM_DOMAIN: ${CF_ACCESS_TEAM_DOMAIN}
+      CF_ACCESS_AUD: ${CF_ACCESS_AUD}
+      OPERATOR_EMAILS: ${OPERATOR_EMAILS:-}
+      SIMULATOR: "1"
+      SIMULATOR_LEASES_FILE: /sim-network/dhcp.leases
+      SIMULATOR_CERT_DIR: /run/ppd-tls
+    volumes:
+      - app-data:/data
+      - sim-network:/sim-network
+      - ${TLS_DIR:-/opt/ppd-demo/tls}:/run/ppd-tls:ro
+
+  gateway:
+    image: ghcr.io/baktistr/ppd-gateway:${GATEWAY_TAG:-capstone-cloud-demo}
+    restart: unless-stopped
+    environment:
+      PPD_DATA_DIR: /data
+      PPD_LISTEN_ADDR: ":8080"
+      PPD_REPOSITORY_URL: http://repository:8081
+      PPD_REPOSITORY_AUTH_TOKEN: ${REPOSITORY_TOKEN}
+      PPD_OPERATOR_TOKEN: ${OPERATOR_TOKEN}
+      PPD_TAXONOMY_PROFILE: core-only
+      # Devices renew at 80% of this, so a policy change reaches them within ~1.5 minutes (default 15m).
+      PPD_ASSOCIATION_FRESHNESS: ${ASSOCIATION_FRESHNESS:-2m}
+      PPD_TLS_CERT_FILE: /run/ppd-tls/gateway-cert.pem
+      PPD_TLS_KEY_FILE: /run/ppd-tls/gateway-key.pem
+      PPD_TLS_CLIENT_CA_FILE: /run/ppd-tls/gateway-ca.pem
+      PPD_DEMO_APP_API_URL: http://app-api:3000
+      PPD_DEMO_APP_API_TOKEN: ${DEMO_TOKEN}
+      # There is no real home network in the cloud: the gateway reads the simulator's lease file instead.
+      PPD_DHCP_LEASES_FILE: /sim-network/dhcp.leases
+      PPD_ARP_TABLE_FILE: /dev/null
+      PPD_FINGERPRINT_TIMEOUT: 100ms
+    # Devices connect here directly; Cloudflare's proxy would end their TLS and drop the client certificate.
+    ports:
+      - "8443:8080"
+    volumes:
+      - gateway-data:/data
+      - sim-network:/sim-network:ro
+      - ${TLS_DIR:-/opt/ppd-demo/tls}:/run/ppd-tls:ro
+    depends_on: [repository]
+
+  repository:
+    image: ghcr.io/baktistr/ppd-repository:${GATEWAY_TAG:-capstone-cloud-demo}
+    restart: unless-stopped
+    environment:
+      PPD_DATA_DIR: /data
+      PPD_REPOSITORY_AUTH_TOKEN: ${REPOSITORY_TOKEN}
+    # No ports: only the gateway reaches it, on the stack's private network.
+    volumes:
+      - repository-data:/data
+
+volumes:
+  app-data:
+  gateway-data:
+  repository-data:
+  sim-network:

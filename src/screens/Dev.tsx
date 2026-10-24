@@ -24,7 +24,7 @@ function Code({ payload, label }: { payload: string; label: string }) {
 export default function Dev() {
   const nav = useNavigate()
   const lib = useLibrary()
-  const { household, resetDemo, addDevice, toast } = useHousehold()
+  const { household, resetDemo, toast } = useHousehold()
   const [sw, setSw] = useState('checking…')
 
   useEffect(() => {
@@ -35,7 +35,6 @@ export default function Dev() {
   if (lib.error) return <><AppBar title="Test tools" back={true} /><ErrorBox error={lib.error} /></>
   if (!lib.data || !household) return <><AppBar title="Test tools" back={true} /><Loading /></>
 
-  const notHome = lib.data.filter((d) => d.source === 'declared' && !household.devices.some((h) => h.device_id === d.id))
   const standalone = window.matchMedia('(display-mode: standalone)').matches
   const facts: [string, string][] = [
     ['Secure page (camera allowed)', window.isSecureContext ? 'yes' : 'no: use https:// or localhost'],
@@ -56,15 +55,15 @@ export default function Dev() {
       <Group><Code label="A Matter setup code" payload={MATTER_DECOY} /></Group>
       <Footnote>The Scan screen explains that this is not the privacy code.</Footnote>
 
+      <SectionHeader>Demo</SectionHeader>
+      <Group>
+        <Cell to="/demo-devices"><div className="cb" style={{ padding: '12px 0' }}><span className="ttl">Demo devices</span><span className="sub">Connect and unplug simulated devices (needs app-api with SIMULATOR=1)</span></div></Cell>
+      </Group>
+
       <SectionHeader>Household</SectionHeader>
       <Group>
-        <Cell onClick={async () => { await resetDemo('seed'); toast('Reset to first launch'); nav('/', { replace: true }) }} chevron={false}><div className="cb" style={{ padding: '12px 0' }}><span className="ttl">Start over with the demo household</span><span className="sub">Four devices. Clears your answers, rules and decisions, so the questions come up again.</span></div></Cell>
-        <Cell onClick={async () => { await resetDemo('empty'); toast('Reset to first launch'); nav('/', { replace: true }) }} chevron={false}><div className="cb" style={{ padding: '12px 0' }}><span className="ttl">Start over with an empty home</span><span className="sub">No devices, answers or rules. To try the questions, then scanning and adding devices.</span></div></Cell>
-        {notHome.map((d) => (
-          <Cell key={d.id} chevron={false} onClick={async () => { await addDevice(d.id, { joined: true }); nav(`/device/${d.id}/joined`) }}>
-            <div className="cb" style={{ padding: '12px 0' }}><span className="ttl">Simulate {d.short_name} joining</span><span className="sub">Opens the “joined your home” screen</span></div>
-          </Cell>
-        ))}
+        <Cell onClick={async () => { await resetDemo('seed'); toast('Reset to first launch'); nav('/', { replace: true }) }} chevron={false}><div className="cb" style={{ padding: '12px 0' }}><span className="ttl">Start over with the demo household</span><span className="sub">Clears your answers, rules and decisions, so the questions come up again. Devices connected to the home gateway stay.</span></div></Cell>
+        <Cell onClick={async () => { await resetDemo('empty'); toast('Reset to first launch'); nav('/', { replace: true }) }} chevron={false}><div className="cb" style={{ padding: '12px 0' }}><span className="ttl">Start over with an empty home</span><span className="sub">No advisory devices, answers or rules. Devices connected to the home gateway stay.</span></div></Cell>
       </Group>
 
       <SectionHeader>This browser</SectionHeader>

@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:mock": "VITE_API_MODE=mock vite",
+    "api": "npm --prefix server run dev",
     "dev:https": "HTTPS=1 vite --host",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host",
