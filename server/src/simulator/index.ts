@@ -1,11 +1,12 @@
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
-import { TAXONOMY_RELEASE } from '../../../shared/taxonomy'
-import type { SimDevice } from '../../../shared/types'
+import { TAXONOMY_RELEASE, termLabel } from '../../../shared/taxonomy'
+import type { SimConsole, SimDevice, SimEvent, SimOutcome } from '../../../shared/types'
 import type { SimulatorConfig } from '../config'
 import type { Fixtures } from '../fixtures'
 import type { LiveDirectory, RegistryEntry } from '../live'
 import type { HouseholdStore } from '../store'
+import { MODELS, type DeviceModel, type DeviceState } from './models'
 import { Participant, type ParticipantIdentity, type ParticipantTls } from './participant'
 
 /**
@@ -22,12 +23,24 @@ interface SimSlot {
   entry: RegistryEntry & { simulator: NonNullable<RegistryEntry['simulator']> }
   wanted: Wanted
   participant: Participant | null
+  /** The demo console: what the device looks like, how it treats the rules, and what it did. In memory only. */
+  model: DeviceModel | null
+  state: DeviceState
+  behavior: SimConsole['behavior']
+  events: SimEvent[]
+  lastPeriodic: number
 }
+
+const MAX_EVENTS = 100
+const TICK_MS = 5000
+/** Household limits a rule can carry (protocol-04 section 7.12), as the console says them. */
+const CONDITION: Record<string, string> = { 'ppd:ephemeral': 'only if not kept', 'ppd:inHomeOnly': 'only if processed in the home', 'ppd:onDeviceOnly': 'only if it stays on the device' }
 
 const FIELDS = ['data_type', 'purpose', 'action', 'source', 'handling_context'] as const
 
 export class Simulator {
   private readonly slots = new Map<string, SimSlot>()
+  private timer: NodeJS.Timeout | null = null
 
   constructor(
     private readonly config: SimulatorConfig,
@@ -39,7 +52,8 @@ export class Simulator {
   ) {
     for (const entry of registry) {
       if (entry.kind !== 'simulated' || !entry.simulator || !entry.fixture || !fixtures.devices.has(entry.fixture)) continue
-      this.slots.set(entry.device_id, { entry: entry as SimSlot['entry'], wanted: 'off', participant: null })
+      const model = MODELS[entry.fixture] ?? null
+      this.slots.set(entry.device_id, { entry: entry as SimSlot['entry'], wanted: 'off', participant: null, model, state: { ...model?.initial }, behavior: 'follows', events: [], lastPeriodic: 0 })
     }
   }
 
@@ -53,6 +67,8 @@ export class Simulator {
       if (w === 'connected') this.participant(slot).start()
     }
     this.writeLeases()
+    this.timer ??= setInterval(() => this.tick(), TICK_MS)
+    this.timer.unref()
   }
 
   list(): SimDevice[] {
@@ -91,6 +107,7 @@ export class Simulator {
     for (const slot of this.slots.values()) {
       slot.participant?.stop()
       slot.wanted = 'off'
+      Object.assign(slot, { state: { ...slot.model?.initial }, behavior: 'follows', events: [], lastPeriodic: 0 })
       this.store.setSimWanted(slot.entry.device_id, 'off')
     }
     this.writeLeases()
@@ -98,7 +115,106 @@ export class Simulator {
   }
 
   close(): void {
+    if (this.timer) clearInterval(this.timer)
     for (const slot of this.slots.values()) slot.participant?.stop()
+  }
+
+  /** The device's console: its state, the controls the real product offers, and what it did with its data. */
+  console(id: string): SimConsole {
+    const slot = this.anySlot(id)
+    const ppd = slot.entry.simulator.mode === 'ppd'
+    const policy = slot.participant?.policy
+    const totals = new Map<string, SimConsole['totals'][number]>()
+    for (const e of slot.events) {
+      for (const f of e.flows) {
+        if (f.outcome === 'kept_home') continue
+        const key = f.recipient + '|' + f.purpose
+        const t = totals.get(key) ?? { recipient: f.recipient, purpose: f.purpose, sent: 0, blocked: 0 }
+        if (f.outcome === 'blocked' || f.outcome === 'held_back') t.blocked++
+        else t.sent++
+        totals.set(key, t)
+      }
+    }
+    return {
+      device: this.view(slot),
+      ppd,
+      state: slot.model?.show(slot.state) ?? [],
+      controls: (slot.model?.controls(slot.state) ?? []).map(({ id, label, hint }) => ({ id, label, hint })),
+      periodic: slot.model?.periodic ? { label: slot.model.periodic.label, seconds: slot.model.periodic.seconds } : null,
+      behavior: slot.behavior,
+      policy: ppd && policy ? { policy_id: policy.policy_id, rules: policy.rules.length } : null,
+      events: slot.events,
+      totals: [...totals.values()].sort((a, b) => a.recipient.localeCompare(b.recipient) || a.purpose.localeCompare(b.purpose)),
+    }
+  }
+
+  /** Someone uses the device: a control the real product offers. The device must be on. */
+  act(id: string, controlId: string): SimConsole {
+    const slot = this.anySlot(id)
+    const control = slot.model?.controls(slot.state).find((c) => c.id === controlId)
+    if (!control) throw Object.assign(new Error(`${id} has no control ${controlId}.`), { statusCode: 404 })
+    if (!this.isOn(slot)) throw Object.assign(new Error(slot.entry.simulator.mode === 'ppd' ? 'Connect it first.' : 'Put it on the network first.'), { statusCode: 409 })
+    if (control.apply) slot.state = control.apply(slot.state)
+    this.fire(slot, control.label, control.flows)
+    return this.console(id)
+  }
+
+  /** Follows the household's rules, or ignores them (to show that receiving a policy is not obeying it). */
+  setBehavior(id: string, mode: SimConsole['behavior']): SimConsole {
+    const slot = this.anySlot(id)
+    if (slot.entry.simulator.mode !== 'ppd') throw Object.assign(new Error(`${id} does not support PPD, so it has no rules to follow.`), { statusCode: 400 })
+    slot.behavior = mode
+    return this.console(id)
+  }
+
+  /** Periodic reports from devices that are on. */
+  private tick(): void {
+    const now = Date.now()
+    for (const slot of this.slots.values()) {
+      const p = slot.model?.periodic
+      if (!p || !this.isOn(slot) || (p.when && !p.when(slot.state)) || now - slot.lastPeriodic < p.seconds * 1000) continue
+      slot.lastPeriodic = now
+      if (p.apply) slot.state = p.apply(slot.state)
+      this.fire(slot, p.label, p.flows)
+    }
+  }
+
+  private isOn(slot: SimSlot): boolean {
+    return slot.entry.simulator.mode === 'ppd' ? slot.wanted === 'connected' && !!slot.participant?.active : slot.wanted === 'on_network'
+  }
+
+  /**
+   * The device handles these flows. A PPD device looks each one up in the household policy it received (one rule
+   * per exact five-field dataflow, protocol-04 section 7.11) and holds back what is denied or not covered;
+   * a device without PPD sends everything.
+   */
+  private fire(slot: SimSlot, label: string, statementIds: string[]): void {
+    const fixture = this.fixtures.devices.get(slot.entry.fixture!)!
+    const ppd = slot.entry.simulator.mode === 'ppd'
+    const rules = slot.participant?.policy?.rules ?? []
+    const flows: SimEvent['flows'] = []
+    for (const sid of statementIds) {
+      const flow = fixture.flows.find((f) => f.id === `${fixture.id}.${sid}`)
+      // A PPD device only does what it declared.
+      if (!flow || (ppd && flow.evidence !== 'source_linked')) continue
+      const t = flow.taxonomy
+      const home = t.handling_context === 'ppd:householdContext'
+      const rule = rules.find((r) => FIELDS.every((k) => r[k] === t[k]))
+      let outcome: SimOutcome
+      if (!ppd) outcome = 'sent_no_ppd'
+      else if (rule?.effect === 'allow') outcome = home ? 'kept_home' : 'sent'
+      else if (slot.behavior === 'ignores') outcome = 'sent_against_rules'
+      else outcome = rule ? 'blocked' : 'held_back'
+      const condition = rule?.effect === 'allow' ? [rule.constraints?.retention, rule.constraints?.processing_boundary].map((v) => (v ? CONDITION[v] : undefined)).filter(Boolean).join(', ') || null : null
+      flows.push({ title: flow.title, recipient: termLabel('handling_context', t.handling_context), purpose: termLabel('purpose', t.purpose), outcome, condition })
+    }
+    slot.events = [{ at: new Date().toISOString(), label, flows }, ...slot.events].slice(0, MAX_EVENTS)
+  }
+
+  private anySlot(id: string): SimSlot {
+    const slot = this.slots.get(id)
+    if (!slot) throw Object.assign(new Error(`No simulated device ${id}.`), { statusCode: 404 })
+    return slot
   }
 
   private slot(id: string, mode: 'ppd' | 'network'): SimSlot {

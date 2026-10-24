@@ -78,8 +78,8 @@ export default function DeviceDetail() {
           <PolicyReceipt live={live} />
           <LifecycleSteps live={live} />
           <ReportedBehavior live={live} />
-          {operator && live.kind === 'real' && (
-            <div className="sf"><Link to="/demo-devices" className="link">What it uploaded and demo controls</Link></div>
+          {operator && (
+            <div className="sf"><Link to={`/demo-devices/${encodeURIComponent(d.id)}`} className="link">Device console (demo)</Link></div>
           )}
           <IdentityAndNetwork live={live} />
         </>

@@ -316,6 +316,40 @@ export interface SimDevice {
   last_error: string | null
 }
 
+/**
+ * What a simulated device did with one data flow when it was used (the demo console, not PPD):
+ * sent / kept_home   the household policy it received allows it;
+ * blocked            the policy says no, so the device held it back;
+ * held_back          no rule in its policy covers it (or it has no policy yet), so it held it back;
+ * sent_against_rules the device was set to ignore the rules and sent it anyway;
+ * sent_no_ppd        a device without PPD, which never receives the household's rules.
+ */
+export type SimOutcome = 'sent' | 'kept_home' | 'blocked' | 'held_back' | 'sent_against_rules' | 'sent_no_ppd'
+
+export interface SimEvent {
+  at: string
+  /** The control used, or the periodic report. */
+  label: string
+  flows: { title: string; recipient: string; purpose: string; outcome: SimOutcome; condition: string | null }[]
+}
+
+/** A simulated device's console: its state, the controls the real product offers, and what it sent. */
+export interface SimConsole {
+  device: SimDevice
+  /** False for devices without PPD (the TV): they never receive the household's rules. */
+  ppd: boolean
+  state: [string, string][]
+  controls: { id: string; label: string; hint: string }[]
+  periodic: { label: string; seconds: number } | null
+  behavior: 'follows' | 'ignores'
+  /** The household policy the device last received, if any. */
+  policy: { policy_id: string; rules: number } | null
+  /** Newest first. */
+  events: SimEvent[]
+  /** Flows that leave the home, counted by recipient and purpose. */
+  totals: { recipient: string; purpose: string; sent: number; blocked: number }[]
+}
+
 /** One atomic rule the compiler wants to publish, and why. */
 export interface CompiledRule extends PolicyRule {
   reason: string
@@ -406,4 +440,7 @@ export interface PpdApi {
   simDisconnect(id: string): Promise<SimDevice>
   simNetwork(id: string, present: boolean): Promise<SimDevice>
   simReset(): Promise<SimDevice[]>
+  getSimConsole(id: string): Promise<SimConsole>
+  simAction(id: string, action: string): Promise<SimConsole>
+  simBehavior(id: string, mode: SimConsole['behavior']): Promise<SimConsole>
 }

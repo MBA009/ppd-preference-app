@@ -141,6 +141,11 @@ Both clients use the same code from `shared/` for what happens to the household 
   (default 10 s) for devices that joined or left, so the preset covers new devices without anyone acting. It sends only
   when the compiled policy differs from the gateway's, and nothing before the household has a preset. Loading one of the
   gateway's example policies (CableLabs dashboard) is therefore replaced by the household's within seconds;
+- runs a **device console** per demo device (Demo devices → a device): the simulated devices get controls their real
+  product offers (`server/src/simulator/models.ts`: lock and unlock, a person walking past the camera, turning the
+  thermostat up, watching TV …). Each control triggers the data flows the device declares, and the device checks each
+  one against the household policy it received: allowed flows are sent, denied or uncovered ones held back, unless it is
+  set to ignore the rules. The TV has no PPD and sends everything. This is demo behaviour, not PPD;
 - relays the cloud demo extensions: devices upload telemetry and poll for guided-demo commands through the gateway, which
   authenticates them and calls `/internal/*` with a service token;
 - requires sign-in in production (it verifies Cloudflare Access tokens itself), refuses writes without the app's

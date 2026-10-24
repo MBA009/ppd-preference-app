@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { api, type SimDevice } from '../api'
 import { AppBar, Cell, DeviceTile, ErrorBox, Footnote, Group, Loading, SectionHeader } from '../components/ui'
 import { useDevices, useHousehold, useMe, useSimDevices } from '../state/data'
-import { DemoControls, TelemetryCard } from '../components/LiveDevice'
 import { timeAgo } from '../lib/device'
 
 /**
@@ -62,12 +61,12 @@ export default function DemoDevices() {
     return (
       <div key={d.id} className="cell d" style={{ alignItems: 'flex-start' }}>
         <div style={{ paddingTop: 12 }}><DeviceTile device={{ ...d, source: 'declared', kind: 'simulated', category: '', category_label: '', matter: false, declaration: null, declaration_id_example: '', flow_count: 0 }} /></div>
-        <div className="cb">
-          <span className="ttl">{d.short_name}</span>
+        <Link className="cb" to={`/demo-devices/${encodeURIComponent(d.id)}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+          <span className="ttl">{d.short_name} <span className="link" style={{ fontSize: 13, fontWeight: 400 }}>Open console ›</span></span>
           <span className="sub">{d.hostname} · {d.ip_address}</span>
           <span className="ln"><span className={`chip ${s.cls}`}>{s.label}</span>{d.last_event && <span className="sub" style={{ fontSize: 13 }}>{d.last_event}{d.last_event_at ? ` · ${timeAgo(d.last_event_at)}` : ''}</span>}</span>
           {d.last_error && <span className="sub" style={{ fontSize: 13, color: '#B3261E' }}>{d.last_error}</span>}
-        </div>
+        </Link>
         <span className="tr" style={{ paddingTop: 12 }}>
           <button className={on ? 'btn2' : 'btn'} style={{ flex: 'none', minHeight: 36, padding: '0 16px' }} disabled={busy === d.id} onClick={run}>{label}</button>
         </span>
@@ -83,27 +82,25 @@ export default function DemoDevices() {
       </div>
 
       <SectionHeader>Real devices</SectionHeader>
-      {real.length ? real.map((d) => (
-        <div key={d.id}>
-          <Group>
-            <Cell className="d" to={`/device/${encodeURIComponent(d.id)}`}>
+      {real.length ? (
+        <Group>
+          {real.map((d) => (
+            <Cell key={d.id} className="d" to={`/demo-devices/${encodeURIComponent(d.id)}`}>
               <DeviceTile device={d} />
-              <div className="cb"><span className="ttl">{d.short_name}</span><span className="sub">Real hardware · {d.live?.association.label ?? 'connected'}</span></div>
+              <div className="cb"><span className="ttl">{d.short_name}</span><span className="sub">Real hardware · {d.live?.association.label ?? 'connected'} · uploads and demo controls</span></div>
             </Cell>
-          </Group>
-          <TelemetryCard device={d} />
-          {me.role === 'operator' && <DemoControls device={d} />}
-        </div>
-      )) : (
+          ))}
+        </Group>
+      ) : (
         <Group><Cell chevron={false}><div className="cb" style={{ padding: '12px 0' }}><span className="ttl">No real device is connected</span><span className="sub">Plug in the ESP32 smart bulb; it shows up here once it joins the home.</span></div></Cell></Group>
       )}
-      <Footnote>What the bulb uploaded and the remote controls play the device maker’s side. They are not PPD: they go through the gateway’s demo extension (/ppd-demo/v1). PPD only delivers the household’s rules and records that the device received them.</Footnote>
+      <Footnote>Each device’s console plays the device’s own side: use it, and see which data leaves the home under the rules it received. None of that is PPD, which only delivers the household’s rules and records that the device received them.</Footnote>
 
       {simulator ? (
         <>
           <SectionHeader>Join through PPD</SectionHeader>
           <Group>{ppd.map(card)}</Group>
-          <Footnote>Simulated devices only take part in PPD: they send no data and take no commands. Connect: the device joins the network, registers, declares what it does, receives your rules and confirms them. Unplug: it stops renewing and turns stale once its receipt expires.</Footnote>
+          <Footnote>Connect: the device joins the network, registers, declares what it does, receives your rules and confirms them. Unplug: it stops renewing and turns stale once its receipt expires.</Footnote>
 
           <SectionHeader>On the network without PPD</SectionHeader>
           <Group>{network.map(card)}</Group>

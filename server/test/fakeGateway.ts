@@ -63,7 +63,7 @@ export class FakeGateway {
       }
       if (path.startsWith('/ppd/v1/policy/effective/')) {
         device.policy_retrieved = true
-        return this.send(res, 200, { policy_id: 'effective-' + device.device_id, policy_hash: 'sha256:1', renewal_interval: 6, rules: [] })
+        return this.send(res, 200, { policy_id: 'effective-' + device.device_id, policy_hash: 'sha256:1', renewal_interval: 6, rules: this.policy.rules })
       }
       if (path === '/ppd/v1/device/ack') {
         Object.assign(device, { acknowledged: true, associated: true, association_status: 'associated' })

@@ -1,4 +1,4 @@
-import type { Command, Device, DeviceSummary, Household, Me, Overview, Policy, HouseholdPreset, Onboarding, PpdApi, Preset, PublishPreview, PublishResult, ResolveResult, Rule, SimDevice, SystemStatus, Telemetry, UnmanagedDevice } from './types'
+import type { Command, Device, DeviceSummary, Household, Me, Overview, Policy, HouseholdPreset, Onboarding, PpdApi, Preset, PublishPreview, PublishResult, ResolveResult, Rule, SimConsole, SimDevice, SystemStatus, Telemetry, UnmanagedDevice } from './types'
 
 /**
  * The real backend: app-api (server/), reached on the same origin under /api. In development Vite
@@ -76,4 +76,7 @@ export const httpClient: PpdApi = {
   simDisconnect: (deviceId) => call<SimDevice>('POST', `/simulator/devices/${id(deviceId)}/disconnect`, {}),
   simNetwork: (deviceId, present) => call<SimDevice>('POST', `/simulator/devices/${id(deviceId)}/network`, { present }),
   simReset: () => call<SimDevice[]>('POST', '/simulator/reset', {}),
+  getSimConsole: (deviceId) => call<SimConsole>('GET', `/simulator/devices/${id(deviceId)}/console`),
+  simAction: (deviceId, action) => call<SimConsole>('POST', `/simulator/devices/${id(deviceId)}/actions`, { action }),
+  simBehavior: (deviceId, mode) => call<SimConsole>('POST', `/simulator/devices/${id(deviceId)}/behavior`, { mode }),
 }

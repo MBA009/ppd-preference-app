@@ -1,5 +1,6 @@
 import http from 'node:http'
 import https from 'node:https'
+import type { PolicyRule } from '../../../shared/types'
 
 /**
  * One simulated PPD participant. It does what a real device does, over the same transport
@@ -27,8 +28,12 @@ class RequestError extends Error {
 const RETRY_MS = 5000
 const MIN_RENEW_MS = 5000
 
+/** The household policy a participant last received: what it uses to decide which data it may send. */
+export interface ReceivedPolicy { policy_id: string; rules: PolicyRule[] }
+
 export class Participant {
   state: ParticipantState = 'paused'
+  policy: ReceivedPolicy | null = null
   lastEvent: string | null = null
   lastEventAt: string | null = null
   lastError: string | null = null
@@ -83,10 +88,11 @@ export class Participant {
           this.event('joining', 'Declaration rejected by the gateway; continuing without it', e.message)
         }
         while (this.running) {
-          const policy = (await this.request('GET', base + 'policy/effective/' + encodeURIComponent(this.identity.deviceId))) as { policy_id: string; policy_hash: string; renewal_interval?: number }
+          const policy = (await this.request('GET', base + 'policy/effective/' + encodeURIComponent(this.identity.deviceId))) as { policy_id: string; policy_hash: string; renewal_interval?: number; rules?: PolicyRule[] }
           const ack = (await this.request('POST', base + 'device/ack', { device_id: this.identity.deviceId, policy_id: policy.policy_id, policy_hash: policy.policy_hash })) as { association_status?: string; renewal_interval?: number }
           // Unplugged while the request was in flight: stay paused.
           if (!this.running) break
+          this.policy = { policy_id: policy.policy_id, rules: policy.rules ?? [] }
           this.event('associated', `Confirmed receipt of ${policy.policy_id}`)
           const interval = (ack.renewal_interval ?? policy.renewal_interval ?? 60) * 1000
           await this.sleep(Math.max(MIN_RENEW_MS, interval * 0.8))

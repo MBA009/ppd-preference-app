@@ -17,6 +17,7 @@ import Sources from './screens/Sources'
 import Dev from './screens/Dev'
 import SystemStatus from './screens/SystemStatus'
 import DemoDevices from './screens/DemoDevices'
+import DeviceConsole from './screens/DeviceConsole'
 
 /** Until the household has a preset, the only screens are the onboarding questions, the presets and the test tools. */
 function OnboardingGate() {
@@ -86,6 +87,7 @@ export default function App() {
                 <Route path="library" element={<Library />} />
                 <Route path="status" element={<SystemStatus />} />
                 <Route path="demo-devices" element={<DemoDevices />} />
+                <Route path="demo-devices/:id" element={<DeviceConsole />} />
                 <Route path="device/:id" element={<Split mode="detail" list={<Home />} detail={<DeviceDetail />} />} />
                 <Route path="device/:id/joined" element={<NewDevice />} />
                 <Route path="device/:id/flow/:flowId" element={<FlowDetail />} />
