@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { PolicyRule } from '../api'
-import { LIVE_POLL_MS, usePreview, usePublished } from '../state/data'
+import { LIVE_POLL_MS, useDevices, useHousehold, usePreview, usePublished } from '../state/data'
 import { PROCESSING_BOUNDARY, RETENTION, termLabel } from '../../shared/taxonomy'
 import { Cell, Expander, Footnote, Group, SectionHeader, Tile } from './ui'
 import { Icon, ShieldCheck } from './icons'
@@ -70,23 +70,70 @@ export function PublishCard() {
 /** The rules the gateway serves right now, in plain language. */
 export function PublishedRules() {
   const { data: policy } = usePublished()
-  const [open, setOpen] = useState(false)
+  const { data: preview } = usePreview(LIVE_POLL_MS)
+  const { household } = useHousehold()
+  const { data: devices } = useDevices(household?.devices.map((d) => d.device_id) ?? [])
+  const [open, setOpen] = useState<string | null>(null)
   if (!policy) return null
-  const allow = policy.rules.filter((r) => r.effect === 'allow')
-  const deny = policy.rules.filter((r) => r.effect === 'deny')
+
+  // Which device flows each sent rule covers, from the compile (same rule ids: one per exact dataflow).
+  const flowsOf = new Map((preview?.rules ?? []).map((r) => [r.rule_id, r.flows]))
+  const name = (id: string) => devices?.find((d) => d.id === id)?.short_name ?? id
+  const byDevice = new Map<string, { rule: PolicyRule; titles: string[] }[]>()
+  for (const rule of policy.rules) {
+    const flows = flowsOf.get(rule.rule_id) ?? []
+    for (const id of new Set(flows.map((f) => f.device_id))) {
+      const list = byDevice.get(id) ?? []
+      list.push({ rule, titles: flows.filter((f) => f.device_id === id).map((f) => f.title) })
+      byDevice.set(id, list)
+    }
+  }
+  const sent = preview?.sync?.last_sent?.policy_id === policy.policy_id ? preview.sync.last_sent.at : null
+  const toggle = (key: string) => setOpen(open === key ? null : key)
+
   return (
     <>
       <SectionHeader>What your devices receive</SectionHeader>
       <Group>
-        <div className="cell kv"><span className="ttl">Rules in force</span><span className="v mono">{policy.policy_id}</span></div>
-        <Expander open={open} onToggle={() => setOpen(!open)} sub={`${plural(deny.length, 'deny rule')} · ${plural(allow.length, 'allow rule')}`}>{open ? 'Hide the rules' : 'Show the rules'}</Expander>
-        {open && policy.rules.map((r) => (
+        <div className="cell">
+          <div className="cb">
+            <span className="ttl">Current policy · {plural(policy.rules.length, 'rule')}</span>
+            <span className="sub mono" style={{ fontSize: 12 }}>{policy.policy_id}{sent ? ` · sent ${timeAgo(sent)}` : ''}</span>
+          </div>
+        </div>
+        {[...byDevice.entries()].map(([id, list]) => {
+          const never = list.filter((x) => x.rule.effect === 'deny').length
+          return (
+            <div key={id}>
+              <Expander open={open === id} onToggle={() => toggle(id)} sub={`${plural(list.length, 'rule')} apply${never ? ` · ${never} never` : ''}`}>{name(id)}</Expander>
+              {open === id && list.sort((a, b) => (a.rule.effect === b.rule.effect ? 0 : a.rule.effect === 'deny' ? -1 : 1)).map(({ rule, titles }) => (
+                <div key={rule.rule_id} className="cell" style={{ paddingLeft: 32 }}>
+                  <div className="cb">
+                    <span className="ttl" style={{ color: rule.effect === 'deny' ? '#B3261E' : '#1E7D34', fontWeight: 500, fontSize: 14 }}>{rule.effect === 'deny' ? 'Never' : 'Allowed'}{limitText(rule)}</span>
+                    <span className="sub">{titles.join(' · ')}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        })}
+        <Expander open={open === 'all'} onToggle={() => toggle('all')} sub="As the gateway and the CableLabs dashboard show them">{`All ${policy.rules.length} rules in PPD terms`}</Expander>
+        {open === 'all' && policy.rules.map((r) => (
           <div key={r.rule_id} className="cell">
-            <div className="cb"><span className="ttl" style={{ color: r.effect === 'deny' ? '#B3261E' : '#1E7D34', fontWeight: 500 }}>{r.effect === 'deny' ? 'Never' : 'Allowed'}</span><span className="sub">{ruleText(r)}</span></div>
+            <div className="cb"><span className="ttl" style={{ color: r.effect === 'deny' ? '#B3261E' : '#1E7D34', fontWeight: 500 }}>{r.effect === 'deny' ? 'Never' : 'Allowed'} <span className="sub mono" style={{ fontWeight: 400 }}>{r.rule_id}</span></span><span className="sub">{ruleText(r)}</span></div>
           </div>
         ))}
       </Group>
-      <Footnote>Each rule covers one exact kind of data flow, so a device can check it directly. Devices only receive rules; we can’t check that they follow them.</Footnote>
+      <Footnote>Every device gets the whole policy and follows the rules that match what it does. Each rule covers one exact kind of data flow, so a device can check it directly; we can’t check that devices follow them.</Footnote>
     </>
   )
+}
+
+/** A household limit a rule carries (protocol-04 section 7.12), as " · only if …". */
+function limitText(r: PolicyRule): string {
+  if (r.effect !== 'allow') return ''
+  if (r.constraints?.processing_boundary === 'ppd:inHomeOnly') return ' · only if processed in your home'
+  if (r.constraints?.processing_boundary === 'ppd:onDeviceOnly') return ' · only if it stays on the device'
+  if (r.constraints?.retention === 'ppd:ephemeral') return ' · only if not kept'
+  return ''
 }
