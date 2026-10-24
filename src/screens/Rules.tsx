@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import type { Rule } from '../api'
 import { ActionBar, AppBar, Cell, ErrorBox, Footnote, Group, Loading, SectionHeader, Segmented, Tile } from '../components/ui'
@@ -39,7 +39,8 @@ function Policy() {
   const nav = useNavigate()
   const [params] = useSearchParams()
   const isNew = params.get('new') === '1'
-  const { household, saveProfile } = useHousehold()
+  const { household, saveProfile, resetDemo, toast } = useHousehold()
+  const [confirmReset, setConfirmReset] = useState(false)
   const { data: presets, error } = useHouseholdPresets()
   const rules = useRules()
   const ids = (household?.devices ?? []).map((d) => d.device_id)
@@ -68,6 +69,13 @@ function Policy() {
   const preset = presets.find((p) => p.id === household.preset_id)
   const made = rules.filter((r) => r.origin.kind === 'preset').length
   const added = rules.length - made
+
+  const reset = async () => {
+    if (!confirmReset) { setConfirmReset(true); return }
+    await resetDemo('seed')
+    toast('Everything was reset')
+    nav('/rules', { replace: true })
+  }
 
   const setProfile = (patch: Partial<typeof profile>) => void saveProfile({ ...profile, ...patch })
 
@@ -179,6 +187,16 @@ function Policy() {
         </Cell>
         <Cell className="t" to="/rules/sources">
           <div className="cb"><span className="ttl">How the presets were made</span><span className="sub">Synthetic households from published studies</span></div>
+        </Cell>
+      </Group>
+
+      <div className="gap" />
+      <Group>
+        <Cell className="t" chevron={false} onClick={reset}>
+          <div className="cb">
+            <span className="ttl" style={{ color: '#B3261E' }}>{confirmReset ? 'Tap again to reset everything' : 'Reset everything'}</span>
+            <span className="sub">Clears your preset, answers and rules, including rules you added, and starts again with the questions. Connected devices stay.</span>
+          </div>
         </Cell>
       </Group>
 
