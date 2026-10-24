@@ -6,6 +6,7 @@ import { Cell, Expander, Footnote, Group, SectionHeader, Tile } from './ui'
 import { Icon, ShieldCheck } from './icons'
 import { plural } from '../lib/verdicts'
 import { timeAgo } from '../lib/device'
+import { KIND } from './PresetSummary'
 
 /**
  * The household rules on their way to the devices. app-api compiles the rules into one PPD household policy
@@ -112,7 +113,7 @@ export function PublishedRules() {
               {open === id && list.sort((a, b) => (a.rule.effect === b.rule.effect ? 0 : a.rule.effect === 'deny' ? -1 : 1)).map(({ rule, titles }) => (
                 <div key={rule.rule_id} className="cell" style={{ paddingLeft: 32 }}>
                   <div className="cb">
-                    <span className="ttl" style={{ color: rule.effect === 'deny' ? '#B3261E' : '#1E7D34', fontWeight: 500, fontSize: 14 }}>{rule.effect === 'deny' ? 'Never' : 'Allowed'}{limitText(rule)}</span>
+                    <span className="ttl" style={{ color: rule.effect === 'deny' ? KIND.never.color : limitText(rule) ? KIND.limited.color : KIND.allow.color, fontWeight: 500, fontSize: 14 }}>{rule.effect === 'deny' ? 'Never' : 'Allowed'}{limitText(rule)}</span>
                     <span className="sub">{titles.join(' · ')}</span>
                   </div>
                 </div>
@@ -123,7 +124,7 @@ export function PublishedRules() {
         <Expander open={open === 'all'} onToggle={() => toggle('all')} sub="As the gateway and the CableLabs dashboard show them">{`All ${policy.rules.length} rules in PPD terms`}</Expander>
         {open === 'all' && policy.rules.map((r) => (
           <div key={r.rule_id} className="cell">
-            <div className="cb"><span className="ttl" style={{ color: r.effect === 'deny' ? '#B3261E' : '#1E7D34', fontWeight: 500 }}>{r.effect === 'deny' ? 'Never' : 'Allowed'} <span className="sub mono" style={{ fontWeight: 400 }}>{r.rule_id}</span></span><span className="sub">{ruleText(r)}</span></div>
+            <div className="cb"><span className="ttl" style={{ color: r.effect === 'deny' ? KIND.never.color : limitText(r) ? KIND.limited.color : KIND.allow.color, fontWeight: 500 }}>{r.effect === 'deny' ? 'Never' : 'Allowed'} <span className="sub mono" style={{ fontWeight: 400 }}>{r.rule_id}</span></span><span className="sub">{ruleText(r)}</span></div>
           </div>
         ))}
       </Group>
