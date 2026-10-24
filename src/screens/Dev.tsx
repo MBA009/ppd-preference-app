@@ -58,6 +58,7 @@ export default function Dev() {
       <SectionHeader>Demo</SectionHeader>
       <Group>
         <Cell to="/demo-devices"><div className="cb" style={{ padding: '12px 0' }}><span className="ttl">Demo devices</span><span className="sub">Connect and unplug simulated devices (needs app-api with SIMULATOR=1)</span></div></Cell>
+        <Cell to="/maker"><div className="cb" style={{ padding: '12px 0' }}><span className="ttl">Device maker’s cloud</span><span className="sub">What the ESP32 bulb uploaded, and its remote demo controls (not part of PPD)</span></div></Cell>
       </Group>
 
       <SectionHeader>Household</SectionHeader>

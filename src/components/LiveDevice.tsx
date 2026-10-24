@@ -8,8 +8,8 @@ import { ShieldCheck } from './icons'
 
 /**
  * The gateway's view of a participating device, as the CableLabs dashboard shows it: association,
- * lifecycle, the policy instance delivered and acknowledged, identity, network, reported behavior,
- * telemetry and guided-demo controls.
+ * lifecycle, the policy instance delivered and acknowledged, identity, network and reported behavior.
+ * Telemetry and guided-demo controls are not PPD; they appear only on the device maker's page (MakerCloud).
  */
 
 const TILE: Record<Tone, 'green' | 'orange' | 'red' | 'grey'> = { good: 'green', warn: 'orange', bad: 'red', neutral: 'grey' }
@@ -133,12 +133,13 @@ export function ReportedBehavior({ live }: { live: LiveState }) {
 /** Recent sensor uploads per purpose. Silence alone is not proof that a device complied. */
 export function TelemetryCard({ device }: { device: Device }) {
   const { data } = useTelemetry(device.id)
-  if (!data || (!data.samples.length && !data.by_purpose.length)) return null
+  if (!data) return null
   const latest = data.samples[0]
   return (
     <>
-      <SectionHeader>Data it sent</SectionHeader>
+      <SectionHeader>What it uploaded</SectionHeader>
       <Group>
+        {!data.by_purpose.length && <Kv k="Nothing uploaded yet" v="" />}
         {data.by_purpose.map((p) => <Kv key={p.purpose} k={p.label} v={`${p.count} ${p.count === 1 ? 'sample' : 'samples'} · last ${when(p.last_at)}`} />)}
         {latest && <Kv k="Latest reading" v={[latest.temperature_c !== null ? `${latest.temperature_c} °C` : null, latest.humidity_pct !== null ? `${latest.humidity_pct} %` : null].filter(Boolean).join(' · ')} />}
       </Group>

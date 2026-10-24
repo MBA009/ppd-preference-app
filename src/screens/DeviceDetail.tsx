@@ -2,7 +2,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api'
 import { AppBar, Cell, DeviceTile, ErrorBox, Group, Loading, SectionHeader } from '../components/ui'
 import { AttentionList, ProvenanceCard } from '../components/DeviceReport'
-import { AssociationCard, DemoControls, IdentityAndNetwork, LifecycleSteps, PolicyReceipt, ReportedBehavior, TelemetryCard } from '../components/LiveDevice'
+import { AssociationCard, IdentityAndNetwork, LifecycleSteps, PolicyReceipt, ReportedBehavior } from '../components/LiveDevice'
 import { useDevice, useHousehold, useMe, useRules } from '../state/data'
 import { STATE_LABEL, forgetBlocker, isConnected, kindLabel, subtitle, timeAgo } from '../lib/device'
 
@@ -78,8 +78,9 @@ export default function DeviceDetail() {
           <PolicyReceipt live={live} />
           <LifecycleSteps live={live} />
           <ReportedBehavior live={live} />
-          <TelemetryCard device={d} />
-          {operator && <DemoControls device={d} />}
+          {operator && live.kind === 'real' && (
+            <div className="sf"><Link to="/maker" className="link">What the maker received (demo)</Link></div>
+          )}
           <IdentityAndNetwork live={live} />
         </>
       ) : (
