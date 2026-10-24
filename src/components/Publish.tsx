@@ -103,9 +103,12 @@ export function PublishedRules() {
         </div>
         {[...byDevice.entries()].map(([id, list]) => {
           const never = list.filter((x) => x.rule.effect === 'deny').length
+          const limited = list.filter((x) => limitText(x.rule)).length
+          const allowed = list.length - never - limited
+          const parts = [never && `${never} never`, allowed && `${allowed} allowed`, limited && `${limited} allowed with a condition`].filter(Boolean)
           return (
             <div key={id}>
-              <Expander open={open === id} onToggle={() => toggle(id)} sub={`${plural(list.length, 'rule')} apply${never ? ` · ${never} never` : ''}`}>{name(id)}</Expander>
+              <Expander open={open === id} onToggle={() => toggle(id)} sub={`${plural(list.length, 'rule')} apply · ${parts.join(' · ')}`}>{name(id)}</Expander>
               {open === id && list.sort((a, b) => (a.rule.effect === b.rule.effect ? 0 : a.rule.effect === 'deny' ? -1 : 1)).map(({ rule, titles }) => (
                 <div key={rule.rule_id} className="cell" style={{ paddingLeft: 32 }}>
                   <div className="cb">
