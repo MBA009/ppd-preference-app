@@ -2,10 +2,10 @@ import { useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import type { Rule } from '../api'
 import { ActionBar, AppBar, Cell, ErrorBox, Footnote, Group, Loading, SectionHeader, Segmented, Tile } from '../components/ui'
-import { Icon, ShieldCheck } from '../components/icons'
+import { ChevronDown, Icon, ShieldCheck } from '../components/icons'
 import { useDevices, useHousehold, useHouseholdPresets, useRules } from '../state/data'
 import { ruleCovers } from '../policy/scope'
-import { kindOf, type RuleKind } from '../policy/choices'
+import { CONDITION_TEXT, kindOf, type RuleKind } from '../policy/choices'
 import { plural } from '../lib/verdicts'
 import Onboarding from './Onboarding'
 import { KIND } from '../components/PresetSummary'
@@ -41,6 +41,7 @@ function Policy() {
   const isNew = params.get('new') === '1'
   const { household, saveProfile, resetDemo, toast } = useHousehold()
   const [confirmReset, setConfirmReset] = useState(false)
+  const [open, setOpen] = useState<Partial<Record<RuleKind, boolean>>>({})
   const { data: presets, error } = useHouseholdPresets()
   const rules = useRules()
   const ids = (household?.devices ?? []).map((d) => d.device_id)
@@ -79,15 +80,20 @@ function Policy() {
 
   const setProfile = (patch: Partial<typeof profile>) => void saveProfile({ ...profile, ...patch })
 
+  // The group already says Never / Allowed, so a title's own "Never:" or "Allow only if …:" is left out.
+  const shortTitle = (r: Rule) => r.title.replace(/^(Never|Allow(?: only if [^:]*)?):\s*/, '')
+  const used = (r: Rule) => impact[r.id]?.flows ?? 0
+
   const row = (r: Rule) => {
     const i = impact[r.id]
     return (
       <Cell key={r.id} to={`/rules/${encodeURIComponent(r.id)}`} className={r.enabled ? '' : 'dim'}>
         <div className="cb">
-          <span className="ttl">{r.title}</span>
+          <span className="ttl" style={{ fontSize: 15, lineHeight: '20px' }}>{shortTitle(r)}</span>
           <span className="sub">
-            {r.origin.kind === 'preset' ? 'From your preset' : 'Added by you'}
-            {devices && ` · ${i && i.flows ? `${plural(i.flows, 'data flow')} on ${plural(i.devices, 'device')}` : 'no device in your home does this'}`}
+            {r.condition && `Only if ${CONDITION_TEXT[r.condition]} · `}
+            {r.origin.kind === 'preset' ? 'Preset' : 'Added by you'}
+            {devices && ` · ${i && i.flows ? `${plural(i.flows, 'data flow')} on ${plural(i.devices, 'device')}` : 'not used by your devices yet'}`}
           </span>
         </div>
         {!r.enabled && <span className="tr off">Off</span>}
@@ -129,14 +135,25 @@ function Policy() {
       )}
 
       {GROUPS.map((g) => {
-        const list = rules.filter((r) => kindOf(r) === g.kind)
+        // Rules your devices use first; the rest are kept for devices that may join.
+        const list = rules.filter((r) => kindOf(r) === g.kind).sort((a, b) => Number(used(b) > 0) - Number(used(a) > 0))
         if (!list.length) return null
         const k = KIND[g.kind]
+        const inUse = list.filter((r) => used(r) > 0).length
+        const isOpen = !!open[g.kind]
         return (
           <div key={g.kind}>
-            <SectionHeader><span style={{ color: k.color }}>{g.kind === 'limited' ? 'Allowed with a condition' : k.title}</span> · {list.length}</SectionHeader>
-            <Group>{list.map(row)}</Group>
-            <Footnote>{g.blurb}</Footnote>
+            <Group style={{ marginTop: 8 }}>
+              <button className="cell" aria-expanded={isOpen} onClick={() => setOpen((o) => ({ ...o, [g.kind]: !isOpen }))}>
+                <div className="cb" style={{ padding: '10px 0' }}>
+                  <span className="ttl" style={{ fontWeight: 500 }}><span style={{ color: k.color }}>{g.kind === 'limited' ? 'Allowed with a condition' : k.title}</span> · {list.length}</span>
+                  <span className="sub">{devices ? (inUse ? `${plural(inUse, 'rule')} used by your devices` : 'None used by your devices yet') : g.blurb}</span>
+                </div>
+                <span className="tr"><ChevronDown up={isOpen} /></span>
+              </button>
+              {isOpen && list.map(row)}
+            </Group>
+            {isOpen && <Footnote>{g.blurb}</Footnote>}
           </div>
         )
       })}
