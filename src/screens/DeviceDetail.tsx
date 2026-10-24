@@ -79,7 +79,7 @@ export default function DeviceDetail() {
           <LifecycleSteps live={live} />
           <ReportedBehavior live={live} />
           {operator && live.kind === 'real' && (
-            <div className="sf"><Link to="/maker" className="link">What the maker received (demo)</Link></div>
+            <div className="sf"><Link to="/demo-devices" className="link">What it uploaded and demo controls</Link></div>
           )}
           <IdentityAndNetwork live={live} />
         </>

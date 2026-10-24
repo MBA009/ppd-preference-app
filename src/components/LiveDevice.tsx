@@ -9,7 +9,7 @@ import { ShieldCheck } from './icons'
 /**
  * The gateway's view of a participating device, as the CableLabs dashboard shows it: association,
  * lifecycle, the policy instance delivered and acknowledged, identity, network and reported behavior.
- * Telemetry and guided-demo controls are not PPD; they appear only on the device maker's page (MakerCloud).
+ * Telemetry and guided-demo controls are not PPD; they appear only on the Demo devices page.
  */
 
 const TILE: Record<Tone, 'green' | 'orange' | 'red' | 'grey'> = { good: 'green', warn: 'orange', bad: 'red', neutral: 'grey' }
