@@ -1,18 +1,19 @@
 # Privacy Preferences — PWA frontend
 
 A phone-first progressive web app for the privacy preference authoring tool: scan a device's privacy code, see what the
-device says it does with your data compared with your household rules, and decide on the flows that need you.
+device says it does with your data compared with your household rules, and see where they conflict.
 
-**First launch asks questions.** Before anything else the app asks seven short questions (about data leaving the home, what
-companies may use it for, sharing, inference, retention, and how to keep you posted). The answers generate a household policy:
-a list of rules, each *Never*, *Ask me first* or *Allowed*. The person then reviews the policy, and can change, switch off,
-delete or add rules. Verdicts for every device are computed from those rules. The questions are derived from four published
-IoT privacy studies; see [`docs/household-policy-decision-tree.md`](docs/household-policy-decision-tree.md) for the tree,
-the answer-to-rule mapping and the citations.
+**First launch places the household in a preset.** Before anything else the app asks a few questions (at most five), walking
+a decision tree to one of eight **household presets**: a short set of rules, each *Never*, *Allowed only if* (not kept,
+processed in the home, or on the device) or *Allowed*. The person sees the preset, can pick another, and can then change,
+switch off, delete or add rules. The household is never asked about single flows (CableLabs guidance): its preset and rules
+decide, and devices receive them. The presets and the tree come from clustering thousands of synthetic households built from
+published IoT privacy studies, following Smullen et al. 2020; see
+[ppd-household-presets](https://github.com/baktistr/ppd-household-presets).
 
-It implements the nine phone screens from the design canvas (1a Scan, 1b/1c Preview, 2a New device, 2b Flow detail and decision,
-3a My home, 3b Device library, 3c Device detail, 3d Household rules), plus the questions, the policy review page, the rule
-editor and a sources page. Its backend is **app-api** (`server/`), which stores the household and computes the verdicts;
+It implements the nine phone screens from the design canvas (1a Scan, 1b/1c Preview, 2a New device, 2b Flow detail,
+3a My home, 3b Device library, 3c Device detail, 3d Household rules), plus the onboarding questions, the preset picker,
+the rule editor and a page on how the presets were made. Its backend is **app-api** (`server/`), which stores the household and computes the verdicts;
 an offline mock mode answers the same calls from static JSON in `public/mock/`.
 
 App: https://ppd-preference-app.vercel.app/#/rules
@@ -105,13 +106,15 @@ Everything the screens need goes through one interface, `PpdApi` in `shared/type
 
 | Call | Returns |
 | --- | --- |
-| `getQuestionnaire()` | the decision tree (`public/mock/questionnaire.json`) |
-| `listRules()`, `savePolicy({answers, rules, profile})`, `upsertRule`, `deleteRule` | the household's rules and the answers they came from |
+| `getOnboarding()`, `listHouseholdPresets()` | the onboarding tree and the presets (`public/mock/onboarding.json`, `household-presets.json`) |
+| `choosePreset({preset_id, answers})`, `saveProfile(profile)` | the household's preset (its rules replace the previous preset's; custom rules stay) |
+| `listRules()`, `upsertRule`, `deleteRule` | the household's rules |
 | `listLibrary()` / `getDevice(id)` | device summaries / a device with all its flows and verdicts |
 | `resolveCode(text)` | which device a scanned code points to |
-| `getHousehold()`, `addDevice`, `removeDevice`, `saveForLater`, `markJoinedSeen`, `saveDecision` | the household's devices and saved preferences |
+| `getHousehold()`, `addDevice`, `removeDevice`, `saveForLater`, `markJoinedSeen` | the household's devices |
 | `getOverview()`, `getSystemStatus()`, `getMe()` | the gateway's readiness summary, service checks, and who is signed in |
-| `getPublishedPolicy()`, `previewPublish()`, `publish()`, `listPresets()`, `applyPreset()` | the household policy the gateway serves, and sending a new one |
+| `getPublishedPolicy()`, `previewPublish()`, `publish()` | the household policy the gateway serves, and sending a new one |
+| `listPresets()`, `applyPreset()` | the gateway's fixed example policies (operator testing; not household presets) |
 | `disassociate()`, `listCommands()`, `sendCommand()`, `getTelemetry()` | operator actions and guided-demo controls for connected devices |
 
 `src/api/httpClient.ts` implements it against app-api; each call is one route under `/api` (see `server/src/app.ts`). The browser
@@ -125,15 +128,16 @@ Both clients use the same code from `shared/` for what happens to the household 
 
 `server/` is a Node + TypeScript service (Fastify), the web app's only backend. It:
 
-- keeps the household (devices, decisions, answers, rules) in SQLite with an audit log, and computes every device's verdicts
+- keeps the household (devices, preset, answers, rules) in SQLite with an audit log, and computes every device's verdicts
   on read;
 - talks to the PPD gateway (`GATEWAY_URL`): it finds the API through `GET /.well-known/ppd` (draft-dsmullen-ppd-protocol-04),
   sends the operator token, and uses mutual TLS when certificate files are set;
 - shows devices the gateway knows: they join My home on their own, their flows are their declared statements, and their
   live state (association, delivered policy, receipt, identity) is what the CableLabs dashboard shows;
-- **publishes the household policy**: it compiles the rules and saved decisions into one PPD policy of atomic allow/deny
-  rules, one per dataflow a connected device declared (`server/src/compiler.ts`), sends it to the gateway, and reads it back.
-  "Ask me first" is not a protocol effect, so a flow still waiting for a decision blocks publication;
+- **publishes the household policy**: it compiles the rules into one PPD policy of atomic allow/deny rules, one per dataflow
+  a connected device declared (`server/src/compiler.ts`), sends it to the gateway, and reads it back. An *Allowed only if*
+  rule is sent as `allow` with its condition as constraints (protocol-04 section 7.12). Nothing is sent before the household
+  has a preset;
 - relays the cloud demo extensions: devices upload telemetry and poll for guided-demo commands through the gateway, which
   authenticates them and calls `/internal/*` with a service token;
 - requires sign-in in production (it verifies Cloudflare Access tokens itself), refuses writes without the app's
@@ -163,40 +167,42 @@ note from the workbook. A simulated device declares its research fixture's flows
 declared by the device).
 
 **The verdicts are this project's comparison, not the PPD protocol's.** app-api computes them with `shared/engine.ts` from the
-household's current rules (a stricter rule wins: Never, then Ask me first, then Allowed; no matching rule and the flow leaves
-the home means "needs your decision"), and `getDevice` returns each flow's `evaluation` block. The PPD protocol defines the
-same five outcome names but not this procedure.
+household's current rules (a stricter rule wins: Never, then Allowed only if, then Allowed; no matching rule and the flow
+leaves the home means it is not allowed), and `getDevice` returns each flow's `evaluation` block. The PPD protocol defines
+these outcome names but not this procedure. A processing-boundary condition (in the home, on the device) is defined only for
+use and inference (taxonomy-05 section 6.7.2), so such a rule covers only those actions.
 
-### The questions
+### The presets and the questions
 
-`public/mock/questionnaire.json` is the decision tree: questions, branching (`show_if`), prefills, the rule each answer makes,
-the "why we ask" text and the sources. `src/policy/generate.ts` walks it. To change a question, edit the JSON, then regenerate
-the document: `python3 tools/build_tree_doc.py` (writes `docs/household-policy-decision-tree.md`).
+`public/mock/household-presets.json` and `public/mock/onboarding.json` are copied from `export/` in
+[ppd-household-presets](https://github.com/baktistr/ppd-household-presets) (notebook 07). `shared/onboarding.ts` walks
+the tree; a question that comes back lower down reuses its first answer. To change them, rerun the notebooks and copy the two
+files again; `server/test/presets.test.ts` checks every path ends in a preset and every preset is reachable.
 
-The questions are derived from factors the cited papers studied. The wording, branching and mapping are this project's design
-and are not user-tested.
+The data is synthetic, built from published studies; the questions and presets are not user-tested.
 
 ## Design rules kept in the code
 
 - **Verdicts compare flows with the household's rules and nothing else.** Control (can the user limit the flow) is one read-only line on
   the flow screen, from the workbook. It never changes a verdict or a chip.
-- **Chips count flows needing attention.** A decision you have saved leaves the "need a decision" count and shows
-  "You chose: …" on the flow.
+- **Only conflicts need attention.** The household is never asked to decide a single flow, and a flow we can't read is
+  shown but never asked about.
 - **The app never claims a device complies.** "Confirmed" means the device acknowledged receiving the rules.
-- **Five verdicts, one colour each:** green matches, blue with limits, orange needs a decision, red conflicts, grey can't tell.
+- **Four verdicts, one colour each:** green matches, blue with limits, red conflicts, grey can't tell.
 
 ## Where this differs from the design canvas
 
-- Counts come from the fixtures and from the rules the answers make, so they differ from the mock-up numbers.
-- The canvas shows five fixed rules. The app has no fixed rules: the household's rules come from the questions.
-- The preference form starts with nothing selected and *Save* disabled, rather than pre-selecting "Allow with limits".
+- Counts come from the fixtures and from the household's preset, so they differ from the mock-up numbers.
+- The canvas shows five fixed rules. The app has no fixed rules: the household's rules come from its preset.
+- The canvas's per-flow preference form (2b) is gone: the flow screen is read-only, per CableLabs guidance.
 - Navigable rows have a small chevron.
 - Added: "Type the code instead" on Scan (useful without a camera), a "Saved" tag in the library, a "Remove from my home" row,
   an "About this declaration" block on the device screen, and the Test tools page.
-- Added: the first-launch questions, the policy review page, the rule editor, and the sources page (none are in the canvas).
+- Added: the onboarding questions, the preset picker, the policy review page, the rule editor, and the page on how the presets
+  were made (none are in the canvas).
 - Added: live devices from the PPD gateway, System status, sending rules to devices, demo presets and controls, and a
   desktop layout (navigation rail and list-beside-detail panes from 1200 px).
-- Not built: sending the summaries and warnings chosen in the last question, push notifications.
+- Not built: sending the summaries and warnings chosen on the rules page, push notifications.
 
 ## Deploying
 
@@ -208,21 +214,21 @@ services on Coolify together with the gateway and repository images from the `ha
 ## Project map
 
 ```
-shared/            used by the app and app-api: the contract (types.ts), core taxonomy, household changes, verdict engine, rule matching
+shared/            used by the app and app-api: the contract (types.ts), core taxonomy, household changes, verdict engine, rule matching, onboarding walk
 server/            app-api: routes (src/routes/), policy compiler, gateway client, live devices, demo simulator, SQLite store, sign-in, tests
 deploy/            compose.example.yaml for the cloud deployment (Coolify)
 scripts/           dev-stack.sh: the whole demo stack on one machine
 src/api/           app-api client, offline mock client, the switch between them (index.ts)
 src/scanner/       camera + QR decoding
-src/screens/       one file per screen (Questionnaire, Rules and RuleEditor make up the household policy)
-src/policy/        the decision tree as code: generate.ts (answers to rules), choices.ts (editor wording)
+src/screens/       one file per screen (Onboarding, ChoosePreset, Rules and RuleEditor make up the household policy)
+src/policy/        choices.ts (editor wording)
 src/components/    app bars, lists, chips, form controls, the shared device report
 src/lib/           verdict labels and counting, device helpers
 src/state/         household store and data hooks
 src/styles/app.css design tokens and component styles from the canvas
-public/mock/       generated fixtures
-tools/             fixture builder, decision-tree document builder, icon generator
-docs/              household-policy-decision-tree.md (generated)
+public/mock/       generated fixtures, and the presets and onboarding tree from ppd-household-presets
+tools/             fixture builder, icon generator
+docs/              deployment guide
 ```
 
 ## PWA details

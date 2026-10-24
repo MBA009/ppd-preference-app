@@ -62,8 +62,8 @@ export default function Dev() {
 
       <SectionHeader>Household</SectionHeader>
       <Group>
-        <Cell onClick={async () => { await resetDemo('seed'); toast('Reset to first launch'); nav('/', { replace: true }) }} chevron={false}><div className="cb" style={{ padding: '12px 0' }}><span className="ttl">Start over with the demo household</span><span className="sub">Clears your answers, rules and decisions, so the questions come up again. Devices connected to the home gateway stay.</span></div></Cell>
-        <Cell onClick={async () => { await resetDemo('empty'); toast('Reset to first launch'); nav('/', { replace: true }) }} chevron={false}><div className="cb" style={{ padding: '12px 0' }}><span className="ttl">Start over with an empty home</span><span className="sub">No advisory devices, answers or rules. Devices connected to the home gateway stay.</span></div></Cell>
+        <Cell onClick={async () => { await resetDemo('seed'); toast('Reset to first launch'); nav('/', { replace: true }) }} chevron={false}><div className="cb" style={{ padding: '12px 0' }}><span className="ttl">Start over with the demo household</span><span className="sub">Clears your preset, answers and rules, so the questions come up again. Devices connected to the home gateway stay.</span></div></Cell>
+        <Cell onClick={async () => { await resetDemo('empty'); toast('Reset to first launch'); nav('/', { replace: true }) }} chevron={false}><div className="cb" style={{ padding: '12px 0' }}><span className="ttl">Start over with an empty home</span><span className="sub">No advisory devices, preset or rules. Devices connected to the home gateway stay.</span></div></Cell>
       </Group>
 
       <SectionHeader>This browser</SectionHeader>

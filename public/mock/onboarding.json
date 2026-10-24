@@ -1,0 +1,571 @@
+{
+  "version": "2.0.0",
+  "kind": "tree",
+  "source": {
+    "generated": "2026-10-24",
+    "by": "ppd-household-presets notebooks 01-07",
+    "data": "synthetic households (not survey data); see data/DATACARD.md",
+    "k": 8,
+    "depth": 5,
+    "questions_avg": 4.86,
+    "questions_max": 5,
+    "match_real_device_flows_cv": 0.851,
+    "one_preset_for_everyone_cv": 0.828
+  },
+  "title": "Your household's privacy preset",
+  "description": "A few questions place your household in a privacy preset: a short set of rules your devices receive. You can change any rule afterwards.",
+  "disclaimer": "The questions, presets and tree come from synthetic households generated from published IoT privacy studies (Emami-Naeini et al. 2017, 2020, 2021) and the method of Smullen et al. 2020. They are not user-tested.",
+  "questions": {
+    "real_personalized_heating": {
+      "prompt": "Would you let a smart device use who is home and readings from your home to personalize how it works, without the data leaving your home?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "with_limits",
+          "label": "Only with limits"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ]
+    },
+    "purpose_personal": {
+      "prompt": "May companies use your data for: personalizing what you see?",
+      "options": [
+        {
+          "id": "never",
+          "label": "Never"
+        },
+        {
+          "id": "ask",
+          "label": "It depends"
+        },
+        {
+          "id": "fine",
+          "label": "That's fine"
+        }
+      ]
+    },
+    "real_usage_improve": {
+      "prompt": "Would you let a device send how you use it to its maker to improve their products?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "with_limits",
+          "label": "Only with limits"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ]
+    },
+    "data_usage": {
+      "prompt": "How you use the device: may it leave your home?",
+      "options": [
+        {
+          "id": "never",
+          "label": "Never"
+        },
+        {
+          "id": "ask",
+          "label": "It depends"
+        },
+        {
+          "id": "fine",
+          "label": "That's fine"
+        }
+      ]
+    },
+    "real_video_cloud": {
+      "prompt": "Would you let a device send video or audio from your home to its maker's cloud, so you can use it remotely?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "with_limits",
+          "label": "Only with limits"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ]
+    },
+    "real_profile_ads": {
+      "prompt": "Would you let a device's maker use a profile of how you use it to show you ads?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "with_limits",
+          "label": "Only with limits"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ]
+    },
+    "concern": {
+      "prompt": "How much do you worry about what smart devices do with your data?",
+      "options": [
+        {
+          "id": "1",
+          "label": "1 · Not at all"
+        },
+        {
+          "id": "2",
+          "label": "2"
+        },
+        {
+          "id": "3",
+          "label": "3"
+        },
+        {
+          "id": "4",
+          "label": "4"
+        },
+        {
+          "id": "5",
+          "label": "5 · A lot"
+        }
+      ]
+    },
+    "purpose_analytics": {
+      "prompt": "May companies use your data for: improving their products?",
+      "options": [
+        {
+          "id": "never",
+          "label": "Never"
+        },
+        {
+          "id": "ask",
+          "label": "It depends"
+        },
+        {
+          "id": "fine",
+          "label": "That's fine"
+        }
+      ]
+    },
+    "real_viewing_advertisers": {
+      "prompt": "Would you let a device's maker share how you use it with advertisers?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "with_limits",
+          "label": "Only with limits"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ]
+    }
+  },
+  "walk": "Show the root question; follow the branch whose 'answers' contain the chosen option; repeat until a node has 'preset'. A question can appear again further down a path with a finer split: reuse the earlier answer, never ask twice.",
+  "root": {
+    "question": "real_personalized_heating",
+    "branches": [
+      {
+        "answers": [
+          "no"
+        ],
+        "next": {
+          "question": "purpose_personal",
+          "branches": [
+            {
+              "answers": [
+                "never",
+                "ask"
+              ],
+              "next": {
+                "question": "real_usage_improve",
+                "branches": [
+                  {
+                    "answers": [
+                      "no",
+                      "with_limits"
+                    ],
+                    "next": {
+                      "question": "data_usage",
+                      "branches": [
+                        {
+                          "answers": [
+                            "never",
+                            "ask"
+                          ],
+                          "next": {
+                            "question": "real_video_cloud",
+                            "branches": [
+                              {
+                                "answers": [
+                                  "no",
+                                  "with_limits"
+                                ],
+                                "next": {
+                                  "preset": "k8-p0"
+                                }
+                              },
+                              {
+                                "answers": [
+                                  "yes"
+                                ],
+                                "next": {
+                                  "preset": "k8-p1"
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "answers": [
+                            "fine"
+                          ],
+                          "next": {
+                            "question": "real_profile_ads",
+                            "branches": [
+                              {
+                                "answers": [
+                                  "no"
+                                ],
+                                "next": {
+                                  "preset": "k8-p1"
+                                }
+                              },
+                              {
+                                "answers": [
+                                  "with_limits",
+                                  "yes"
+                                ],
+                                "next": {
+                                  "preset": "k8-p3"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "answers": [
+                      "yes"
+                    ],
+                    "next": {
+                      "question": "purpose_personal",
+                      "branches": [
+                        {
+                          "answers": [
+                            "never"
+                          ],
+                          "next": {
+                            "preset": "k8-p1"
+                          }
+                        },
+                        {
+                          "answers": [
+                            "ask",
+                            "fine"
+                          ],
+                          "next": {
+                            "question": "data_usage",
+                            "branches": [
+                              {
+                                "answers": [
+                                  "never",
+                                  "ask"
+                                ],
+                                "next": {
+                                  "preset": "k8-p7"
+                                }
+                              },
+                              {
+                                "answers": [
+                                  "fine"
+                                ],
+                                "next": {
+                                  "preset": "k8-p1"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "answers": [
+                "fine"
+              ],
+              "next": {
+                "question": "real_usage_improve",
+                "branches": [
+                  {
+                    "answers": [
+                      "no",
+                      "with_limits"
+                    ],
+                    "next": {
+                      "preset": "k8-p6"
+                    }
+                  },
+                  {
+                    "answers": [
+                      "yes"
+                    ],
+                    "next": {
+                      "preset": "k8-p5"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "answers": [
+          "with_limits",
+          "yes"
+        ],
+        "next": {
+          "question": "real_profile_ads",
+          "branches": [
+            {
+              "answers": [
+                "no"
+              ],
+              "next": {
+                "question": "real_usage_improve",
+                "branches": [
+                  {
+                    "answers": [
+                      "no"
+                    ],
+                    "next": {
+                      "question": "concern",
+                      "branches": [
+                        {
+                          "answers": [
+                            "1",
+                            "2",
+                            "3"
+                          ],
+                          "next": {
+                            "preset": "k8-p6"
+                          }
+                        },
+                        {
+                          "answers": [
+                            "4",
+                            "5"
+                          ],
+                          "next": {
+                            "preset": "k8-p0"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "answers": [
+                      "with_limits",
+                      "yes"
+                    ],
+                    "next": {
+                      "question": "concern",
+                      "branches": [
+                        {
+                          "answers": [
+                            "1",
+                            "2"
+                          ],
+                          "next": {
+                            "question": "purpose_analytics",
+                            "branches": [
+                              {
+                                "answers": [
+                                  "never"
+                                ],
+                                "next": {
+                                  "preset": "k8-p6"
+                                }
+                              },
+                              {
+                                "answers": [
+                                  "ask",
+                                  "fine"
+                                ],
+                                "next": {
+                                  "preset": "k8-p5"
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "answers": [
+                            "3",
+                            "4",
+                            "5"
+                          ],
+                          "next": {
+                            "preset": "k8-p7"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "answers": [
+                "with_limits",
+                "yes"
+              ],
+              "next": {
+                "question": "real_usage_improve",
+                "branches": [
+                  {
+                    "answers": [
+                      "no"
+                    ],
+                    "next": {
+                      "question": "concern",
+                      "branches": [
+                        {
+                          "answers": [
+                            "1",
+                            "2",
+                            "3"
+                          ],
+                          "next": {
+                            "question": "real_viewing_advertisers",
+                            "branches": [
+                              {
+                                "answers": [
+                                  "no"
+                                ],
+                                "next": {
+                                  "preset": "k8-p6"
+                                }
+                              },
+                              {
+                                "answers": [
+                                  "with_limits",
+                                  "yes"
+                                ],
+                                "next": {
+                                  "preset": "k8-p3"
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "answers": [
+                            "4",
+                            "5"
+                          ],
+                          "next": {
+                            "question": "real_viewing_advertisers",
+                            "branches": [
+                              {
+                                "answers": [
+                                  "no"
+                                ],
+                                "next": {
+                                  "preset": "k8-p0"
+                                }
+                              },
+                              {
+                                "answers": [
+                                  "with_limits",
+                                  "yes"
+                                ],
+                                "next": {
+                                  "preset": "k8-p2"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "answers": [
+                      "with_limits",
+                      "yes"
+                    ],
+                    "next": {
+                      "question": "purpose_personal",
+                      "branches": [
+                        {
+                          "answers": [
+                            "never"
+                          ],
+                          "next": {
+                            "preset": "k8-p2"
+                          }
+                        },
+                        {
+                          "answers": [
+                            "ask",
+                            "fine"
+                          ],
+                          "next": {
+                            "question": "real_viewing_advertisers",
+                            "branches": [
+                              {
+                                "answers": [
+                                  "no"
+                                ],
+                                "next": {
+                                  "preset": "k8-p7"
+                                }
+                              },
+                              {
+                                "answers": [
+                                  "with_limits",
+                                  "yes"
+                                ],
+                                "next": {
+                                  "preset": "k8-p4"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

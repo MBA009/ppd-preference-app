@@ -11,7 +11,6 @@ import type { Constraints, Field } from './taxonomy'
 export type Verdict =
   | 'compatible' //                 shown as "Matches your rules"
   | 'conditionally_satisfiable' //  "With limits"
-  | 'decision_required' //          "Needs your decision"
   | 'unsatisfiable' //              "Conflicts with your rules"
   | 'indeterminate' //              not readable: no source for the flow, or a term the comparison cannot resolve (never asked about)
 
@@ -32,8 +31,16 @@ export type DeclarationState =
 
 export type DeviceIcon = 'thermostat' | 'lock' | 'tv' | 'camera' | 'bulb'
 
-/** What a rule says to do with a flow it matches. Stricter wins: dont_allow beats ask, ask beats allow. */
-export type RuleEffect = 'allow' | 'ask' | 'dont_allow'
+/** What a rule says to do with a flow it matches (a PPD rule effect). Stricter wins: dont_allow beats allow. */
+export type RuleEffect = 'allow' | 'dont_allow'
+
+/**
+ * A qualifier an allow rule requires (draft-dsmullen-ppd-protocol-04 section 7.12): the flow is allowed only
+ * when it is not kept, or is processed in the home or on the device. Sent to devices as the rule's constraints.
+ * The processing boundary is defined only for use and inference (taxonomy-05 section 6.7.2), so such a rule
+ * covers only those actions.
+ */
+export type RuleCondition = 'retention=ppd:ephemeral' | 'processing_boundary=ppd:inHomeOnly' | 'processing_boundary=ppd:onDeviceOnly'
 
 /**
  * Which flows a rule is about. Every field is optional (left out = any) and lists IRIs from the PPD taxonomy,
@@ -55,10 +62,12 @@ export interface Rule {
   /** The sentence the person sees. */
   title: string
   effect: RuleEffect
+  /** Only on allow rules: allowed only under this qualifier. Absent or null = allowed as is. */
+  condition?: RuleCondition | null
   scope: RuleScope
   enabled: boolean
-  /** Where the rule came from: an answer to a question, or the person adding it. */
-  origin: { kind: 'questionnaire'; question_id: string; row_id?: string; answer: string } | { kind: 'custom' }
+  /** Where the rule came from: the household's preset, or the person adding it. */
+  origin: { kind: 'preset'; preset_id: string } | { kind: 'custom' }
 }
 
 /** What the person wants to hear about. Saved with the policy; nothing sends these yet. */
@@ -67,41 +76,41 @@ export interface Profile {
   warn_on_conflict: boolean
 }
 
-/* ---------- the questionnaire (decision tree), served as JSON ---------- */
-export interface Source { short: string; citation: string; url: string; pdf?: string }
+/* ---------- household presets and the onboarding tree (public/mock/, from ppd-household-presets) ---------- */
 
-export type Condition =
-  | { all_rows: { question: string; equals: string } }
-  | { answer: { question: string; equals?: string; in?: string[] } }
-  | { not: Condition }
-  | { all: Condition[] }
-  | { any: Condition[] }
+/** A starting policy for a kind of household: a short set of rules, exactly one of which matches any flow. */
+export interface HouseholdPreset {
+  id: string
+  /** A CableLabs tier (Privacy-tightened, Balanced, Cloud-assisted), then what sets the preset apart. */
+  name: string
+  tier: string
+  description: string
+  /** Share of the synthetic households this preset was built from. */
+  households_share: number
+  reached_by_onboarding: boolean
+  rules: Rule[]
+}
 
-export interface TemplateRule { id: string; effect: RuleEffect; scope: RuleScope; title: string }
-export interface Option { id: string; label: string; prefill?: { question: string; row: string; value: string }[]; rules: TemplateRule[] }
-export interface ScaleItem { id: string; label: string; effect: RuleEffect }
-export interface MatrixRow { id: string; label: string; example: string; scope: RuleScope; titles: Record<string, string> }
-export interface ProfileField { id: string; type: 'single' | 'toggle'; label: string; default: string | boolean; options?: { id: string; label: string }[] }
+export interface OnboardingQuestion { prompt: string; options: { id: string; label: string }[] }
 
-interface QuestionBase { id: string; short: string; prompt: string; help: string; why: string; sources: string[]; show_if?: Condition }
-export type Question =
-  | (QuestionBase & { type: 'single'; default: string | null; options: Option[] })
-  | (QuestionBase & { type: 'matrix'; scale: ScaleItem[]; default: string; rows: MatrixRow[] })
-  | (QuestionBase & { type: 'profile'; fields: ProfileField[] })
+/** A question with one branch per group of answers, or the preset the walk ends in. */
+export type OnboardingNode =
+  | { question: string; branches: { answers: string[]; next: OnboardingNode }[] }
+  | { preset: string }
 
-export interface Questionnaire {
+/** The decision tree that places a household in a preset. A question can come back lower down; its first answer is reused. */
+export interface Onboarding {
   version: string
   title: string
   description: string
   disclaimer: string
-  precedence: RuleEffect[]
-  sources: Record<string, Source>
-  questions: Question[]
+  source: Record<string, string | number>
+  questions: Record<string, OnboardingQuestion>
+  root: OnboardingNode
 }
 
-/** single: option id. matrix: row id to scale id. profile: field id to value. */
-export type AnswerValue = string | Record<string, string | boolean>
-export type Answers = Record<string, AnswerValue>
+/** Question id to option id. */
+export type Answers = Record<string, string>
 
 /** The taxonomy fields of one flow: five core ppd: terms and the Constraints Object (protocol-04 section 7.8). */
 export interface Taxonomy {
@@ -180,21 +189,6 @@ export interface Device extends DeviceSummary {
   live?: LiveState
 }
 
-export type Preference = 'allow' | 'allow_with_limits' | 'dont_allow'
-
-export interface Decision {
-  flow_id: string
-  device_id: string
-  preference: Preference
-  /** Only with 'allow_with_limits'. */
-  keep?: 'briefly' | 'until_deleted'
-  region?: string
-  /** Also applies to other flows in the same core rule group. */
-  remember_similar: boolean
-  core_group_id: string
-  decided_at: string
-}
-
 export interface HomeEntry {
   device_id: string
   added_at: string
@@ -205,12 +199,11 @@ export interface HomeEntry {
 export interface Household {
   devices: HomeEntry[]
   saved: string[]
-  decisions: Record<string, Decision>
-  /** Preferences remembered for every flow in a core rule group. */
-  group_decisions: Record<string, Decision>
-  /** Answers to the questionnaire. null until the person has answered it (first launch). */
+  /** Answers to the onboarding questions. null until the household has chosen a preset (first launch). */
   answers: Answers | null
-  /** The household policy: generated from the answers, then edited by the person. */
+  /** The preset the household chose. Its rules were copied into `rules`. */
+  preset_id: string | null
+  /** The household policy: the preset's rules, then edited by the person. */
   rules: Rule[]
   profile: Profile | null
 }
@@ -335,8 +328,6 @@ export interface PublishPreview {
   base_policy_id: string | null
   rules: CompiledRule[]
   removed: PolicyRule[]
-  /** Flows whose household rule says "Ask me first" and that have no decision yet. Publishing waits for them. */
-  blocked: { device_id: string; flow_id: string; title: string; reason: string }[]
   warnings: string[]
   devices: number
 }
@@ -356,11 +347,13 @@ export type ResolveResult =
   | { ok: false; reason: 'matter_code' | 'unknown_code' | 'not_a_code' }
 
 export interface PpdApi {
-  getQuestionnaire(): Promise<Questionnaire>
+  getOnboarding(): Promise<Onboarding>
+  listHouseholdPresets(): Promise<HouseholdPreset[]>
+  /** Replaces the preset's rules with this preset's; rules the person added stay. `answers` are stored when given. */
+  choosePreset(p: { preset_id: string; answers?: Answers }): Promise<Household>
+  saveProfile(profile: Profile): Promise<Household>
   /** The household's rules. */
   listRules(): Promise<Rule[]>
-  /** Stores the answers and the policy generated from them (custom rules the person added are kept by the caller). */
-  savePolicy(p: { answers: Answers; rules: Rule[]; profile: Profile }): Promise<Household>
   upsertRule(rule: Rule): Promise<Household>
   deleteRule(id: string): Promise<Household>
   listLibrary(): Promise<DeviceSummary[]>
@@ -373,7 +366,6 @@ export interface PpdApi {
   removeDevice(id: string): Promise<Household>
   saveForLater(id: string): Promise<Household>
   markJoinedSeen(id: string): Promise<Household>
-  saveDecision(d: Omit<Decision, 'decided_at'>): Promise<Household>
   /** Test helper: 'seed' restores the fixture household, 'empty' removes everything. */
   resetDemo(mode: 'seed' | 'empty'): Promise<Household>
 

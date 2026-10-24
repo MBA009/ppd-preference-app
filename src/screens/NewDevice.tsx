@@ -1,10 +1,10 @@
 import { useEffect } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
-import { ActionBar, AppBar, Cell, ErrorBox, Group, Loading, SectionHeader, Tile } from '../components/ui'
-import { FlowRow, ProvenanceCard, flowPath, nounOf } from '../components/DeviceReport'
+import { ActionBar, AppBar, Cell, ErrorBox, Footnote, Group, Loading, SectionHeader, Tile } from '../components/ui'
+import { FlowRow, ProvenanceCard, nounOf } from '../components/DeviceReport'
 import { Icon } from '../components/icons'
 import { useDevice, useHousehold, useRules } from '../state/data'
-import { pendingFlows } from '../lib/verdicts'
+import { needsAttention } from '../lib/verdicts'
 import { timeAgo } from '../lib/device'
 
 /** Screen 2a: a device that supports PPD joined the home and sent its declaration. */
@@ -24,9 +24,9 @@ export default function NewDevice() {
   if (!d || !household) return <><AppBar title="New device" /><Loading /></>
   if (!entry || d.source !== 'declared') return <Navigate to={`/device/${id}`} replace />
 
-  const pending = pendingFlows(d, household)
-  const rest = pending.slice(3)
-  const others = d.flows.length - pending.length
+  const conflicts = d.flows.filter(needsAttention)
+  const rest = conflicts.slice(3)
+  const others = d.flows.length - conflicts.length
   const ruleCount = rules.length
 
   return (
@@ -42,22 +42,23 @@ export default function NewDevice() {
         </Cell>
       </Group>
       <div className="gap" />
-      <ProvenanceCard device={d} household={household} ruleCount={ruleCount} sub={`${d.category_label} · Gets your rules`} stacked />
+      <ProvenanceCard device={d} ruleCount={ruleCount} sub={`${d.category_label} · Gets your rules`} stacked />
       <div className="sf">
         <b>Nothing was changed on {nounOf(d)}.</b> These verdicts compare what it says it does with your rules. The app can’t switch anything on or off in the device, or check that it follows your rules.
       </div>
 
-      {pending.length > 0 && (
+      {conflicts.length > 0 && (
         <>
-          <SectionHeader>Decide now · {pending.length}</SectionHeader>
+          <SectionHeader>Conflicts with your rules · {conflicts.length}</SectionHeader>
           <Group>
-            {pending.slice(0, 3).map((f) => <FlowRow key={f.id} device={d} flow={f} household={household} />)}
+            {conflicts.slice(0, 3).map((f) => <FlowRow key={f.id} device={d} flow={f} />)}
             {rest.length > 0 && (
-              <Cell to={flowPath(d.id, pending[3].id)}>
-                <div className="cb"><span className="sub">{rest.length} more: {rest.length <= 2 ? rest.map((f) => f.title.toLowerCase()).join(' and ') : 'review them one by one'}</span></div>
+              <Cell to={`/device/${d.id}`}>
+                <div className="cb"><span className="sub">{rest.length} more: {rest.length <= 2 ? rest.map((f) => f.title.toLowerCase()).join(' and ') : 'see them all on the device'}</span></div>
               </Cell>
             )}
           </Group>
+          <Footnote>Your rules say no to these, and the device is told so. There is nothing you need to decide. To allow one, change your rules.</Footnote>
         </>
       )}
       {others > 0 && (
@@ -69,8 +70,8 @@ export default function NewDevice() {
 
       <div className="spacer" />
       <ActionBar>
-        <Link to="/" className="btn2">{pending.length ? 'Decide later' : 'Done'}</Link>
-        {pending.length > 0 && <Link to={flowPath(d.id, pending[0].id)} className="btn">Review {pending.length} {pending.length === 1 ? 'decision' : 'decisions'}</Link>}
+        <Link to={`/device/${d.id}`} className="btn2">See the device</Link>
+        <Link to="/" className="btn">Done</Link>
       </ActionBar>
     </div>
   )

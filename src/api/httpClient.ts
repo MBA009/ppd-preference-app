@@ -1,4 +1,4 @@
-import type { Command, Device, DeviceSummary, Household, Me, Overview, Policy, PpdApi, Preset, PublishPreview, PublishResult, Questionnaire, ResolveResult, Rule, SimDevice, SystemStatus, Telemetry, UnmanagedDevice } from './types'
+import type { Command, Device, DeviceSummary, Household, Me, Overview, Policy, HouseholdPreset, Onboarding, PpdApi, Preset, PublishPreview, PublishResult, ResolveResult, Rule, SimDevice, SystemStatus, Telemetry, UnmanagedDevice } from './types'
 
 /**
  * The real backend: app-api (server/), reached on the same origin under /api. In development Vite
@@ -37,9 +37,11 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
 const id = encodeURIComponent
 
 export const httpClient: PpdApi = {
-  getQuestionnaire: () => call<Questionnaire>('GET', '/questionnaire'),
+  getOnboarding: () => call<Onboarding>('GET', '/onboarding'),
+  listHouseholdPresets: () => call<HouseholdPreset[]>('GET', '/household-presets'),
+  choosePreset: (p) => call<Household>('PUT', '/household/preset', p),
+  saveProfile: (profile) => call<Household>('PUT', '/household/profile', profile),
   listRules: () => call<Rule[]>('GET', '/household/rules'),
-  savePolicy: (p) => call<Household>('PUT', '/household/policy', p),
   upsertRule: (rule) => call<Household>('PUT', `/household/rules/${id(rule.id)}`, rule),
   deleteRule: (ruleId) => call<Household>('DELETE', `/household/rules/${id(ruleId)}`),
 
@@ -52,7 +54,6 @@ export const httpClient: PpdApi = {
   removeDevice: (deviceId) => call<Household>('DELETE', `/household/devices/${id(deviceId)}`),
   saveForLater: (deviceId) => call<Household>('POST', '/household/saved', { device_id: deviceId }),
   markJoinedSeen: (deviceId) => call<Household>('POST', `/household/devices/${id(deviceId)}/seen`),
-  saveDecision: (d) => call<Household>('POST', '/household/decisions', d),
   resetDemo: (mode) => call<Household>('POST', '/household/reset', { mode }),
 
   getMe: () => call<Me>('GET', '/me'),

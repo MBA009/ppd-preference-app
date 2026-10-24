@@ -5,7 +5,6 @@ import { AttentionList, ProvenanceCard } from '../components/DeviceReport'
 import { AssociationCard, DemoControls, IdentityAndNetwork, LifecycleSteps, PolicyReceipt, ReportedBehavior, TelemetryCard } from '../components/LiveDevice'
 import { useDevice, useHousehold, useMe, useRules } from '../state/data'
 import { STATE_LABEL, forgetBlocker, isConnected, kindLabel, subtitle, timeAgo } from '../lib/device'
-import { decidedCount } from '../lib/verdicts'
 
 /** Screen 3c. For a device the PPD gateway knows, it also shows the gateway's live view of it. */
 export default function DeviceDetail() {
@@ -22,7 +21,6 @@ export default function DeviceDetail() {
 
   const inHome = household.devices.some((h) => h.device_id === d.id)
   const ruleCount = rules.length
-  const decided = decidedCount(d, household)
   const decl = d.declaration
   const live = d.live
   const operator = me?.role === 'operator'
@@ -70,11 +68,10 @@ export default function DeviceDetail() {
           <div className="gap" />
         </>
       )}
-      <ProvenanceCard device={d} household={household} ruleCount={ruleCount} />
+      <ProvenanceCard device={d} ruleCount={ruleCount} />
       <div className="sf" style={{ fontStyle: 'italic' }}>We can’t check that the device will follow your rules.</div>
-      {decided > 0 && <div className="sf">{decided} {decided === 1 ? 'decision' : 'decisions'} made by you.</div>}
 
-      <AttentionList device={d} household={household} />
+      <AttentionList device={d} />
 
       {live ? (
         <>

@@ -1,30 +1,31 @@
 import { useMemo } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import type { Rule, RuleEffect } from '../api'
+import type { Rule } from '../api'
 import { ActionBar, AppBar, Cell, ErrorBox, Footnote, Group, Loading, SectionHeader, Segmented, Tile } from '../components/ui'
 import { Icon, ShieldCheck } from '../components/icons'
-import { useDevices, useHousehold, useQuestionnaire, useRules } from '../state/data'
-import { matchesScope } from '../policy/scope'
-import { originLabel } from '../policy/generate'
+import { useDevices, useHousehold, useHouseholdPresets, useRules } from '../state/data'
+import { ruleCovers } from '../policy/scope'
+import { kindOf, type RuleKind } from '../policy/choices'
 import { plural } from '../lib/verdicts'
-import Questionnaire from './Questionnaire'
+import Onboarding from './Onboarding'
+import { KIND } from '../components/PresetSummary'
 import { PublishCard, PublishedRules, Presets } from '../components/Publish'
 
 /**
- * The household policy page. On first launch (no answers yet) it asks the questions;
- * afterwards it lists the rules those answers made, grouped by what they do, and lets the person change them.
+ * The household policy page. On first launch (no preset yet) it asks the onboarding questions;
+ * afterwards it lists the household's rules (its preset's, then its own), grouped by what they do.
  */
 export default function Rules() {
   const { household } = useHousehold()
   if (!household) return <><AppBar title="Household rules" /><Loading /></>
-  if (household.answers === null) return <Questionnaire />
+  if (!household.preset_id) return <Onboarding />
   return <Policy />
 }
 
-const GROUPS: { effect: RuleEffect; title: string; blurb: string; color: string }[] = [
-  { effect: 'dont_allow', title: 'Never', blurb: 'A device that does this conflicts with your rules.', color: '#B3261E' },
-  { effect: 'ask', title: 'Ask me first', blurb: 'A device that does this waits for your decision.', color: '#8A4B00' },
-  { effect: 'allow', title: 'Allowed', blurb: 'A device that does this matches your rules.', color: '#1E7D34' },
+const GROUPS: { kind: RuleKind; blurb: string }[] = [
+  { kind: 'never', blurb: 'A device that does this conflicts with your rules, and is told no.' },
+  { kind: 'limited', blurb: 'A device that does this is told the condition, and matches with limits.' },
+  { kind: 'allow', blurb: 'A device that does this matches your rules.' },
 ]
 
 const FREQ = [
@@ -38,8 +39,8 @@ function Policy() {
   const nav = useNavigate()
   const [params] = useSearchParams()
   const isNew = params.get('new') === '1'
-  const { household, savePolicy } = useHousehold()
-  const { data: tree, error } = useQuestionnaire()
+  const { household, saveProfile } = useHousehold()
+  const { data: presets, error } = useHouseholdPresets()
   const rules = useRules()
   const ids = (household?.devices ?? []).map((d) => d.device_id)
   const { data: devices } = useDevices(ids)
@@ -51,7 +52,7 @@ function Policy() {
       let flows = 0
       let ds = 0
       for (const d of devices ?? []) {
-        const n = d.flows.filter((f) => matchesScope(f, r.scope)).length
+        const n = d.flows.filter((f) => ruleCovers({ ...r, enabled: true }, f.taxonomy)).length
         flows += n
         if (n) ds += 1
       }
@@ -61,29 +62,23 @@ function Policy() {
   }, [rules, devices])
 
   if (error) return <><AppBar title="Household rules" /><ErrorBox error={error} /></>
-  if (!household || !tree) return <><AppBar title="Household rules" /><Loading /></>
+  if (!household || !presets) return <><AppBar title="Household rules" /><Loading /></>
 
   const profile = household.profile ?? { summary_frequency: 'monthly' as const, warn_on_conflict: true }
-  const made = rules.filter((r) => r.origin.kind === 'questionnaire').length
+  const preset = presets.find((p) => p.id === household.preset_id)
+  const made = rules.filter((r) => r.origin.kind === 'preset').length
   const added = rules.length - made
 
-  const setProfile = (patch: Partial<typeof profile>) => {
-    const next = { ...profile, ...patch }
-    const pq = tree.questions.find((k) => k.type === 'profile')
-    const answers = { ...(household.answers ?? {}) }
-    if (pq) answers[pq.id] = { ...(typeof answers[pq.id] === 'object' ? (answers[pq.id] as Record<string, string | boolean>) : {}), ...next }
-    void savePolicy({ answers, rules, profile: next })
-  }
+  const setProfile = (patch: Partial<typeof profile>) => void saveProfile({ ...profile, ...patch })
 
   const row = (r: Rule) => {
     const i = impact[r.id]
-    const origin = originLabel(tree, r)
     return (
       <Cell key={r.id} to={`/rules/${encodeURIComponent(r.id)}`} className={r.enabled ? '' : 'dim'}>
         <div className="cb">
           <span className="ttl">{r.title}</span>
           <span className="sub">
-            {origin ? `From your answer: ${origin}` : 'Added by you'}
+            {r.origin.kind === 'preset' ? 'From your preset' : 'Added by you'}
             {devices && ` · ${i && i.flows ? `${plural(i.flows, 'data flow')} on ${plural(i.devices, 'device')}` : 'no device in your home does this'}`}
           </span>
         </div>
@@ -102,7 +97,7 @@ function Policy() {
             <Tile tone="green" style={{ marginTop: 10 }}><ShieldCheck /></Tile>
             <div className="cb" style={{ paddingRight: 16 }}>
               <span className="ttl" style={{ fontWeight: 500 }}>Your household policy is ready</span>
-              <span className="sub">We made {plural(made, 'rule')} from your answers. Look them over. Tap any rule to change it, switch it off, or add your own.</span>
+              <span className="sub">{preset?.name ?? 'Your preset'} gave you {plural(made, 'rule')}. Look them over. Tap any rule to change it, switch it off, or add your own.</span>
             </div>
           </Cell>
         </Group>
@@ -117,12 +112,21 @@ function Policy() {
         </>
       )}
 
+      {preset && (
+        <Group style={{ marginBottom: 4 }}>
+          <Cell className="t" to="/rules/presets">
+            <div className="cb"><span className="sub">Your preset</span><span className="ttl" style={{ fontWeight: 500 }}>{preset.name}</span></div>
+          </Cell>
+        </Group>
+      )}
+
       {GROUPS.map((g) => {
-        const list = rules.filter((r) => r.effect === g.effect)
+        const list = rules.filter((r) => kindOf(r) === g.kind)
         if (!list.length) return null
+        const k = KIND[g.kind]
         return (
-          <div key={g.effect}>
-            <SectionHeader><span style={{ color: g.color }}>{g.title}</span> · {list.length}</SectionHeader>
+          <div key={g.kind}>
+            <SectionHeader><span style={{ color: k.color }}>{g.kind === 'limited' ? 'Allowed with a condition' : k.title}</span> · {list.length}</SectionHeader>
             <Group>{list.map(row)}</Group>
             <Footnote>{g.blurb}</Footnote>
           </div>
@@ -132,7 +136,7 @@ function Policy() {
       {!rules.length && (
         <Group style={{ marginTop: 8 }}>
           <Cell className="t" chevron={false}>
-            <div className="cb"><span className="ttl">No rules yet</span><span className="sub">Devices that stay in your home match. Anything that leaves it will wait for your decision.</span></div>
+            <div className="cb"><span className="ttl">No rules yet</span><span className="sub">Devices that stay in your home match. Anything that leaves it is not allowed.</span></div>
           </Cell>
         </Group>
       )}
@@ -165,13 +169,16 @@ function Policy() {
       </Group>
       <Footnote>Saved with your policy. The app does not send summaries or warnings yet.</Footnote>
 
-      <SectionHeader>Your answers</SectionHeader>
+      <SectionHeader>Your preset</SectionHeader>
       <Group>
         <Cell className="t" to="/rules/update">
-          <div className="cb"><span className="ttl">Answer the questions again</span><span className="sub">Rules made from your answers are replaced. {added ? `The ${plural(added, 'rule')} you added stay.` : 'Rules you add yourself stay.'}</span></div>
+          <div className="cb"><span className="ttl">Answer the questions again</span><span className="sub">Rules from your preset are replaced. {added ? `The ${plural(added, 'rule')} you added stay.` : 'Rules you add yourself stay.'}</span></div>
+        </Cell>
+        <Cell className="t" to="/rules/presets">
+          <div className="cb"><span className="ttl">Choose a different preset</span><span className="sub">{plural(presets.length, 'preset')} to pick from</span></div>
         </Cell>
         <Cell className="t" to="/rules/sources">
-          <div className="cb"><span className="ttl">Where the questions come from</span><span className="sub">Four research papers</span></div>
+          <div className="cb"><span className="ttl">How the presets were made</span><span className="sub">Synthetic households from published studies</span></div>
         </Cell>
       </Group>
 

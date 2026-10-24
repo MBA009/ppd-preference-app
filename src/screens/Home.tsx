@@ -2,9 +2,9 @@ import { Link } from 'react-router-dom'
 import { AppBar, Cell, DeviceTile, Footnote, Group, SectionHeader, Tile, VerdictChip, VerdictChips, Loading, ErrorBox } from '../components/ui'
 import { DashedCircle, Icon, SmallCheck } from '../components/icons'
 import { useDevices, useHousehold, useOverview, useUnmanaged } from '../state/data'
-import { countVerdicts, pendingFlows, plural } from '../lib/verdicts'
+import { countVerdicts, plural } from '../lib/verdicts'
 import { hasRules, isConnected, stateLabel } from '../lib/device'
-import type { Device, Household, Overview, UnmanagedDevice } from '../api'
+import type { Device, Overview, UnmanagedDevice } from '../api'
 
 /**
  * Screen 3a. Three kinds of device, kept apart:
@@ -28,25 +28,22 @@ export default function Home() {
   const advisory = list.filter((d) => !isConnected(d))
   const withRules = connected.filter(hasRules)
   const attentionDevices = connected.filter((d) => !hasRules(d))
-  const waiting = list.map((d) => ({ d, n: pendingFlows(d, household).length })).filter((x) => x.n > 0)
-  const totalWaiting = waiting.reduce((s, x) => s + x.n, 0)
   const updating = connected.filter((d) => d.live?.publication === 'waiting').length
   const unseen = household.devices.find((h) => h.joined_seen === false && connected.some((d) => d.id === h.device_id))
-  const first = waiting[0]?.d
 
-  const bannerTo = unseen ? `/device/${unseen.device_id}/joined` : first ? `/device/${first.id}` : undefined
+  const bannerTo = unseen ? `/device/${unseen.device_id}/joined` : undefined
   const joinedName = unseen ? connected.find((d) => d.id === unseen.device_id)?.short_name : undefined
-  const bannerTitle = joinedName ? `${joinedName} joined your home` : totalWaiting > 0 ? `${plural(totalWaiting, 'decision')} waiting` : 'Rules are updating'
-  const bannerSub = [first ? first.short_name + (waiting.length > 1 ? ` and ${waiting.length - 1} more` : '') + ' · decisions waiting' : null, updating ? `${plural(updating, 'device is', 'devices are')} picking up a rule change` : null].filter(Boolean).join(' · ')
+  const bannerTitle = joinedName ? `${joinedName} joined your home` : 'Rules are updating'
+  const bannerSub = updating ? `${plural(updating, 'device is', 'devices are')} picking up a rule change` : ''
 
   return (
     <div className="screen">
       <AppBar title="My home" right={<Link to="/library" className="ntr" aria-label="Add a device"><Icon name="plus" /></Link>} />
 
-      {(unseen || totalWaiting > 0 || updating > 0) && (
+      {(unseen || updating > 0) && (
         <Group style={{ marginTop: 4 }}>
           <Cell className="t" to={bannerTo} chevron={!!bannerTo}>
-            <Tile tone={unseen ? 'blue' : 'orange'}>{unseen ? <Icon name="plus" size={18} /> : <DecisionGlyph />}</Tile>
+            <Tile tone="blue">{unseen ? <Icon name="plus" size={18} /> : <Icon name="publish" size={18} />}</Tile>
             <div className="cb">
               <span className="ttl" style={{ fontWeight: 500 }}>{bannerTitle}</span>
               <span className="sub">{bannerSub || 'See what it does with your data'}</span>
@@ -67,7 +64,7 @@ export default function Home() {
       {attentionDevices.length > 0 && (
         <>
           <SectionHeader>Need attention · {attentionDevices.length}</SectionHeader>
-          <Group>{attentionDevices.map((d) => <DeviceRow key={d.id} device={d} household={household} />)}</Group>
+          <Group>{attentionDevices.map((d) => <DeviceRow key={d.id} device={d} />)}</Group>
           <Footnote>These devices connected through PPD but don’t hold your current rules: they haven’t confirmed them yet, stopped renewing, or need to reconnect. A device that has left for good can be forgotten from its page.</Footnote>
         </>
       )}
@@ -75,7 +72,7 @@ export default function Home() {
       {withRules.length > 0 && (
         <>
           <SectionHeader>Have your rules · {withRules.length}</SectionHeader>
-          <Group>{withRules.map((d) => <DeviceRow key={d.id} device={d} household={household} />)}</Group>
+          <Group>{withRules.map((d) => <DeviceRow key={d.id} device={d} />)}</Group>
         </>
       )}
 
@@ -94,7 +91,7 @@ export default function Home() {
       {advisory.length > 0 && (
         <>
           <SectionHeader>Advisory devices you added · {advisory.length}</SectionHeader>
-          <Group>{advisory.map((d) => <DeviceRow key={d.id} device={d} household={household} />)}</Group>
+          <Group>{advisory.map((d) => <DeviceRow key={d.id} device={d} />)}</Group>
           <Footnote>From our research. Nothing is sent to these devices.</Footnote>
         </>
       )}
@@ -115,9 +112,9 @@ export default function Home() {
   )
 }
 
-function DeviceRow({ device: d, household }: { device: Device; household: Household }) {
-  const counts = countVerdicts(d, household)
-  const attention = (['unsatisfiable', 'decision_required'] as const).some((v) => counts[v])
+function DeviceRow({ device: d }: { device: Device }) {
+  const counts = countVerdicts(d)
+  const attention = !!counts.unsatisfiable
   return (
     <Cell className="d" to={`/device/${d.id}`}>
       <DeviceTile device={d} />
@@ -128,7 +125,7 @@ function DeviceRow({ device: d, household }: { device: Device; household: Househ
           <span>{d.live && !hasRules(d) ? d.live.association.label : stateLabel(d)}</span>
         </span>
         <span className="ln">
-          {attention ? <VerdictChips counts={counts} order={['unsatisfiable', 'decision_required']} /> : <VerdictChip verdict="compatible" n={(counts.compatible ?? 0) + (counts.conditionally_satisfiable ?? 0)} />}
+          {attention ? <VerdictChips counts={counts} order={['unsatisfiable']} /> : <VerdictChip verdict="compatible" n={(counts.compatible ?? 0) + (counts.conditionally_satisfiable ?? 0)} />}
         </span>
       </div>
     </Cell>
@@ -187,13 +184,5 @@ function Readiness({ overview: o }: { overview: Overview }) {
         </Cell>
       </Group>
     </>
-  )
-}
-
-export function DecisionGlyph() {
-  return (
-    <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-      <circle cx="7" cy="7" r="5.5" /><path d="M7 4v3.3" /><circle cx="7" cy="10" r=".7" fill="currentColor" />
-    </svg>
   )
 }

@@ -97,8 +97,6 @@ export function ChipGlyph({ verdict, size = 12 }: { verdict: Verdict; size?: num
   switch (verdict) {
     case 'unsatisfiable':
       return (<svg {...common} strokeWidth={1.8} {...stroke}><path d="M7 1.8l5.4 9.4H1.6z" /><path d="M7 5.6v2.6" /><circle cx="7" cy="10" r=".6" fill="currentColor" /></svg>)
-    case 'decision_required':
-      return (<svg {...common} strokeWidth={1.8} {...stroke}><circle cx="7" cy="7" r="5.5" /><path d="M7 4v3.3" /><circle cx="7" cy="10" r=".7" fill="currentColor" /></svg>)
     case 'indeterminate':
       return (<svg {...common} strokeWidth={1.8} {...stroke}><circle cx="7" cy="7" r="5.5" /><path d="M5.4 5.6a1.7 1.7 0 1 1 2.5 1.5c-.6.4-.9.8-.9 1.4" /><circle cx="7" cy="10.4" r=".7" fill="currentColor" /></svg>)
     case 'conditionally_satisfiable':
@@ -114,8 +112,6 @@ export function RowGlyph({ verdict }: { verdict: Verdict }) {
   switch (verdict) {
     case 'unsatisfiable':
       return (<svg {...w}><path d="M8 1.9L14.6 13.3H1.4Z" fill="currentColor" stroke="currentColor" strokeWidth={1.8} strokeLinejoin="round" /><path d="M8 6.2v3.3" stroke="#fff" strokeWidth={1.7} strokeLinecap="round" /><circle cx="8" cy="11.5" r=".95" fill="#fff" /></svg>)
-    case 'decision_required':
-      return (<svg {...w}><circle cx="8" cy="8" r="7" fill="currentColor" /><path d="M8 4.2v4.1" stroke="#fff" strokeWidth={1.7} strokeLinecap="round" /><circle cx="8" cy="11.3" r=".95" fill="#fff" /></svg>)
     case 'indeterminate':
       return (<svg {...w}><circle cx="8" cy="8" r="7" fill="currentColor" /><path d="M6.2 6.3a1.9 1.9 0 1 1 2.9 1.6c-.7.45-1.1.9-1.1 1.7" fill="none" stroke="#fff" strokeWidth={1.6} strokeLinecap="round" /><circle cx="8" cy="11.8" r=".95" fill="#fff" /></svg>)
     case 'conditionally_satisfiable':

@@ -1,4 +1,4 @@
-import type { RuleEffect, RuleScope } from '../api'
+import type { Rule, RuleCondition, RuleEffect, RuleScope } from '../api'
 
 /** Plain-language choices the rule editor offers. Each maps to one or more taxonomy terms. */
 export interface Choice { id: string; label: string; iris: string[] }
@@ -44,8 +44,20 @@ export const SOURCE_CHOICES: Choice[] = [
 
 export const KEPT_FOREVER = 'retention=ppd:indefinite'
 
-export const EFFECT_LABEL: Record<RuleEffect, string> = { dont_allow: 'Never', ask: 'Ask me first', allow: 'Allowed' }
-export const EFFECT_TITLE: Record<RuleEffect, string> = { dont_allow: 'Never allow', ask: 'Ask me first', allow: 'Allow' }
+export const EFFECT_LABEL: Record<RuleEffect, string> = { dont_allow: 'Never', allow: 'Allowed' }
+
+/** The conditions an allow rule can carry, in the words after "Allowed only if". */
+export const CONDITION_TEXT: Record<RuleCondition, string> = {
+  'processing_boundary=ppd:inHomeOnly': 'it is processed in my home',
+  'processing_boundary=ppd:onDeviceOnly': 'it stays on the device',
+  'retention=ppd:ephemeral': 'it is not kept',
+}
+export const CONDITIONS = Object.keys(CONDITION_TEXT) as RuleCondition[]
+export const isBoundary = (c: RuleCondition | null | undefined) => !!c?.startsWith('processing_boundary=')
+
+/** How a rule reads on the rules page: never, allowed only if, or allowed. */
+export type RuleKind = 'never' | 'limited' | 'allow'
+export const kindOf = (r: Rule): RuleKind => (r.effect === 'dont_allow' ? 'never' : r.condition ? 'limited' : 'allow')
 
 export const isOn = (list: string[] | undefined, c: Choice) => !!list?.length && c.iris.every((i) => list.includes(i))
 
@@ -56,13 +68,13 @@ export function toggle(list: string[] | undefined, c: Choice): string[] | undefi
 }
 
 /** A readable starting title for a rule that has none, built from its scope. */
-export function autoTitle(effect: RuleEffect, scope: RuleScope): string {
+export function autoTitle(effect: RuleEffect, scope: RuleScope, condition?: RuleCondition | null): string {
   const names = (choices: Choice[], list?: string[]) => choices.filter((c) => isOn(list, c)).map((c) => c.label.toLowerCase())
   const parts = [
     names(DATA_CHOICES, scope.data_type).join(', '),
     names(PURPOSE_CHOICES, scope.purpose).join(', ') && 'for ' + names(PURPOSE_CHOICES, scope.purpose).join(' or '),
     names(WHO_CHOICES, scope.handling_context).join(' or ') && '· ' + names(WHO_CHOICES, scope.handling_context).join(' or '),
   ].filter(Boolean)
-  const lead = { dont_allow: 'Never', ask: 'Ask me before', allow: 'Allow' }[effect]
+  const lead = effect === 'dont_allow' ? 'Never' : condition ? `Allow only if ${CONDITION_TEXT[condition]}` : 'Allow'
   return `${lead}: ${parts.join(' ') || 'any data flow'}`
 }

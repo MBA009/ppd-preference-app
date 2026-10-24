@@ -33,9 +33,9 @@ export default function Preview() {
         </Cell>
       </Group>
       <div className="gap" />
-      <ProvenanceCard device={d} household={household} ruleCount={ruleCount} />
+      <ProvenanceCard device={d} ruleCount={ruleCount} />
       {d.source === 'declared' && <div className="sf" style={{ fontStyle: 'italic' }}>We can’t check that the device will follow your rules.</div>}
-      <AttentionList device={d} household={household} />
+      <AttentionList device={d} />
       <div className="spacer" />
       <ActionBar>
         <Link to="/scan" className="btn2">Scan another box</Link>

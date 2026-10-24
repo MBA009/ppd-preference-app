@@ -1,13 +1,15 @@
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
-import type { Device, DeviceSummary, Questionnaire } from '../../shared/types'
+import type { Device, DeviceSummary, HouseholdPreset, Onboarding } from '../../shared/types'
 
 /**
- * The research fixtures that tools/build_mock.py writes to public/mock/. They are read once at start-up;
+ * The research fixtures that tools/build_mock.py writes to public/mock/, and the household presets and
+ * onboarding tree exported by ppd-household-presets (notebook 07). They are read once at start-up;
  * restart app-api after regenerating them.
  */
 export interface Fixtures {
-  questionnaire: Questionnaire
+  onboarding: Onboarding
+  presets: HouseholdPreset[]
   library: DeviceSummary[]
   devices: Map<string, Device>
   codes: Record<string, string>
@@ -19,8 +21,9 @@ async function readJson<T>(dir: string, file: string): Promise<T> {
 }
 
 export async function loadFixtures(dir: string): Promise<Fixtures> {
-  const [questionnaire, library, codes, household] = await Promise.all([
-    readJson<Questionnaire>(dir, 'questionnaire.json'),
+  const [onboarding, presets, library, codes, household] = await Promise.all([
+    readJson<Onboarding>(dir, 'onboarding.json'),
+    readJson<{ presets: HouseholdPreset[] }>(dir, 'household-presets.json'),
     readJson<{ devices: DeviceSummary[] }>(dir, 'library.json'),
     readJson<{ codes: Record<string, string> }>(dir, 'codes.json'),
     readJson<Fixtures['household']>(dir, 'household.json'),
@@ -30,5 +33,5 @@ export async function loadFixtures(dir: string): Promise<Fixtures> {
   for (const summary of library.devices) {
     devices.set(summary.id, await readJson<Device>(dir, path.join('devices', `${summary.id}.json`)))
   }
-  return { questionnaire, library: library.devices, devices, codes: codes.codes, household }
+  return { onboarding, presets: presets.presets, library: library.devices, devices, codes: codes.codes, household }
 }

@@ -1,11 +1,24 @@
-import type { Answers, Decision, Device, Household, Profile, ResolveResult, Rule } from './types'
+import type { Answers, Device, Household, HouseholdPreset, Profile, ResolveResult, Rule } from './types'
 
 /**
  * How the household changes. Each function takes the current household and returns the next one;
  * app-api stores the result in its database, mockClient.ts in localStorage.
  */
 
-export const blankHousehold = (): Household => ({ devices: [], saved: [], decisions: {}, group_decisions: {}, answers: null, rules: [], profile: null })
+export const blankHousehold = (): Household => ({ devices: [], saved: [], answers: null, preset_id: null, rules: [], profile: null })
+
+/**
+ * A stored household in today's shape. Households saved before presets (answers to the old questionnaire,
+ * "Ask me first" rules, per-flow decisions) go back to the onboarding questions. Their custom allow and never
+ * rules stay; "Ask me first" rules are dropped, since the household is no longer asked and its preset decides.
+ */
+export function normalizeHousehold(raw: Partial<Household> & Record<string, unknown>): Household {
+  const { decisions: _d, group_decisions: _g, ...rest } = raw
+  const h: Household = { ...blankHousehold(), ...rest }
+  const rules = h.rules.filter((r) => (r.effect as string) !== 'ask')
+  if (!('preset_id' in raw)) return { ...h, answers: null, preset_id: null, rules: rules.filter((r) => r.origin.kind === 'custom') }
+  return { ...h, rules }
+}
 
 /** The fixture household (public/mock/household.json): Reolink "just joined", the others have been in the home for a day. */
 export function seedHousehold(fixture: { devices: { device_id: string; added_at: string }[] }, now = Date.now()): Household {
@@ -19,7 +32,18 @@ export function seedHousehold(fixture: { devices: { device_id: string; added_at:
   }
 }
 
-export const savePolicy = (h: Household, p: { answers: Answers; rules: Rule[]; profile: Profile }): Household => ({ ...h, answers: p.answers, rules: p.rules, profile: p.profile })
+/** Takes the preset's rules in place of the previous preset's. Rules the person added stay, after them. */
+export function choosePreset(h: Household, preset: HouseholdPreset, answers?: Answers): Household {
+  const rules: Rule[] = preset.rules.map((r) => ({ ...r, origin: { kind: 'preset', preset_id: preset.id } }))
+  return {
+    ...h,
+    preset_id: preset.id,
+    answers: answers ?? h.answers ?? {},
+    rules: [...rules, ...h.rules.filter((r) => r.origin.kind === 'custom')],
+  }
+}
+
+export const saveProfile = (h: Household, profile: Profile): Household => ({ ...h, profile })
 
 export function upsertRule(h: Household, rule: Rule): Household {
   const exists = h.rules.some((r) => r.id === rule.id)
@@ -37,10 +61,7 @@ export function addDevice(h: Household, id: string, opts?: { joined?: boolean },
   }
 }
 
-export function removeDevice(h: Household, id: string): Household {
-  const decisions = Object.fromEntries(Object.entries(h.decisions).filter(([, d]) => d.device_id !== id))
-  return { ...h, devices: h.devices.filter((d) => d.device_id !== id), decisions }
-}
+export const removeDevice = (h: Household, id: string): Household => ({ ...h, devices: h.devices.filter((d) => d.device_id !== id) })
 
 export const saveForLater = (h: Household, id: string): Household => ({ ...h, saved: h.saved.includes(id) ? h.saved : [...h.saved, id] })
 
@@ -48,17 +69,6 @@ export const markJoinedSeen = (h: Household, id: string): Household => ({
   ...h,
   devices: h.devices.map((d) => (d.device_id === id ? { ...d, joined_seen: true } : d)),
 })
-
-export function saveDecision(h: Household, d: Omit<Decision, 'decided_at'>, now = new Date()): Household {
-  const decision: Decision = { ...d, decided_at: now.toISOString() }
-  return {
-    ...h,
-    decisions: { ...h.decisions, [d.flow_id]: decision },
-    group_decisions: d.remember_similar
-      ? { ...h.group_decisions, [d.core_group_id]: decision }
-      : Object.fromEntries(Object.entries(h.group_decisions).filter(([k]) => k !== d.core_group_id)),
-  }
-}
 
 /** The fixture declarations have fixed dates; make them relative to now so the demo never looks stale. */
 export function withFreshDeclaration(d: Device, now = Date.now()): Device {

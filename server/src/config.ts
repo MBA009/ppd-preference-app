@@ -8,7 +8,7 @@ export interface Config {
   /** development enables a fixed local identity; anything else requires Cloudflare Access. */
   appEnv: 'development' | 'production'
   databasePath: string
-  /** The research fixtures (public/mock/): questionnaire, device library, declarations, privacy codes. */
+  /** The research fixtures (public/mock/): onboarding tree and presets, device library, declarations, privacy codes. */
   fixturesDir: string
   /** Which gateway devices are real hardware or simulated participants, and how to present them. */
   deviceRegistryPath: string

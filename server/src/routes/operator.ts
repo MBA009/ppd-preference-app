@@ -101,9 +101,7 @@ export function operatorRoutes(app: FastifyInstance, ctx: AppContext): void {
     requireOperator(req)
     const [household, devices, published] = await Promise.all([ctx.household(), ctx.liveDevices().catch(unavailable), ctx.gateway.defaultPolicy().catch(unavailable)])
     const { preview, policy } = compileHouseholdPolicy(household, devices, published)
-    if (preview.blocked.length) {
-      throw httpError(409, `${preview.blocked.length} data ${preview.blocked.length === 1 ? 'flow waits' : 'flows wait'} for your decision before the rules can be sent.`)
-    }
+    if (!household.preset_id) throw httpError(409, 'Answer the household questions first: your rules start from the preset they choose.')
     const wire: Policy = { policy_id: newPolicyId(), ...policy }
     await ctx.gateway.putDefaultPolicy(wire).catch(unavailable)
     // Read back what the repository stored rather than assuming the write meant what we sent.
@@ -143,8 +141,8 @@ export function operatorRoutes(app: FastifyInstance, ctx: AppContext): void {
   })
 
   /**
-   * Forgets a device that has left the home: the gateway deletes its records, and it leaves the household with its
-   * saved decisions. The gateway refuses while the device is associated or still on the network. If it comes back,
+   * Forgets a device that has left the home: the gateway deletes its records, and it leaves the household.
+   * The gateway refuses while the device is associated or still on the network. If it comes back,
    * it registers again and joins as new.
    */
   app.post<{ Params: { id: string } }>('/api/devices/:id/forget', { schema: { params: idParams } }, async (req) => {

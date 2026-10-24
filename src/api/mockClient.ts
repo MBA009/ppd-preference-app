@@ -1,4 +1,4 @@
-import type { Device, DeviceSummary, Household, Overview, PpdApi, Questionnaire } from './types'
+import type { Device, DeviceSummary, Household, HouseholdPreset, Onboarding, Overview, PpdApi } from './types'
 import { evaluateDevice } from '../../shared/engine'
 import * as hh from '../../shared/household'
 
@@ -43,8 +43,8 @@ const seed = async () => hh.seedHousehold(await getJson('household.json'))
 function read(): Household | null {
   try {
     const raw = localStorage.getItem(STORE_KEY)
-    // Older saves lack the policy fields; fill them in so the person lands on the questions.
-    return raw ? { ...hh.blankHousehold(), ...(JSON.parse(raw) as Partial<Household>) } : null
+    // Older saves (before presets) go back to the onboarding questions.
+    return raw ? hh.normalizeHousehold(JSON.parse(raw)) : null
   } catch {
     return null
   }
@@ -60,20 +60,28 @@ function write(h: Household): Household {
   return h
 }
 
+const presets = async () => (await getJson<{ presets: HouseholdPreset[] }>('household-presets.json')).presets
+
 let memory: Household | null = null
 async function current(): Promise<Household> {
   return memory ?? read() ?? write(await seed())
 }
 
 export const mockClient: PpdApi = {
-  getQuestionnaire() {
-    return getJson<Questionnaire>('questionnaire.json')
+  getOnboarding() {
+    return getJson<Onboarding>('onboarding.json')
+  },
+  listHouseholdPresets: presets,
+  async choosePreset({ preset_id, answers }) {
+    const preset = (await presets()).find((p) => p.id === preset_id)
+    if (!preset) throw new Error(`Preset ${preset_id} not found.`)
+    return write(hh.choosePreset(await current(), preset, answers))
+  },
+  async saveProfile(profile) {
+    return write(hh.saveProfile(await current(), profile))
   },
   async listRules() {
     return (await current()).rules
-  },
-  async savePolicy(p) {
-    return write(hh.savePolicy(await current(), p))
   },
   async upsertRule(rule) {
     return write(hh.upsertRule(await current(), rule))
@@ -109,11 +117,8 @@ export const mockClient: PpdApi = {
   async markJoinedSeen(id) {
     return write(hh.markJoinedSeen(await current(), id))
   },
-  async saveDecision(d) {
-    return write(hh.saveDecision(await current(), d))
-  },
   async resetDemo(mode) {
-    // Both modes return to first launch: no answers and no rules yet.
+    // Both modes return to first launch: no preset, answers or rules yet.
     return write(mode === 'seed' ? await seed() : hh.blankHousehold())
   },
 
