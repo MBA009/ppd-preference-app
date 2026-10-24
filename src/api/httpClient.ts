@@ -78,5 +78,6 @@ export const httpClient: PpdApi = {
   simReset: () => call<SimDevice[]>('POST', '/simulator/reset', {}),
   getSimConsole: (deviceId) => call<SimConsole>('GET', `/simulator/devices/${id(deviceId)}/console`),
   simAction: (deviceId, action) => call<SimConsole>('POST', `/simulator/devices/${id(deviceId)}/actions`, { action }),
+  simClearLog: (deviceId) => call<SimConsole>('POST', `/simulator/devices/${id(deviceId)}/log/clear`, {}),
   simBehavior: (deviceId, mode) => call<SimConsole>('POST', `/simulator/devices/${id(deviceId)}/behavior`, { mode }),
 }

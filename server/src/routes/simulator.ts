@@ -51,6 +51,11 @@ export function simulatorRoutes(app: FastifyInstance, ctx: AppContext, sim: Simu
     },
   )
 
+  app.post<{ Params: { id: string } }>('/api/simulator/devices/:id/log/clear', { schema: { params: idParams } }, async (req) => {
+    requireOperator(req)
+    return sim.clearLog(req.params.id)
+  })
+
   app.post('/api/simulator/reset', async (req): Promise<SimDevice[]> => {
     requireOperator(req)
     ctx.store.audit('sim_reset', undefined, req.identity?.email)

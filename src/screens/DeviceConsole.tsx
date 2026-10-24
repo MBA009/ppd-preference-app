@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { api, type Device, type SimConsole, type SimOutcome } from '../api'
-import { AppBar, Cell, DeviceTile, ErrorBox, Footnote, Group, Loading, SectionHeader, Segmented } from '../components/ui'
+import { AppBar, Cell, DeviceTile, ErrorBox, Expander, Footnote, Group, Loading, SectionHeader, Segmented } from '../components/ui'
 import { DemoControls, TelemetryCard } from '../components/LiveDevice'
 import { useDevice, useHousehold, useMe, useSimConsole, useSimDevices } from '../state/data'
 import { timeAgo } from '../lib/device'
@@ -102,7 +102,7 @@ function SimulatedConsole({ id, operator }: { id: string; operator: boolean }) {
       )}
 
       <Totals c={c} />
-      <Activity c={c} />
+      <Activity c={c} onClear={operator ? () => run(() => api.simClearLog(id)) : undefined} />
       <div className="spacer" />
     </div>
   )
@@ -125,7 +125,19 @@ function Totals({ c }: { c: SimConsole }) {
   )
 }
 
-function Activity({ c }: { c: SimConsole }) {
+/** Shown before "Show all". The server keeps the latest 100. */
+const RECENT = 10
+
+function Activity({ c, onClear }: { c: SimConsole; onClear?: () => void }) {
+  const [all, setAll] = useState(false)
+  const [confirm, setConfirm] = useState(false)
+  const shown = all ? c.events : c.events.slice(0, RECENT)
+  const clear = () => {
+    if (!confirm) return setConfirm(true)
+    setConfirm(false)
+    setAll(false)
+    onClear?.()
+  }
   return (
     <>
       <SectionHeader>What it did</SectionHeader>
@@ -133,7 +145,7 @@ function Activity({ c }: { c: SimConsole }) {
         <Group><Cell chevron={false}><div className="cb" style={{ padding: '12px 0' }}><span className="sub">Nothing yet. Use the device above.</span></div></Cell></Group>
       ) : (
         <Group>
-          {c.events.slice(0, 15).map((e, i) => (
+          {shown.map((e, i) => (
             <div key={e.at + i} className="cell" style={{ alignItems: 'flex-start' }}>
               <div className="cb" style={{ padding: '10px 0' }}>
                 <span className="ttl" style={{ fontWeight: 500 }}>{e.label} <span className="sub" style={{ fontWeight: 400 }}>· {timeAgo(e.at)}</span></span>
@@ -149,6 +161,17 @@ function Activity({ c }: { c: SimConsole }) {
               </div>
             </div>
           ))}
+          {c.events.length > RECENT && (
+            <Expander open={all} onToggle={() => setAll(!all)}>{all ? 'Show the last 10' : `Show all ${c.events.length}`}</Expander>
+          )}
+        </Group>
+      )}
+      {c.events.length > 0 && <Footnote>The device keeps its latest 100 events, until app-api restarts or the log is cleared.</Footnote>}
+      {onClear && c.events.length > 0 && (
+        <Group>
+          <Cell className="t" chevron={false} onClick={clear}>
+            <div className="cb"><span className="ttl" style={{ color: '#B3261E' }}>{confirm ? 'Tap again to clear the log' : 'Clear log'}</span><span className="sub">Empties what it did and the totals. The device stays as it is.</span></div>
+          </Cell>
         </Group>
       )}
     </>

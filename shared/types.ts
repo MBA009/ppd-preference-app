@@ -443,4 +443,5 @@ export interface PpdApi {
   getSimConsole(id: string): Promise<SimConsole>
   simAction(id: string, action: string): Promise<SimConsole>
   simBehavior(id: string, mode: SimConsole['behavior']): Promise<SimConsole>
+  simClearLog(id: string): Promise<SimConsole>
 }

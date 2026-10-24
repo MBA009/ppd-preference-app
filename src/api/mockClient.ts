@@ -144,4 +144,5 @@ export const mockClient: PpdApi = {
   getSimConsole: offline,
   simAction: offline,
   simBehavior: offline,
+  simClearLog: offline,
 }

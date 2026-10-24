@@ -220,6 +220,10 @@ describe('simulator', () => {
     assert.equal(tv.ppd, false)
     assert.ok(tv.events[0].flows.length > 0 && tv.events[0].flows.every((f) => f.outcome === 'sent_no_ppd'))
     await json('POST', '/api/simulator/devices/lg-oled65c6pua-c6-01/behavior', { mode: 'ignores' }, 400)
+
+    const cleared = await json<SimConsole>('POST', '/api/simulator/devices/level-lock-01/log/clear', {})
+    assert.deepEqual([cleared.events, cleared.totals], [[], []])
+    assert.deepEqual(cleared.state[0], ['Door', 'Locked']) // the device's state stays
   })
 
   test('reset turns everything off and clears the leases', async () => {

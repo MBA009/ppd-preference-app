@@ -167,6 +167,12 @@ export class Simulator {
     return this.console(id)
   }
 
+  /** Empties the device's activity log and totals; its state and behaviour stay. */
+  clearLog(id: string): SimConsole {
+    this.anySlot(id).events = []
+    return this.console(id)
+  }
+
   /** Periodic reports from devices that are on. */
   private tick(): void {
     const now = Date.now()
