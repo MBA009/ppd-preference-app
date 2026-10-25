@@ -25,7 +25,6 @@ export function PresetSummary({ preset, open: startOpen = false }: { preset: Hou
           </div>
         </Cell>
       </Group>
-      <div className="sf">About {Math.round(preset.households_share * 100)}% of the households we modelled fit this preset.</div>
       <SectionHeader>Its rules · {preset.rules.length}</SectionHeader>
       <Group>
         <Expander open={open} onToggle={() => setOpen(!open)}>{open ? 'Hide the rules' : `See ${plural(preset.rules.length, 'rule')}`}</Expander>

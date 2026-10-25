@@ -5,6 +5,13 @@ import { ActionBar, AppBar, ErrorBox, Footnote, Group, Loading } from '../compon
 import { PresetSummary } from '../components/PresetSummary'
 import { useHousehold, useHouseholdPresets } from '../state/data'
 
+/**
+ * The order presets are listed in: strictest first, by how much of all data flows each allows (its description
+ * in household-presets.json). Fixed here for display; the presets themselves are unchanged.
+ */
+const ORDER = ['k8-p0', 'k8-p7', 'k8-p1', 'k8-p2', 'k8-p6', 'k8-p3', 'k8-p5', 'k8-p4']
+const rank = (id: string) => (ORDER.indexOf(id) + 1 || ORDER.length + 1)
+
 /** Every household preset, to pick one directly instead of (or after) answering the questions. */
 export default function ChoosePreset() {
   const nav = useNavigate()
@@ -32,15 +39,15 @@ export default function ChoosePreset() {
   return (
     <div className="screen">
       <AppBar title="Presets" back={true} />
-      <div className="sf" style={{ paddingTop: 0 }}>Each preset is a short set of rules for one kind of household. Pick the one that fits yours.</div>
+      <div className="sf" style={{ paddingTop: 0 }}>Each preset is a short set of rules for one kind of household, from the strictest to the most open. Pick the one that fits yours.</div>
       <Group>
         <div role="radiogroup" aria-label="Presets">
-          {presets.map((p) => (
+          {[...presets].sort((a, b) => rank(a.id) - rank(b.id)).map((p) => (
             <button key={p.id} className="cell" role="radio" aria-checked={current === p.id} onClick={() => setPicked(p.id)}>
               <span className={'rd' + (current === p.id ? ' on' : '')} />
               <div className="cb" style={{ padding: '11px 0' }}>
                 <span className="ttl">{p.name}</span>
-                <span className="sub">{p.id === household.preset_id ? 'Your preset now · ' : ''}About {Math.round(p.households_share * 100)}% of households</span>
+                {p.id === household.preset_id && <span className="sub">Your preset now</span>}
               </div>
               <span className="tr" />
             </button>
