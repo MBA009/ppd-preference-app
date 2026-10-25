@@ -6,10 +6,11 @@ import { PresetSummary } from '../components/PresetSummary'
 import { useHousehold, useHouseholdPresets } from '../state/data'
 
 /**
- * The order presets are listed in: strictest first, by how much of all data flows each allows (its description
- * in household-presets.json). Fixed here for display; the presets themselves are unchanged.
+ * The order presets are listed in: strictest first, by how much of all data flows each refuses (its description
+ * in household-presets.json; ties go to the one with more conditions). Fixed here for display; the presets
+ * themselves are unchanged.
  */
-const ORDER = ['k8-p0', 'k8-p7', 'k8-p1', 'k8-p2', 'k8-p6', 'k8-p3', 'k8-p5', 'k8-p4']
+const ORDER = ['k8-p0', 'k8-p1', 'k8-p7', 'k8-p2', 'k8-p6', 'k8-p3', 'k8-p5', 'k8-p4']
 const rank = (id: string) => (ORDER.indexOf(id) + 1 || ORDER.length + 1)
 
 /** Every household preset, to pick one directly instead of (or after) answering the questions. */
