@@ -5,3 +5,5 @@ dev-dist
 server/data
 .dev-stack
 .cloud-tls
+CLAUDE.md
+household-policy-decision-tree.md

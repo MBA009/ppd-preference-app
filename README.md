@@ -15,7 +15,6 @@ It implements the nine phone screens from the design canvas (1a Scan, 1b/1c Prev
 editor and a sources page. Its backend is **app-api** (`server/`), which stores the household and computes the verdicts;
 an offline mock mode answers the same calls from static JSON in `public/mock/`.
 
-App: https://ppd-preference-app.vercel.app/#/rules
 
 ## Run it
 
