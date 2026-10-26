@@ -14,6 +14,23 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * The Cloudflare Access session ran out: the edge answers API calls with a redirect to its login page, which a
+ * fetch cannot follow. Reloading the page sends the browser through that login (page loads go to the network
+ * first, see vite.config.ts). At most once a minute, so a login that keeps failing cannot loop.
+ */
+function signInAgain(): void {
+  const KEY = 'ppd.signin-reload'
+  try {
+    const last = Number(sessionStorage.getItem(KEY) ?? 0)
+    if (Date.now() - last < 60_000) return
+    sessionStorage.setItem(KEY, String(Date.now()))
+  } catch {
+    /* storage blocked: still reload once */
+  }
+  window.location.reload()
+}
+
 async function call<T>(method: string, path: string, body?: unknown): Promise<T> {
   let res: Response
   try {
@@ -24,12 +41,17 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
       body: body === undefined ? undefined : JSON.stringify(body),
       cache: 'no-store',
       credentials: 'same-origin',
+      // app-api never redirects; a redirect is the sign-in layer in front of it asking the person to log in.
+      redirect: 'manual',
     })
   } catch {
     throw new ApiError('Could not reach the server. Check your connection and try again.', 0)
   }
+  if (res.type === 'opaqueredirect' || res.status === 401) {
+    signInAgain()
+    throw new ApiError('Your sign-in has expired. Reload the page to sign in again.', 401)
+  }
   const data = res.headers.get('content-type')?.includes('json') ? await res.json().catch(() => null) : null
-  if (res.status === 401) throw new ApiError('Your sign-in has expired. Reload the page to sign in again.', 401)
   if (!res.ok) throw new ApiError((data as { message?: string } | null)?.message ?? `The server returned ${res.status}.`, res.status)
   return data as T
 }
