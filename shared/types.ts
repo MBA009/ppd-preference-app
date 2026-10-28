@@ -59,15 +59,18 @@ export interface RuleScope {
 
 export interface Rule {
   id: string
-  /** The sentence the person sees. */
+  /** The sentence the person sees, generated from the rule (shared/ruleTitle.ts); never typed. */
   title: string
   effect: RuleEffect
   /** Only on allow rules: allowed only under this qualifier. Absent or null = allowed as is. */
   condition?: RuleCondition | null
   scope: RuleScope
   enabled: boolean
-  /** Where the rule came from: the household's preset, or the person adding it. */
-  origin: { kind: 'preset'; preset_id: string } | { kind: 'custom' }
+  /**
+   * Where the rule came from: the preset the questionnaire assigned (a starting rule), the household's answer to one
+   * situation question (written into the starting rules), or the person adding it.
+   */
+  origin: { kind: 'preset'; preset_id: string } | { kind: 'answer'; question: string } | { kind: 'custom' }
 }
 
 /** What the person wants to hear about. Saved with the policy; nothing sends these yet. */
@@ -78,34 +81,57 @@ export interface Profile {
 
 /* ---------- household presets and the onboarding tree (public/mock/, from ppd-household-presets) ---------- */
 
-/** A starting policy for a kind of household: a short set of rules, exactly one of which matches any flow. */
+/**
+ * A starting policy for a kind of household: rules that never overlap, so exactly one decides any flow.
+ * Internal: the household never sees or chooses a preset (the questionnaire assigns it).
+ */
 export interface HouseholdPreset {
   id: string
-  /** A CableLabs tier (Privacy-tightened, Balanced, Cloud-assisted), then what sets the preset apart. */
-  name: string
-  tier: string
+  /** A working name for the team, never shown to households. */
+  internal_name: string
   description: string
+  shown_to_households: false
+  /** Share of all possible flows the preset allows. */
+  accepted_share: number
   /** Share of the synthetic households this preset was built from. */
   households_share: number
   reached_by_onboarding: boolean
   rules: Rule[]
 }
 
-export interface OnboardingQuestion { prompt: string; options: { id: string; label: string }[] }
+/** A situation question's data type × purpose × handling context (one block of 28 flows). */
+export interface Situation { data_type: string; purpose: string; handling_context: string }
 
-/** A question with one branch per group of answers, or the preset the walk ends in. */
-export type OnboardingNode =
-  | { question: string; branches: { answers: string[]; next: OnboardingNode }[] }
-  | { preset: string }
+export interface OnboardingQuestion {
+  prompt: string
+  options: { id: string; label: string }[]
+  /** Set on situation questions: the block of flows a yes or no decides. */
+  situation?: Situation
+  /** The data in the prompt, worded for a device class ('default' is the one in the prompt). */
+  data_examples?: Record<string, string>
+}
 
-/** The decision tree that places a household in a preset. A question can come back lower down; its first answer is reused. */
+/** Where stage 1 ends: the preset, and the follow-up questions (stage 2) for households that end here. */
+export interface OnboardingLeaf { preset: string; follow_up_budget: number; follow_ups: string[] }
+
+/** A question with one branch per group of answers, or a leaf. */
+export type OnboardingNode = { question: string; branches: { answers: string[]; next: OnboardingNode }[] } | OnboardingLeaf
+
+/**
+ * The questionnaire: a decision tree (stage 1) that places a household in a preset, then that leaf's follow-ups
+ * (stage 2). A question can come back lower down the tree; its first answer is reused.
+ */
 export interface Onboarding {
   version: string
-  title: string
-  description: string
-  disclaimer: string
-  source: Record<string, string | number>
+  kind: string
+  source: { total_questions_cap: number } & Record<string, unknown>
+  splash: { title: string; text: string }
+  follow_up_intro: { title: string; text: string }
   questions: Record<string, OnboardingQuestion>
+  /** How to walk the tree, how answers become rules, and what rerunning does (plain text, for readers of the file). */
+  walk: string
+  rules: string
+  rerun: string
   root: OnboardingNode
 }
 
@@ -199,11 +225,11 @@ export interface HomeEntry {
 export interface Household {
   devices: HomeEntry[]
   saved: string[]
-  /** Answers to the onboarding questions. null until the household has chosen a preset (first launch). */
+  /** Answers to the onboarding questions (stage 1 and the follow-ups). null until the household has answered (first launch). */
   answers: Answers | null
-  /** The preset the household chose. Its rules were copied into `rules`. */
+  /** The preset the questionnaire assigned (internal). Its rules, with the answers written in, are `rules`. */
   preset_id: string | null
-  /** The household policy: the preset's rules, then edited by the person. */
+  /** The household policy: the preset's rules with the household's answers written in, then edited by the person. */
   rules: Rule[]
   profile: Profile | null
 }
@@ -267,6 +293,8 @@ export interface Overview {
     known: number; registered: number; declared: number; policy_retrieved: number; acknowledged: number; associated: number
     needs_reassociation: number; stale: number; broken: number; policy_conflict: number; overrides: number; authenticated: number; compatibility_mode: number
     network_observed: number; unmanaged: number; need_attention: number
+    /** Devices that hold the current rules: associated, with no runtime conflict reported. */
+    have_rules: number
   }
   household_policy: { policy_id: string | null; updated_at: string | null; published_by_app: boolean }
   updated_at: string
@@ -347,7 +375,7 @@ export interface SimConsole {
   /** Newest first. */
   events: SimEvent[]
   /** Flows that leave the home, counted by recipient and purpose. */
-  totals: { recipient: string; purpose: string; sent: number; blocked: number }[]
+  totals: { recipient: string; purpose: string; sent: number; blocked: number; against: number }[]
 }
 
 /** One atomic rule the compiler wants to publish, and why. */
@@ -395,8 +423,11 @@ export type ResolveResult =
 export interface PpdApi {
   getOnboarding(): Promise<Onboarding>
   listHouseholdPresets(): Promise<HouseholdPreset[]>
-  /** Replaces the preset's rules with this preset's; rules the person added stay. `answers` are stored when given. */
-  choosePreset(p: { preset_id: string; answers?: Answers }): Promise<Household>
+  /**
+   * Finishes the questionnaire: walks the tree with `answers` to a preset and rebuilds the household's rules from it and
+   * the answers. Starts over: every earlier rule is replaced, including the person's own edits.
+   */
+  finishOnboarding(p: { answers: Answers }): Promise<Household>
   saveProfile(profile: Profile): Promise<Household>
   /** The household's rules. */
   listRules(): Promise<Rule[]>

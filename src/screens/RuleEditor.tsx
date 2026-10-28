@@ -3,8 +3,9 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import type { Rule, RuleCondition, RuleScope } from '../api'
 import { ActionBar, AppBar, Cell, Footnote, Group, Loading, Pill, SectionHeader, Switch } from '../components/ui'
 import { useDevices, useHousehold } from '../state/data'
-import { ruleCovers } from '../policy/scope'
-import { ACTION_CHOICES, CONDITIONS, CONDITION_TEXT, DATA_CHOICES, KEPT_FOREVER, PURPOSE_CHOICES, SOURCE_CHOICES, WHO_CHOICES, autoTitle, isBoundary, isOn, kindOf, toggle, type Choice, type RuleKind } from '../policy/choices'
+import { ruleCovers, rulesOverlap, strictness } from '../policy/scope'
+import { ruleTitle } from '../../shared/ruleTitle'
+import { ACTION_CHOICES, CONDITIONS, CONDITION_TEXT, DATA_CHOICES, KEPT_FOREVER, PURPOSE_CHOICES, SOURCE_CHOICES, WHO_CHOICES, isBoundary, isOn, kindOf, toggle, type Choice, type RuleKind } from '../policy/choices'
 import { plural } from '../lib/verdicts'
 
 /** Add a rule (/rules/new) or change one (/rules/:ruleId). */
@@ -36,7 +37,6 @@ function Editor({ rule }: { rule: Rule | undefined }) {
   const ids = (household?.devices ?? []).map((d) => d.device_id)
   const { data: devices } = useDevices(ids)
 
-  const [title, setTitle] = useState(rule?.title ?? '')
   const [kind, setKind] = useState<RuleKind>(rule ? kindOf(rule) : 'never')
   const [condition, setCondition] = useState<RuleCondition>(rule?.condition ?? 'processing_boundary=ppd:inHomeOnly')
   const [scope, setScope] = useState<RuleScope>(rule?.scope ?? {})
@@ -47,18 +47,27 @@ function Editor({ rule }: { rule: Rule | undefined }) {
   const empty = !scope.data_type?.length && !scope.purpose?.length && !scope.handling_context?.length && !scope.action?.length && !scope.source?.length && !scope.constraints?.length
   const effect = kind === 'never' ? 'dont_allow' : 'allow'
   const cond = kind === 'limited' ? condition : null
-  const shownTitle = title.trim() || autoTitle(effect, scope, cond)
+  // The rule as it would be saved. Its name is generated from it (shared/ruleTitle.ts), never typed.
+  const draft: Rule = { id: rule?.id ?? '', title: '', effect, condition: cond, scope, enabled, origin: rule?.origin ?? { kind: 'custom' } }
+  const name = ruleTitle(draft)
 
   const impact = useMemo(() => {
     let flows = 0
     let ds = 0
     for (const d of devices ?? []) {
-      const n = d.flows.filter((f) => ruleCovers({ id: '', title: '', effect, condition: cond, scope, enabled: true, origin: { kind: 'custom' } }, f.taxonomy)).length
+      const n = d.flows.filter((f) => ruleCovers({ ...draft, enabled: true }, f.taxonomy)).length
       flows += n
       if (n) ds += 1
     }
     return { flows, devices: ds }
   }, [devices, scope, effect, cond])
+
+  // Where this rule and another disagree, the stricter one wins (Never, then Allow only if, then Allow). Say so before
+  // saving: a stricter rule means part of this one does nothing; a looser one means this one takes over part of it.
+  const others = (household?.rules ?? []).filter((r) => r.id !== rule?.id && !empty && rulesOverlap(draft, r) && strictness(r) !== strictness(draft))
+  const stricter = others.filter((r) => strictness(r) > strictness(draft))
+  const looser = others.filter((r) => strictness(r) < strictness(draft))
+  const sharedFlows = (r: Rule) => (devices ?? []).reduce((n, d) => n + d.flows.filter((f) => ruleCovers({ ...draft, enabled: true }, f.taxonomy) && ruleCovers(r, f.taxonomy)).length, 0)
 
   const flip = (key: 'data_type' | 'purpose' | 'handling_context' | 'action' | 'source', c: Choice) =>
     setScope((s) => ({ ...s, [key]: toggle(s[key], c) }))
@@ -72,7 +81,7 @@ function Editor({ rule }: { rule: Rule | undefined }) {
   const save = async () => {
     const next: Rule = {
       id: rule?.id ?? `custom.${Date.now().toString(36)}`,
-      title: shownTitle,
+      title: name,
       effect,
       condition: cond,
       scope,
@@ -105,6 +114,10 @@ function Editor({ rule }: { rule: Rule | undefined }) {
   return (
     <div className="screen">
       <AppBar title={rule ? 'Edit rule' : 'New rule'} back="/rules" />
+      <div className="rname" aria-live="polite">
+        <span className="sub">This rule</span>
+        <span className="ttl">{empty ? 'Pick what it covers below' : name}</span>
+      </div>
 
       <SectionHeader>What should happen</SectionHeader>
       <Group>
@@ -144,11 +157,6 @@ function Editor({ rule }: { rule: Rule | undefined }) {
       </div>
       <div className="sf" style={{ paddingTop: 0, marginTop: -6 }}>We can only check this when a device states how long it keeps data. “Not stated” is never treated as forever.</div>
 
-      <SectionHeader>Rule name</SectionHeader>
-      <Group>
-        <textarea className="fld" rows={2} aria-label="Rule name" value={title} placeholder={autoTitle(effect, scope, cond)} onChange={(e) => setTitle(e.target.value)} />
-      </Group>
-
       <div style={{ height: 12, flex: 'none' }} />
       <Group>
         <div className="cell">
@@ -166,8 +174,28 @@ function Editor({ rule }: { rule: Rule | undefined }) {
               ? `This rule covers ${plural(impact.flows, 'data flow')} on ${plural(impact.devices, 'device')} in your home.`
               : 'No device in your home does this right now. The rule will apply when one does.'}
       </div>
-      {rule && rule.origin.kind === 'preset' && (
-        <Footnote>This rule comes from your preset. Your changes are kept until you choose a preset again.</Footnote>
+      {enabled && stricter.length > 0 && (
+        <div className="note" role="status" style={{ margin: '12px 16px 0' }}>
+          <b>Part of this rule won’t take effect.</b> It overlaps with {stricter.length === 1 ? 'a stricter rule' : `${stricter.length} stricter rules`}, and where rules disagree the stricter one wins:
+          <ul className="olap">
+            {stricter.map((r) => {
+              const n = sharedFlows(r)
+              return <li key={r.id}><Link to={`/rules/${encodeURIComponent(r.id)}`}>{r.title}</Link>{devices && <span> · {n ? `${plural(n, 'data flow')} on your devices` : 'none of your devices yet'}</span>}</li>
+            })}
+          </ul>
+          To change what happens there, edit {stricter.length === 1 ? 'that rule' : 'those rules'}. To use a feature on one device only, turn it on in the device’s own app.
+        </div>
+      )}
+      {enabled && looser.length > 0 && (
+        <Footnote>
+          Where it overlaps with {looser.length === 1 ? <>“{looser[0].title}”</> : `${looser.length} other rules`}, this rule is stricter, so this rule wins.
+        </Footnote>
+      )}
+      {rule && rule.origin.kind !== 'custom' && (
+        <Footnote>
+          {rule.origin.kind === 'answer' ? 'This rule comes from your answer to one of the questions.' : 'This rule comes from the questions: households that answered like you chose it.'}
+          {' '}Your changes are kept until you answer the questions again, which rebuilds your rules.
+        </Footnote>
       )}
 
       {rule && (

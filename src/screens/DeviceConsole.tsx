@@ -20,12 +20,14 @@ export default function DeviceConsole() {
   return simulated ? <SimulatedConsole id={id!} operator={me.role === 'operator'} /> : <RealConsole id={id!} operator={me.role === 'operator'} />
 }
 
+// Held back by the rules is the rules working (calm green outline); sent against them is the device misbehaving
+// (solid red, and the whole event is marked).
 const OUTCOME: Record<SimOutcome, { cls: string; text: (recipient: string) => string }> = {
   sent: { cls: 'ok', text: (r) => `Sent · ${r}` },
   kept_home: { cls: 'ok', text: () => 'Stayed in your home' },
-  blocked: { cls: 'bad', text: () => 'Held back: your rules say no' },
-  held_back: { cls: 'unk', text: () => 'Held back: no rule covers it' },
-  sent_against_rules: { cls: 'bad', text: (r) => `Sent against your rules · ${r}` },
+  blocked: { cls: 'held', text: () => '✓ Held back: your rules say no' },
+  held_back: { cls: 'held unk-o', text: () => 'Held back: no rule covers it' },
+  sent_against_rules: { cls: 'bad', text: (r) => `⚠ Sent against your rules · ${r}` },
   sent_no_ppd: { cls: 'dec', text: (r) => `Sent · ${r} · no PPD` },
 }
 
@@ -97,7 +99,11 @@ function SimulatedConsole({ id, operator }: { id: string; operator: boolean }) {
               <Segmented full label="Behavior" value={c.behavior} onChange={(v) => void run(() => api.simBehavior(id, v))} options={[{ value: 'follows', label: 'Follows rules' }, { value: 'ignores', label: 'Ignores rules' }]} />
             </div>
           </Group>
-          <Footnote>PPD delivers the rules and records that the device received them; it cannot make the device follow them. “Ignores rules” shows what that looks like.</Footnote>
+          <Footnote>
+            PPD delivers the rules and records that the device received them; it cannot make the device follow them. “Ignores rules” shows what that looks like.
+            When the device sends something against your rules, it also reports a runtime conflict to the gateway, so the household app warns about it.
+            That report is a demo extension of the gateway, not part of the PPD drafts.
+          </Footnote>
         </>
       )}
 
@@ -117,7 +123,7 @@ function Totals({ c }: { c: SimConsole }) {
         {c.totals.map((t) => (
           <div key={t.recipient + t.purpose} className="cell kv">
             <span className="ttl">{t.recipient} · {t.purpose.toLowerCase()}</span>
-            <span className="v">{t.sent} sent{t.blocked ? ` · ${t.blocked} held back` : ''}</span>
+            <span className="v">{[t.sent && `${t.sent} sent`, t.against && <b key="a" style={{ color: 'var(--bad)' }}>{t.against} against your rules</b>, t.blocked && `${t.blocked} held back`].filter(Boolean).reduce<React.ReactNode[]>((out, x, i) => (i ? [...out, ' · ', x] : [x]), [])}</span>
           </div>
         ))}
       </Group>
@@ -146,7 +152,7 @@ function Activity({ c, onClear }: { c: SimConsole; onClear?: () => void }) {
       ) : (
         <Group>
           {shown.map((e, i) => (
-            <div key={e.at + i} className="cell" style={{ alignItems: 'flex-start' }}>
+            <div key={e.at + i} className={'cell' + (e.flows.some((f) => f.outcome === 'sent_against_rules') ? ' ev-against' : '')} style={{ alignItems: 'flex-start' }}>
               <div className="cb" style={{ padding: '10px 0' }}>
                 <span className="ttl" style={{ fontWeight: 500 }}>{e.label} <span className="sub" style={{ fontWeight: 400 }}>· {timeAgo(e.at)}</span></span>
                 {e.flows.map((f, j) => {

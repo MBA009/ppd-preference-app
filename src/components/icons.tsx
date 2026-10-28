@@ -14,6 +14,7 @@ const PATHS: Record<string, { w: number; node: ReactNode }> = {
   scan: { w: 2, node: (<><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" /><path d="M8 12h8" /></>) },
   rules: { w: 2, node: <path d="M5 6h14M5 12h14M5 18h9" /> },
   check: { w: 2.8, node: <path d="M5 12.5l4.5 4.5L19 7" /> },
+  block: { w: 2.4, node: (<><circle cx="12" cy="12" r="8" /><path d="M6.5 17.5l11-11" /></>) },
   thermostat: { w: 2, node: (<><circle cx="12" cy="12" r="8" /><path d="M12 12l3-3" /></>) },
   lock: { w: 2, node: (<><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></>) },
   tv: { w: 2, node: (<><rect x="3" y="5" width="18" height="12" rx="2" /><path d="M9 20h6M12 17v3" /></>) },

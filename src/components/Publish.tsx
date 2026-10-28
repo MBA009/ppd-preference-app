@@ -1,12 +1,13 @@
 import { useState } from 'react'
-import type { PolicyRule } from '../api'
-import { LIVE_POLL_MS, useDevices, useHousehold, usePreview, usePublished } from '../state/data'
+import type { PolicyRule, Rule } from '../api'
+import { LIVE_POLL_MS, useDevices, useHousehold, usePreview, usePublished, useRules } from '../state/data'
+import { ruleCovers, strictness } from '../policy/scope'
 import { PROCESSING_BOUNDARY, RETENTION, termLabel } from '../../shared/taxonomy'
 import { Cell, Expander, Footnote, Group, SectionHeader, Tile } from './ui'
 import { Icon, ShieldCheck } from './icons'
 import { plural } from '../lib/verdicts'
+import { KIND } from '../policy/choices'
 import { timeAgo } from '../lib/device'
-import { KIND } from './PresetSummary'
 
 /**
  * The household rules on their way to the devices. app-api compiles the rules into one PPD household policy
@@ -50,7 +51,7 @@ export function PublishCard() {
     ? 'When a device that supports PPD joins your home, it gets your rules automatically.'
     : pending
       ? error ? `Not sent yet: ${error} Trying again.` : `${plural(changes, 'change')}, going out within a few seconds.`
-      : `${plural(p.rules.length, 'rule')} for ${plural(p.devices, 'device')}${sent ? ` · sent automatically ${timeAgo(sent.at)}` : ''}. New devices get them on their own.`
+      : `${plural(p.devices, 'device')}${sent ? ` · sent automatically ${timeAgo(sent.at)}` : ''}. New devices get them on their own.`
 
   return (
     <>
@@ -74,6 +75,7 @@ export function PublishedRules() {
   const { data: preview } = usePreview(LIVE_POLL_MS)
   const { household } = useHousehold()
   const { data: devices } = useDevices(household?.devices.map((d) => d.device_id) ?? [])
+  const rules = useRules()
   const [open, setOpen] = useState<string | null>(null)
   if (!policy) return null
 
@@ -89,16 +91,29 @@ export function PublishedRules() {
       byDevice.set(id, list)
     }
   }
+  // How the counts relate: household rules in use → the flows they cover → exact rules, some shared by devices.
+  const shared = new Set(policy.rules.filter((r) => new Set((flowsOf.get(r.rule_id) ?? []).map((f) => f.device_id)).size > 1).map((r) => r.rule_id))
+  const flowCount = [...flowsOf.values()].reduce((n, f) => n + f.length, 0)
+  // Rules that decide at least one flow: a rule a stricter one overrides on every flow it covers decides nothing.
+  const decides = (r: Rule) => devices?.some((d) => d.flows.some((f) => ruleCovers({ ...r, enabled: true }, f.taxonomy)
+    && !rules.some((o) => o.id !== r.id && strictness(o) > strictness(r) && ruleCovers(o, f.taxonomy))))
+  const inUse = rules.filter(decides).length
+  const exact = (n: number) => `${n} exact ${n === 1 ? 'rule' : 'rules'}`
   const sent = preview?.sync?.last_sent?.policy_id === policy.policy_id ? preview.sync.last_sent.at : null
   const toggle = (key: string) => setOpen(open === key ? null : key)
 
   return (
     <>
       <SectionHeader>What your devices receive</SectionHeader>
+      <div className="sf" style={{ paddingTop: 0, paddingBottom: 8 }}>
+        {devices && byDevice.size > 0
+          ? <>{plural(inUse, 'household rule')} {inUse === 1 ? 'covers' : 'cover'} the {plural(flowCount, 'data flow')} your {plural(byDevice.size, 'device')} declare, sent as {exact(policy.rules.length)}{shared.size ? ` (${shared.size} shared by more than one device)` : ''}. An exact rule covers one exact kind of data flow.</>
+          : 'Your household rules, turned into one exact rule for each kind of data flow your devices declare.'}
+      </div>
       <Group>
         <div className="cell">
           <div className="cb">
-            <span className="ttl">Current policy · {plural(policy.rules.length, 'rule')}</span>
+            <span className="ttl">Current policy · {exact(policy.rules.length)}</span>
             <span className="sub mono" style={{ fontSize: 12 }}>{policy.policy_id}{sent ? ` · sent ${timeAgo(sent)}` : ''}</span>
           </div>
         </div>
@@ -107,9 +122,10 @@ export function PublishedRules() {
           const limited = list.filter((x) => limitText(x.rule)).length
           const allowed = list.length - never - limited
           const parts = [never && `${never} never`, allowed && `${allowed} allowed`, limited && `${limited} allowed with a condition`].filter(Boolean)
+          const both = list.filter((x) => shared.has(x.rule.rule_id)).length
           return (
             <div key={id}>
-              <Expander open={open === id} onToggle={() => toggle(id)} sub={`${plural(list.length, 'rule')} apply · ${parts.join(' · ')}`}>{name(id)}</Expander>
+              <Expander open={open === id} onToggle={() => toggle(id)} sub={`${exact(list.length)} apply · ${parts.join(' · ')}${both ? ` · ${both} shared with ${byDevice.size > 2 ? 'other devices' : 'the other device'}` : ''}`}>{name(id)}</Expander>
               {open === id && list.sort((a, b) => (a.rule.effect === b.rule.effect ? 0 : a.rule.effect === 'deny' ? -1 : 1)).map(({ rule, titles }) => (
                 <div key={rule.rule_id} className="cell" style={{ paddingLeft: 32 }}>
                   <div className="cb">
@@ -121,14 +137,14 @@ export function PublishedRules() {
             </div>
           )
         })}
-        <Expander open={open === 'all'} onToggle={() => toggle('all')} sub="As the gateway and the CableLabs dashboard show them">{`All ${policy.rules.length} rules in PPD terms`}</Expander>
+        <Expander open={open === 'all'} onToggle={() => toggle('all')} sub="As the gateway and the CableLabs dashboard show them">{`All ${exact(policy.rules.length)} in PPD terms`}</Expander>
         {open === 'all' && policy.rules.map((r) => (
           <div key={r.rule_id} className="cell">
             <div className="cb"><span className="ttl" style={{ color: r.effect === 'deny' ? KIND.never.color : limitText(r) ? KIND.limited.color : KIND.allow.color, fontWeight: 500 }}>{r.effect === 'deny' ? 'Never' : 'Allowed'} <span className="sub mono" style={{ fontWeight: 400 }}>{r.rule_id}</span></span><span className="sub">{ruleText(r)}</span></div>
           </div>
         ))}
       </Group>
-      <Footnote>Every device gets the whole policy and follows the rules that match what it does. Each rule covers one exact kind of data flow, so a device can check it directly; we can’t check that devices follow them.</Footnote>
+      <Footnote>Every device gets the whole policy and follows the rules that match what it does. Each exact rule covers one exact kind of data flow, so a device can check it directly; we can’t check that devices follow them.</Footnote>
     </>
   )
 }

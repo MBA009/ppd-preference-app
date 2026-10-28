@@ -180,6 +180,37 @@ button.cell:active, a.cell:active { background: #f1f3f6; }
 .q { flex: none; padding: 8px 16px 0; }
 .q h2 { margin: 0; font-size: 22px; line-height: 28px; font-weight: 400; }
 .q p { margin: 4px 0 0; font-size: 14px; line-height: 20px; color: var(--text-2); }
+/* rules overview: total, then the share of each kind of rule */
+.ov { padding: 16px 16px 14px; margin-top: 8px; }
+.ov-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.ov-n { font-size: 36px; line-height: 40px; font-weight: 500; letter-spacing: -0.5px; }
+.ov-use { font-size: 14px; line-height: 20px; color: var(--text-2); text-align: right; }
+.ov-use b { color: inherit; font-weight: 600; color: #202124; }
+.ov-bar { display: flex; gap: 3px; height: 8px; margin-top: 14px; border-radius: 4px; overflow: hidden; }
+.ov-bar i { min-width: 4px; }
+.ov-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 10px; font-size: 14px; line-height: 20px; color: var(--text-2); }
+.ov-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.ov-legend i { width: 8px; height: 8px; border-radius: 50%; }
+.ov-legend b { font-weight: 600; color: #202124; }
+.cnt { min-width: 28px; height: 24px; padding: 0 8px; border-radius: 12px; background: #eef0f3; color: #3c4043; font-size: 13px; line-height: 24px; font-weight: 600; text-align: center; }
+.cell.inuse { box-shadow: inset 4px 0 0 var(--k); background: color-mix(in srgb, var(--k) 5%, var(--surface)); }
+.cell.idle .ttl { color: var(--text-2); }
+.use { display: inline-flex; align-self: flex-start; align-items: center; gap: 6px; margin-top: 4px; padding: 2px 10px; border-radius: 10px; background: #dff3e4; color: #1e5f2c; font-size: 13px; line-height: 18px; font-weight: 500; }
+.use i { width: 7px; height: 7px; border-radius: 50%; background: #1e7d34; }
+.cell.sub-h { min-height: 0; padding: 12px 16px 4px; font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .4px; text-transform: uppercase; color: var(--text-2); }
+.json { margin: 0 16px; padding: 14px 16px; border-radius: 16px; background: #1f2329; color: #e6e8eb; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; line-height: 18px; white-space: pre; overflow: auto; max-height: 70vh; }
+.rname { flex: none; display: flex; flex-direction: column; gap: 2px; margin: 0 16px 4px; padding: 12px 16px; border-radius: 16px; background: var(--surface); }
+.rname .ttl { font-weight: 500; }
+.olap { margin: 6px 0; padding-left: 18px; }
+.olap li { margin: 4px 0; }
+.olap a { color: inherit; text-decoration: underline; font-weight: 500; }
+.warn { display: inline-flex; align-self: flex-start; align-items: center; gap: 4px; margin-top: 4px; padding: 2px 10px; border-radius: 10px; background: #ffe8cc; color: #7a3a00; font-size: 13px; line-height: 18px; font-weight: 500; }
+.warn-t { color: #b45300; font-weight: 500; }
+.cell.beaten { box-shadow: inset 4px 0 0 #e8710a; }
+.chip.held { background: #dff3e4; color: #1e5f2c; box-shadow: inset 0 0 0 1px #b7dfc2; }
+.chip.held.unk-o { background: #eef0f3; color: #3c4043; box-shadow: inset 0 0 0 1px #dadce0; }
+.cell.ev-against { box-shadow: inset 4px 0 0 var(--bad); background: color-mix(in srgb, var(--bad) 6%, var(--surface)); }
+.q p.eg { margin-top: 10px; font-size: 15px; font-style: italic; }
 .rowq { flex-direction: column; align-items: stretch; gap: 8px; padding: 12px 16px; }
 .rowq .eg { font-size: 13px; line-height: 17px; color: var(--text-2); }
 .segc.full { display: flex; margin: 0; width: 100%; }

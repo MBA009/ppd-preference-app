@@ -9,7 +9,7 @@ const stringList = { type: 'array', items: { type: 'string', maxLength: 200 }, m
 
 export const ruleSchema = {
   type: 'object',
-  required: ['id', 'title', 'effect', 'scope', 'enabled', 'origin'],
+  required: ['id', 'effect', 'scope', 'enabled', 'origin'],
   properties: {
     id: { type: 'string', minLength: 1, maxLength: 200 },
     title: { type: 'string', maxLength: 500 },
@@ -21,7 +21,11 @@ export const ruleSchema = {
       properties: { data_type: stringList, purpose: stringList, handling_context: stringList, action: stringList, source: stringList, constraints: stringList },
     },
     enabled: { type: 'boolean' },
-    origin: { type: 'object', required: ['kind'], properties: { kind: { enum: ['preset', 'custom'] }, preset_id: { type: 'string', maxLength: 100 } } },
+    origin: {
+      type: 'object',
+      required: ['kind'],
+      properties: { kind: { enum: ['preset', 'answer', 'custom'] }, preset_id: { type: 'string', maxLength: 100 }, question: { type: 'string', maxLength: 200 } },
+    },
   },
 } as const
 
@@ -53,14 +57,29 @@ export function householdRoutes(app: FastifyInstance, ctx: AppContext): void {
 
   app.get('/api/household/rules', async () => (await ctx.household()).rules)
 
-  app.put<{ Body: { preset_id: string; answers?: Answers } }>(
-    '/api/household/preset',
-    { schema: { body: { type: 'object', required: ['preset_id'], properties: { preset_id: { type: 'string', minLength: 1, maxLength: 100 }, answers: answersSchema } } } },
+  // The questionnaire is finished: the server walks the tree itself (the client only sends answers), assigns the preset
+  // and rebuilds the household's rules from it and the answers. Starts over: earlier rules and edits are replaced.
+  app.put<{ Body: { answers: Answers } }>(
+    '/api/household/onboarding',
+    { schema: { body: { type: 'object', required: ['answers'], properties: { answers: answersSchema } } } },
     async (req) => {
-      const preset = ctx.fixtures.presets.find((p) => p.id === req.body.preset_id)
-      if (!preset) throw httpError(404, `Preset ${req.body.preset_id} not found.`)
-      const h = ctx.change(req, 'choose_preset', (h) => hh.choosePreset(h, preset, req.body.answers), preset.id)
-      await ctx.publisher.sync('preset chosen')
+      const { onboarding, presets } = ctx.fixtures
+      for (const [q, a] of Object.entries(req.body.answers)) {
+        const question = onboarding.questions[q]
+        if (!question) throw httpError(400, `There is no question ${q}.`)
+        if (!question.options.some((o) => o.id === a)) throw httpError(400, `"${a}" is not an answer to ${q}.`)
+      }
+      let preset = ''
+      const h = ctx.change(req, 'finish_onboarding', (h) => {
+        try {
+          const next = hh.finishOnboarding(h, onboarding, presets, req.body.answers)
+          preset = next.preset_id ?? ''
+          return next
+        } catch (e) {
+          throw httpError(400, (e as Error).message)
+        }
+      })
+      await ctx.publisher.sync(`questionnaire finished (${preset})`)
       return h
     },
   )

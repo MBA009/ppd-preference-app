@@ -1,4 +1,6 @@
-import type { Answers, Device, Household, HouseholdPreset, Profile, ResolveResult, Rule } from './types'
+import type { Answers, Device, Household, HouseholdPreset, Onboarding, Profile, ResolveResult, Rule } from './types'
+import { followUps, rulesFromAnswers, stageOnePath, walk } from './onboarding'
+import { named } from './ruleTitle'
 
 /**
  * How the household changes. Each function takes the current household and returns the next one;
@@ -15,7 +17,7 @@ export const blankHousehold = (): Household => ({ devices: [], saved: [], answer
 export function normalizeHousehold(raw: Partial<Household> & Record<string, unknown>): Household {
   const { decisions: _d, group_decisions: _g, ...rest } = raw
   const h: Household = { ...blankHousehold(), ...rest }
-  const rules = h.rules.filter((r) => (r.effect as string) !== 'ask')
+  const rules = h.rules.filter((r) => (r.effect as string) !== 'ask').map(named)
   if (!('preset_id' in raw)) return { ...h, answers: null, preset_id: null, rules: rules.filter((r) => r.origin.kind === 'custom') }
   return { ...h, rules }
 }
@@ -32,20 +34,35 @@ export function seedHousehold(fixture: { devices: { device_id: string; added_at:
   }
 }
 
-/** Takes the preset's rules in place of the previous preset's. Rules the person added stay, after them. */
-export function choosePreset(h: Household, preset: HouseholdPreset, answers?: Answers): Household {
-  const rules: Rule[] = preset.rules.map((r) => ({ ...r, origin: { kind: 'preset', preset_id: preset.id } }))
-  return {
-    ...h,
-    preset_id: preset.id,
-    answers: answers ?? h.answers ?? {},
-    rules: [...rules, ...h.rules.filter((r) => r.origin.kind === 'custom')],
-  }
+/**
+ * Finishes the questionnaire: the answers walk the tree to a leaf (its preset), and the household's rules are rebuilt
+ * from that preset with every yes or no to a situation written in (shared/onboarding.ts). Starts over: every earlier
+ * rule is replaced, including the person's own edits and rules (the app warns before a rerun). Only answers the
+ * questionnaire would have asked are kept: stage 1's path and the leaf's follow-ups.
+ */
+export function finishOnboarding(h: Household, tree: Onboarding, presets: HouseholdPreset[], answers: Answers): Household {
+  const step = walk(tree, answers)
+  if (!('leaf' in step)) throw new Error('The answers do not reach the end of the questions yet.')
+  const preset = presets.find((p) => p.id === step.leaf.preset)
+  if (!preset) throw new Error(`The questions led to a preset this app does not have (${step.leaf.preset}).`)
+  const asked = new Set([...stageOnePath(tree, answers), ...followUps(tree, step.leaf, answers)])
+  const kept: Answers = Object.fromEntries(Object.entries(answers).filter(([q]) => asked.has(q)))
+  return { ...h, preset_id: preset.id, answers: kept, rules: rulesFromAnswers(preset, kept, tree.questions) }
+}
+
+/**
+ * A household whose preset is no longer in the presets (they were rebuilt) goes back to the questions: its answers
+ * and rules came from the old presets. Devices stay.
+ */
+export function retirePreset(h: Household, presets: HouseholdPreset[]): Household {
+  if (!h.preset_id || presets.some((p) => p.id === h.preset_id)) return h
+  return { ...h, preset_id: null, answers: null, rules: [] }
 }
 
 export const saveProfile = (h: Household, profile: Profile): Household => ({ ...h, profile })
 
-export function upsertRule(h: Household, rule: Rule): Household {
+export function upsertRule(h: Household, input: Rule): Household {
+  const rule = named(input)
   const exists = h.rules.some((r) => r.id === rule.id)
   return { ...h, rules: exists ? h.rules.map((r) => (r.id === rule.id ? rule : r)) : [...h.rules, rule] }
 }

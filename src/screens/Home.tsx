@@ -1,10 +1,11 @@
-import { Link } from 'react-router-dom'
 import { AppBar, Cell, DeviceTile, Footnote, Group, SectionHeader, Tile, VerdictChip, VerdictChips, Loading, ErrorBox } from '../components/ui'
 import { DashedCircle, Icon, SmallCheck } from '../components/icons'
 import { useDevices, useHousehold, useOverview, useUnmanaged } from '../state/data'
 import { countVerdicts, plural } from '../lib/verdicts'
-import { hasRules, isConnected, stateLabel } from '../lib/device'
+import { hasRules, isConnected, stateLabel, timeAgo } from '../lib/device'
 import type { Device, Overview, UnmanagedDevice } from '../api'
+
+type Notice = { key: string; tone: 'red' | 'orange' | 'blue'; icon: 'status' | 'plus' | 'publish'; title: string; sub: string; to?: string }
 
 /**
  * Screen 3a. Three kinds of device, kept apart:
@@ -28,27 +29,68 @@ export default function Home() {
   const advisory = list.filter((d) => !isConnected(d))
   const withRules = connected.filter(hasRules)
   const attentionDevices = connected.filter((d) => !hasRules(d))
-  const updating = connected.filter((d) => d.live?.publication === 'waiting').length
   const unseen = household.devices.find((h) => h.joined_seen === false && connected.some((d) => d.id === h.device_id))
+  const status = (d: Device) => d.live?.association.status
+  const reported = (d: Device) => !!d.live?.runtime.conflict_active || status(d) === 'policy_conflict'
+  const stale = connected.filter((d) => status(d) === 'stale_association')
+  const reconnect = connected.filter((d) => status(d) === 'needs_reassociation' || status(d) === 'broken')
+  // One notice per device: a device that lost touch says so, and mentions a conflict it reported before.
+  // Only devices still in touch are "updating": a device that stopped checking in is not about to pick anything up.
+  const lost = new Set([...stale, ...reconnect].map((d) => d.id))
+  const conflicting = connected.filter((d) => reported(d) && !lost.has(d.id))
+  const earlier = (list: Device[]) => list.length === 1 && reported(list[0]) ? ' Before that, it reported sending data against your rules.' : ''
+  const updating = connected.filter((d) => d.live?.publication === 'waiting' && !lost.has(d.id)).length
+  const joined = unseen && connected.find((d) => d.id === unseen.device_id)
 
-  const bannerTo = unseen ? `/device/${unseen.device_id}/joined` : undefined
-  const joinedName = unseen ? connected.find((d) => d.id === unseen.device_id)?.short_name : undefined
-  const bannerTitle = joinedName ? `${joinedName} joined your home` : 'Rules are updating'
-  const bannerSub = updating ? `${plural(updating, 'device is', 'devices are')} picking up a rule change` : ''
+  const names = (list: Device[]) => list.length === 1 ? list[0].short_name : `${list.length} devices`
+  const lastSeen = (d: Device) => (d.live?.receipt?.acknowledged_at ? ` since ${timeAgo(d.live.receipt.acknowledged_at)}` : '')
+  const to = (list: Device[]) => (list.length === 1 ? `/device/${encodeURIComponent(list[0].id)}` : undefined)
+
+  // Every notice on My home, most urgent first. Each says what happened and what to do; the device lists below have
+  // the detail.
+  const notices: Notice[] = [
+    conflicting.length > 0 && {
+      key: 'conflict', tone: 'red', icon: 'status', to: to(conflicting),
+      title: `${names(conflicting)} ${conflicting.length === 1 ? 'is' : 'are'} doing something your rules don’t allow`,
+      sub: conflicting.length === 1 ? 'See what it is doing' : conflicting.map((d) => d.short_name).join(', '),
+    },
+    stale.length > 0 && {
+      key: 'stale', tone: stale.some(reported) ? 'red' : 'orange', icon: 'status', to: to(stale),
+      title: `${names(stale)} stopped checking in`,
+      sub: stale.length === 1
+        ? `It hasn’t confirmed your rules${lastSeen(stale[0])}. It may be unplugged or offline, and gets your rules again when it’s back.${earlier(stale)}`
+        : `${stale.map((d) => d.short_name).join(', ')}. They may be unplugged or offline.`,
+    },
+    reconnect.length > 0 && {
+      key: 'reconnect', tone: reconnect.some(reported) ? 'red' : 'orange', icon: 'status', to: to(reconnect),
+      title: `${names(reconnect)} ${reconnect.length === 1 ? 'needs' : 'need'} to reconnect`,
+      sub: `${reconnect.length === 1 ? 'It' : 'They'} can’t get your rules until ${reconnect.length === 1 ? 'it joins' : 'they join'} again.${earlier(reconnect)}`,
+    },
+    !!joined && {
+      key: 'joined', tone: 'blue', icon: 'plus', to: `/device/${encodeURIComponent(joined.id)}/joined`,
+      title: `${joined.short_name} joined your home`, sub: 'See what it does with your data',
+    },
+    updating > 0 && {
+      key: 'updating', tone: 'blue', icon: 'publish',
+      title: 'Rules are updating', sub: `${plural(updating, 'device is', 'devices are')} picking up your latest rule change. This takes a minute or two.`,
+    },
+  ].filter((n): n is Notice => !!n)
 
   return (
     <div className="screen">
-      <AppBar title="My home" right={<Link to="/library" className="ntr" aria-label="Add a device"><Icon name="plus" /></Link>} />
+      <AppBar title="My home" />
 
-      {(unseen || updating > 0) && (
+      {notices.length > 0 && (
         <Group style={{ marginTop: 4 }}>
-          <Cell className="t" to={bannerTo} chevron={!!bannerTo}>
-            <Tile tone="blue">{unseen ? <Icon name="plus" size={18} /> : <Icon name="publish" size={18} />}</Tile>
-            <div className="cb">
-              <span className="ttl" style={{ fontWeight: 500 }}>{bannerTitle}</span>
-              <span className="sub">{bannerSub || 'See what it does with your data'}</span>
-            </div>
-          </Cell>
+          {notices.map((n) => (
+            <Cell key={n.key} className="t" to={n.to} chevron={!!n.to} style={{ alignItems: 'flex-start' }}>
+              <Tile tone={n.tone} style={{ marginTop: 10 }}><Icon name={n.icon} size={18} /></Tile>
+              <div className="cb">
+                <span className="ttl" style={{ fontWeight: 500 }}>{n.title}</span>
+                <span className="sub">{n.sub}</span>
+              </div>
+            </Cell>
+          ))}
         </Group>
       )}
 
@@ -99,14 +141,14 @@ export default function Home() {
       <div className="gap" />
       <Group>
         <Cell className="t" to="/library">
-          <Tile tone="blue"><Icon name="plus" size={18} /></Tile>
+          <Tile tone="blue"><Icon name="search" size={18} /></Tile>
           <div className="cb">
-            <span className="ttl" style={{ color: '#0066CC' }}>Add a device</span>
-            <span className="sub">Scan its code or pick it from our research library</span>
+            <span className="ttl" style={{ color: '#0066CC' }}>Check a device before you buy it</span>
+            <span className="sub">See how what it says it does fits your rules. Scan its privacy code, or look it up in our research library.</span>
           </div>
         </Cell>
       </Group>
-      <Footnote>Devices that support PPD join by themselves when they connect to your network.</Footnote>
+      <Footnote>This checks what the device declares, not what it will actually do. You don’t need to add devices you own: devices that support PPD join and get your rules by themselves when they connect to your network.</Footnote>
       <div className="spacer" />
     </div>
   )
@@ -162,7 +204,7 @@ function Readiness({ overview: o }: { overview: Overview }) {
   }
   const stats: [string, number, string | undefined][] = [
     ['On your network', c.known, undefined],
-    ['Have your rules', c.associated, 'ok'],
+    ['Have your rules', c.have_rules, 'ok'],
     ['Don’t support PPD', c.unmanaged, undefined],
     ['Need attention', c.need_attention, c.need_attention ? 'dec' : undefined],
   ]

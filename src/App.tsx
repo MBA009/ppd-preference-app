@@ -12,14 +12,14 @@ import DeviceDetail from './screens/DeviceDetail'
 import Rules from './screens/Rules'
 import RuleEditor from './screens/RuleEditor'
 import Onboarding from './screens/Onboarding'
-import ChoosePreset from './screens/ChoosePreset'
 import Sources from './screens/Sources'
+import RulesJson from './screens/RulesJson'
 import Dev from './screens/Dev'
 import SystemStatus from './screens/SystemStatus'
 import DemoDevices from './screens/DemoDevices'
 import DeviceConsole from './screens/DeviceConsole'
 
-/** Until the household has a preset, the only screens are the onboarding questions, the presets and the test tools. */
+/** Until the household has answered the questions, the only screens are the questions, how they were made and the test tools. */
 function OnboardingGate() {
   const { household, error, reload } = useHousehold()
   const { pathname } = useLocation()
@@ -33,7 +33,7 @@ function OnboardingGate() {
   }
   if (!household) return <Loading />
   const onboarding = household.preset_id === null
-  if (onboarding && !['/rules', '/rules/sources', '/rules/presets', '/dev'].includes(pathname)) return <Navigate to="/rules" replace />
+  if (onboarding && !['/rules', '/rules/sources', '/dev'].includes(pathname)) return <Navigate to="/rules" replace />
   return <Outlet />
 }
 
@@ -78,9 +78,10 @@ export default function App() {
                   <Route path="scan" element={<Scan />} />
                   <Route path="rules" element={<RulesSplit mode="list" />} />
                 </Route>
-                <Route path="rules/update" element={<Onboarding retake />} />
-                <Route path="rules/presets" element={<ChoosePreset />} />
+                <Route path="rules/update" element={<Onboarding mode="retake" />} />
+                <Route path="rules/refine" element={<Onboarding mode="refine" />} />
                 <Route path="rules/sources" element={<Sources />} />
+                <Route path="rules/json" element={<RulesJson />} />
                 <Route path="rules/new" element={<RulesSplit mode="detail" />} />
                 <Route path="rules/:ruleId" element={<RulesSplit mode="detail" />} />
                 <Route path="preview/:id" element={<Preview />} />

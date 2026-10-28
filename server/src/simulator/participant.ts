@@ -29,7 +29,14 @@ const RETRY_MS = 5000
 const MIN_RENEW_MS = 5000
 
 /** The household policy a participant last received: what it uses to decide which data it may send. */
-export interface ReceivedPolicy { policy_id: string; rules: PolicyRule[] }
+export interface ReceivedPolicy { policy_id: string; policy_hash: string; rules: PolicyRule[] }
+
+/**
+ * A runtime report: what the device is actually doing against the policy it acknowledged. Not part of PPD
+ * (protocol-04 acknowledgement is a receipt, never a claim of compliance): the gateway's demo extension,
+ * POST device/runtime-status, the one the ESP32 bulb uses.
+ */
+export interface RuntimeReport { conflict_active: boolean; behavior_mode: string; conflicting_purposes: string[] }
 
 export class Participant {
   state: ParticipantState = 'paused'
@@ -38,10 +45,15 @@ export class Participant {
   lastEventAt: string | null = null
   lastError: string | null = null
   private running = false
+  private base: string | null = null
   private wake: (() => void) | null = null
   private readonly agent: http.Agent
 
-  constructor(private readonly origin: string, private readonly identity: ParticipantIdentity, tls: ParticipantTls | null, private readonly onChange: () => void) {
+  /**
+   * `runtime` is what the device is doing now. It is reported after every acknowledgement (joining and each renewal),
+   * so the gateway's runtime state always matches the device, also after app-api restarts or the device reconnects.
+   */
+  constructor(private readonly origin: string, private readonly identity: ParticipantIdentity, tls: ParticipantTls | null, private readonly onChange: () => void, private readonly runtime?: () => RuntimeReport) {
     this.agent = origin.startsWith('https://') ? new https.Agent({ ...tls, keepAlive: false }) : new http.Agent({ keepAlive: false })
   }
 
@@ -76,6 +88,7 @@ export class Participant {
       try {
         this.event('joining', 'Looking for the home gateway')
         const base = await this.discover()
+        this.base = base
         await this.request('POST', base + 'device/register', this.identity.registration)
         this.event('joining', 'Registered')
         // Describing itself is optional (protocol-04); acknowledging the household policy is not. A rejected
@@ -92,8 +105,9 @@ export class Participant {
           const ack = (await this.request('POST', base + 'device/ack', { device_id: this.identity.deviceId, policy_id: policy.policy_id, policy_hash: policy.policy_hash })) as { association_status?: string; renewal_interval?: number }
           // Unplugged while the request was in flight: stay paused.
           if (!this.running) break
-          this.policy = { policy_id: policy.policy_id, rules: policy.rules ?? [] }
+          this.policy = { policy_id: policy.policy_id, policy_hash: policy.policy_hash, rules: policy.rules ?? [] }
           this.event('associated', `Confirmed receipt of ${policy.policy_id}`)
+          if (this.runtime) await this.reportRuntime(this.runtime())
           const interval = (ack.renewal_interval ?? policy.renewal_interval ?? 60) * 1000
           await this.sleep(Math.max(MIN_RENEW_MS, interval * 0.8))
         }
@@ -106,6 +120,18 @@ export class Participant {
         this.event('error', 'Could not reach the gateway; retrying', e instanceof Error ? e.message : String(e))
         await this.sleep(RETRY_MS)
       }
+    }
+  }
+
+  /** Sends a runtime report for the policy it holds. Best effort: a device that cannot reach the gateway says so. */
+  async reportRuntime(report: RuntimeReport): Promise<void> {
+    if (!this.base) return
+    try {
+      await this.request('POST', this.base + 'device/runtime-status', { device_id: this.identity.deviceId, policy_id: this.policy?.policy_id, policy_hash: this.policy?.policy_hash, ...report })
+      this.onChange()
+    } catch (e) {
+      this.lastError = `Runtime report not sent: ${e instanceof Error ? e.message : String(e)}`
+      this.onChange()
     }
   }
 

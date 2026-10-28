@@ -1,225 +1,1950 @@
 {
-  "version": "2.0.0",
-  "kind": "tree",
+  "version": "3.0.0",
+  "kind": "tree+follow_ups",
   "source": {
-    "generated": "2026-10-24",
+    "generated": "2026-10-28",
     "by": "ppd-household-presets notebooks 01-07",
     "data": "synthetic households (not survey data); see data/DATACARD.md",
-    "k": 8,
-    "depth": 5,
-    "questions_avg": 4.86,
-    "questions_max": 5,
-    "match_real_device_flows_cv": 0.851,
-    "one_preset_for_everyone_cv": 0.828
-  },
-  "title": "Your household's privacy preset",
-  "description": "A few questions place your household in a privacy preset: a short set of rules your devices receive. You can change any rule afterwards.",
-  "disclaimer": "The questions, presets and tree come from synthetic households generated from published IoT privacy studies (Emami-Naeini et al. 2017, 2020, 2021) and the method of Smullen et al. 2020. They are not user-tested.",
-  "questions": {
-    "real_personalized_heating": {
-      "prompt": "Would you let a smart device use who is home and readings from your home to personalize how it works, without the data leaving your home?",
-      "options": [
-        {
-          "id": "no",
-          "label": "No"
-        },
-        {
-          "id": "with_limits",
-          "label": "Only with limits"
-        },
-        {
-          "id": "yes",
-          "label": "Yes"
-        }
-      ]
+    "k": 4,
+    "depth": 6,
+    "total_questions_cap": 15,
+    "match_all_items_cv": {
+      "one_preset": 0.739,
+      "after_profiling": 0.786,
+      "after_follow_ups": 0.803
     },
-    "purpose_personal": {
-      "prompt": "May companies use your data for: personalizing what you see?",
-      "options": [
-        {
-          "id": "never",
-          "label": "Never"
-        },
-        {
-          "id": "ask",
-          "label": "It depends"
-        },
-        {
-          "id": "fine",
-          "label": "That's fine"
-        }
-      ]
-    },
-    "real_usage_improve": {
-      "prompt": "Would you let a device send how you use it to its maker to improve their products?",
-      "options": [
-        {
-          "id": "no",
-          "label": "No"
-        },
-        {
-          "id": "with_limits",
-          "label": "Only with limits"
-        },
-        {
-          "id": "yes",
-          "label": "Yes"
-        }
-      ]
-    },
-    "data_usage": {
-      "prompt": "How you use the device: may it leave your home?",
-      "options": [
-        {
-          "id": "never",
-          "label": "Never"
-        },
-        {
-          "id": "ask",
-          "label": "It depends"
-        },
-        {
-          "id": "fine",
-          "label": "That's fine"
-        }
-      ]
-    },
-    "real_video_cloud": {
-      "prompt": "Would you let a device send video or audio from your home to its maker's cloud, so you can use it remotely?",
-      "options": [
-        {
-          "id": "no",
-          "label": "No"
-        },
-        {
-          "id": "with_limits",
-          "label": "Only with limits"
-        },
-        {
-          "id": "yes",
-          "label": "Yes"
-        }
-      ]
-    },
-    "real_profile_ads": {
-      "prompt": "Would you let a device's maker use a profile of how you use it to show you ads?",
-      "options": [
-        {
-          "id": "no",
-          "label": "No"
-        },
-        {
-          "id": "with_limits",
-          "label": "Only with limits"
-        },
-        {
-          "id": "yes",
-          "label": "Yes"
-        }
-      ]
-    },
-    "concern": {
-      "prompt": "How much do you worry about what smart devices do with your data?",
-      "options": [
-        {
-          "id": "1",
-          "label": "1 · Not at all"
-        },
-        {
-          "id": "2",
-          "label": "2"
-        },
-        {
-          "id": "3",
-          "label": "3"
-        },
-        {
-          "id": "4",
-          "label": "4"
-        },
-        {
-          "id": "5",
-          "label": "5 · A lot"
-        }
-      ]
-    },
-    "purpose_analytics": {
-      "prompt": "May companies use your data for: improving their products?",
-      "options": [
-        {
-          "id": "never",
-          "label": "Never"
-        },
-        {
-          "id": "ask",
-          "label": "It depends"
-        },
-        {
-          "id": "fine",
-          "label": "That's fine"
-        }
-      ]
-    },
-    "real_viewing_advertisers": {
-      "prompt": "Would you let a device's maker share how you use it with advertisers?",
-      "options": [
-        {
-          "id": "no",
-          "label": "No"
-        },
-        {
-          "id": "with_limits",
-          "label": "Only with limits"
-        },
-        {
-          "id": "yes",
-          "label": "Yes"
-        }
-      ]
+    "match_real_device_flows_cv": {
+      "one_preset": 0.879,
+      "after_profiling": 0.891,
+      "after_follow_ups": 0.9
     }
   },
-  "walk": "Show the root question; follow the branch whose 'answers' contain the chosen option; repeat until a node has 'preset'. A question can appear again further down a path with a finer split: reuse the earlier answer, never ask twice.",
+  "splash": {
+    "title": "Set up your home's privacy rules",
+    "text": "We'll show you up to 15 short situations, like a camera sending video to its maker. Tell us whether you'd allow each one. From your answers we set up rules for every smart device in your home, before any of them joins. It takes about three minutes, you can change any rule later, and you can redo this at any time."
+  },
+  "follow_up_intro": {
+    "title": "Help us get the details right",
+    "text": "Households like yours are split on these situations, so we'd rather ask than guess."
+  },
+  "questions": {
+    "cell_usageData_communicationsAndNotifications_vendorContext": {
+      "prompt": "A device sends how you use your devices (for example, when you switch the lights on, or what you watch on TV) to the company that made it, to send you alerts and messages (for example, a doorbell or smoke alarm notification). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:usageData",
+        "purpose": "ppd:communicationsAndNotifications",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "how you use your devices (for example, when you switch the lights on, or what you watch on TV)",
+        "light_plug": "how you use your devices (for example, when you switch your lights on and off)",
+        "tv_media": "how you use your devices (for example, what you watch on your TV)",
+        "thermostat_sensors": "how you use your devices (for example, when you change the temperature)",
+        "camera": "how you use your devices (for example, when you check your camera from your phone)",
+        "lock_entry": "how you use your devices (for example, when you lock and unlock your door)"
+      }
+    },
+    "cell_sensorData_diagnosticsAndMaintenance_thirdPartyContext": {
+      "prompt": "A device's maker passes sensor readings (for example, the temperature, motion, or whether someone is home) on to other companies, such as advertising or analytics firms, to fix problems and update the device (for example, sending error reports). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:sensorData",
+        "purpose": "ppd:diagnosticsAndMaintenance",
+        "handling_context": "ppd:thirdPartyContext"
+      },
+      "data_examples": {
+        "default": "sensor readings (for example, the temperature, motion, or whether someone is home)",
+        "thermostat_sensors": "sensor readings (for example, your home's temperature and whether someone is home)",
+        "camera": "sensor readings (for example, motion your camera detects)",
+        "lock_entry": "sensor readings (for example, when your door is opened)"
+      }
+    },
+    "cell_identifierData_security_vendorContext": {
+      "prompt": "A device sends your account details (for example, your name, email address and account ID) to the company that made it, to keep your home and the device secure (for example, detecting a break-in or a hacked device). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:identifierData",
+        "purpose": "ppd:security",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "your account details (for example, your name, email address and account ID)"
+      }
+    },
+    "cell_deviceAndNetworkData_analyticsAndImprovement_thirdPartyContext": {
+      "prompt": "A device's maker passes device and network details (for example, the device's settings, your Wi-Fi network and IP address) on to other companies, such as advertising or analytics firms, to improve their products (for example, studying how people use the device). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:deviceAndNetworkData",
+        "purpose": "ppd:analyticsAndImprovement",
+        "handling_context": "ppd:thirdPartyContext"
+      },
+      "data_examples": {
+        "default": "device and network details (for example, the device's settings, your Wi-Fi network and IP address)"
+      }
+    },
+    "cell_locationData_personalization_householdContext": {
+      "prompt": "A device uses your location (for example, your phone's location, to know when you are home or away) only inside your home, without it leaving your home, to personalize what the device does or shows you (for example, heating that follows your routine). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:locationData",
+        "purpose": "ppd:personalization",
+        "handling_context": "ppd:householdContext"
+      },
+      "data_examples": {
+        "default": "your location (for example, your phone's location, to know when you are home or away)"
+      }
+    },
+    "cell_contentData_communicationsAndNotifications_householdContext": {
+      "prompt": "A device uses video or audio (for example, a camera's video of your living room, or what you say to a voice assistant) only inside your home, without it leaving your home, to send you alerts and messages (for example, a doorbell or smoke alarm notification). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:contentData",
+        "purpose": "ppd:communicationsAndNotifications",
+        "handling_context": "ppd:householdContext"
+      },
+      "data_examples": {
+        "default": "video or audio (for example, a camera's video of your living room, or what you say to a voice assistant)",
+        "camera": "video or audio (for example, your camera's video of your living room)",
+        "voice_assistant": "video or audio (for example, what you say to your voice assistant)",
+        "lock_entry": "video or audio (for example, your doorbell's video of your front door)"
+      }
+    },
+    "cell_locationData_communicationsAndNotifications_householdContext": {
+      "prompt": "A device uses your location (for example, your phone's location, to know when you are home or away) only inside your home, without it leaving your home, to send you alerts and messages (for example, a doorbell or smoke alarm notification). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:locationData",
+        "purpose": "ppd:communicationsAndNotifications",
+        "handling_context": "ppd:householdContext"
+      },
+      "data_examples": {
+        "default": "your location (for example, your phone's location, to know when you are home or away)"
+      }
+    },
+    "cell_usageData_coreFunctionality_vendorContext": {
+      "prompt": "A device sends how you use your devices (for example, when you switch the lights on, or what you watch on TV) to the company that made it, so the device works (for example, so you can control it from your phone). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:usageData",
+        "purpose": "ppd:coreFunctionality",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "how you use your devices (for example, when you switch the lights on, or what you watch on TV)",
+        "light_plug": "how you use your devices (for example, when you switch your lights on and off)",
+        "tv_media": "how you use your devices (for example, what you watch on your TV)",
+        "thermostat_sensors": "how you use your devices (for example, when you change the temperature)",
+        "camera": "how you use your devices (for example, when you check your camera from your phone)",
+        "lock_entry": "how you use your devices (for example, when you lock and unlock your door)"
+      }
+    },
+    "cell_identifierData_communicationsAndNotifications_householdContext": {
+      "prompt": "A device uses your account details (for example, your name, email address and account ID) only inside your home, without it leaving your home, to send you alerts and messages (for example, a doorbell or smoke alarm notification). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:identifierData",
+        "purpose": "ppd:communicationsAndNotifications",
+        "handling_context": "ppd:householdContext"
+      },
+      "data_examples": {
+        "default": "your account details (for example, your name, email address and account ID)"
+      }
+    },
+    "cell_deviceAndNetworkData_communicationsAndNotifications_vendorContext": {
+      "prompt": "A device sends device and network details (for example, the device's settings, your Wi-Fi network and IP address) to the company that made it, to send you alerts and messages (for example, a doorbell or smoke alarm notification). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:deviceAndNetworkData",
+        "purpose": "ppd:communicationsAndNotifications",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "device and network details (for example, the device's settings, your Wi-Fi network and IP address)"
+      }
+    },
+    "cell_profileData_communicationsAndNotifications_householdContext": {
+      "prompt": "A device uses a profile of you (for example, your preferences and the daily routines a device has learned) only inside your home, without it leaving your home, to send you alerts and messages (for example, a doorbell or smoke alarm notification). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:profileData",
+        "purpose": "ppd:communicationsAndNotifications",
+        "handling_context": "ppd:householdContext"
+      },
+      "data_examples": {
+        "default": "a profile of you (for example, your preferences and the daily routines a device has learned)",
+        "thermostat_sensors": "a profile of you (for example, the heating schedule your thermostat has learned)",
+        "tv_media": "a profile of you (for example, the kinds of shows you like)"
+      }
+    },
+    "cell_deviceAndNetworkData_diagnosticsAndMaintenance_vendorContext": {
+      "prompt": "A device sends device and network details (for example, the device's settings, your Wi-Fi network and IP address) to the company that made it, to fix problems and update the device (for example, sending error reports). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:deviceAndNetworkData",
+        "purpose": "ppd:diagnosticsAndMaintenance",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "device and network details (for example, the device's settings, your Wi-Fi network and IP address)"
+      }
+    },
+    "cell_usageData_communicationsAndNotifications_householdContext": {
+      "prompt": "A device uses how you use your devices (for example, when you switch the lights on, or what you watch on TV) only inside your home, without it leaving your home, to send you alerts and messages (for example, a doorbell or smoke alarm notification). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:usageData",
+        "purpose": "ppd:communicationsAndNotifications",
+        "handling_context": "ppd:householdContext"
+      },
+      "data_examples": {
+        "default": "how you use your devices (for example, when you switch the lights on, or what you watch on TV)",
+        "light_plug": "how you use your devices (for example, when you switch your lights on and off)",
+        "tv_media": "how you use your devices (for example, what you watch on your TV)",
+        "thermostat_sensors": "how you use your devices (for example, when you change the temperature)",
+        "camera": "how you use your devices (for example, when you check your camera from your phone)",
+        "lock_entry": "how you use your devices (for example, when you lock and unlock your door)"
+      }
+    },
+    "cell_profileData_coreFunctionality_vendorContext": {
+      "prompt": "A device sends a profile of you (for example, your preferences and the daily routines a device has learned) to the company that made it, so the device works (for example, so you can control it from your phone). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:profileData",
+        "purpose": "ppd:coreFunctionality",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "a profile of you (for example, your preferences and the daily routines a device has learned)",
+        "thermostat_sensors": "a profile of you (for example, the heating schedule your thermostat has learned)",
+        "tv_media": "a profile of you (for example, the kinds of shows you like)"
+      }
+    },
+    "cell_deviceAndNetworkData_personalization_householdContext": {
+      "prompt": "A device uses device and network details (for example, the device's settings, your Wi-Fi network and IP address) only inside your home, without it leaving your home, to personalize what the device does or shows you (for example, heating that follows your routine). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:deviceAndNetworkData",
+        "purpose": "ppd:personalization",
+        "handling_context": "ppd:householdContext"
+      },
+      "data_examples": {
+        "default": "device and network details (for example, the device's settings, your Wi-Fi network and IP address)"
+      }
+    },
+    "cell_sensorData_diagnosticsAndMaintenance_vendorContext": {
+      "prompt": "A device sends sensor readings (for example, the temperature, motion, or whether someone is home) to the company that made it, to fix problems and update the device (for example, sending error reports). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:sensorData",
+        "purpose": "ppd:diagnosticsAndMaintenance",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "sensor readings (for example, the temperature, motion, or whether someone is home)",
+        "thermostat_sensors": "sensor readings (for example, your home's temperature and whether someone is home)",
+        "camera": "sensor readings (for example, motion your camera detects)",
+        "lock_entry": "sensor readings (for example, when your door is opened)"
+      }
+    },
+    "cell_deviceAndNetworkData_diagnosticsAndMaintenance_thirdPartyContext": {
+      "prompt": "A device's maker passes device and network details (for example, the device's settings, your Wi-Fi network and IP address) on to other companies, such as advertising or analytics firms, to fix problems and update the device (for example, sending error reports). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:deviceAndNetworkData",
+        "purpose": "ppd:diagnosticsAndMaintenance",
+        "handling_context": "ppd:thirdPartyContext"
+      },
+      "data_examples": {
+        "default": "device and network details (for example, the device's settings, your Wi-Fi network and IP address)"
+      }
+    },
+    "cell_usageData_personalization_householdContext": {
+      "prompt": "A device uses how you use your devices (for example, when you switch the lights on, or what you watch on TV) only inside your home, without it leaving your home, to personalize what the device does or shows you (for example, heating that follows your routine). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:usageData",
+        "purpose": "ppd:personalization",
+        "handling_context": "ppd:householdContext"
+      },
+      "data_examples": {
+        "default": "how you use your devices (for example, when you switch the lights on, or what you watch on TV)",
+        "light_plug": "how you use your devices (for example, when you switch your lights on and off)",
+        "tv_media": "how you use your devices (for example, what you watch on your TV)",
+        "thermostat_sensors": "how you use your devices (for example, when you change the temperature)",
+        "camera": "how you use your devices (for example, when you check your camera from your phone)",
+        "lock_entry": "how you use your devices (for example, when you lock and unlock your door)"
+      }
+    },
+    "cell_sensorData_analyticsAndImprovement_vendorContext": {
+      "prompt": "A device sends sensor readings (for example, the temperature, motion, or whether someone is home) to the company that made it, to improve their products (for example, studying how people use the device). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:sensorData",
+        "purpose": "ppd:analyticsAndImprovement",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "sensor readings (for example, the temperature, motion, or whether someone is home)",
+        "thermostat_sensors": "sensor readings (for example, your home's temperature and whether someone is home)",
+        "camera": "sensor readings (for example, motion your camera detects)",
+        "lock_entry": "sensor readings (for example, when your door is opened)"
+      }
+    },
+    "cell_deviceAndNetworkData_analyticsAndImprovement_vendorContext": {
+      "prompt": "A device sends device and network details (for example, the device's settings, your Wi-Fi network and IP address) to the company that made it, to improve their products (for example, studying how people use the device). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:deviceAndNetworkData",
+        "purpose": "ppd:analyticsAndImprovement",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "device and network details (for example, the device's settings, your Wi-Fi network and IP address)"
+      }
+    },
+    "cell_contentData_security_vendorContext": {
+      "prompt": "A device sends video or audio (for example, a camera's video of your living room, or what you say to a voice assistant) to the company that made it, to keep your home and the device secure (for example, detecting a break-in or a hacked device). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:contentData",
+        "purpose": "ppd:security",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "video or audio (for example, a camera's video of your living room, or what you say to a voice assistant)",
+        "camera": "video or audio (for example, your camera's video of your living room)",
+        "voice_assistant": "video or audio (for example, what you say to your voice assistant)",
+        "lock_entry": "video or audio (for example, your doorbell's video of your front door)"
+      }
+    },
+    "cell_sensorData_personalization_vendorContext": {
+      "prompt": "A device sends sensor readings (for example, the temperature, motion, or whether someone is home) to the company that made it, to personalize what the device does or shows you (for example, heating that follows your routine). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:sensorData",
+        "purpose": "ppd:personalization",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "sensor readings (for example, the temperature, motion, or whether someone is home)",
+        "thermostat_sensors": "sensor readings (for example, your home's temperature and whether someone is home)",
+        "camera": "sensor readings (for example, motion your camera detects)",
+        "lock_entry": "sensor readings (for example, when your door is opened)"
+      }
+    },
+    "cell_sensorData_analyticsAndImprovement_thirdPartyContext": {
+      "prompt": "A device's maker passes sensor readings (for example, the temperature, motion, or whether someone is home) on to other companies, such as advertising or analytics firms, to improve their products (for example, studying how people use the device). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:sensorData",
+        "purpose": "ppd:analyticsAndImprovement",
+        "handling_context": "ppd:thirdPartyContext"
+      },
+      "data_examples": {
+        "default": "sensor readings (for example, the temperature, motion, or whether someone is home)",
+        "thermostat_sensors": "sensor readings (for example, your home's temperature and whether someone is home)",
+        "camera": "sensor readings (for example, motion your camera detects)",
+        "lock_entry": "sensor readings (for example, when your door is opened)"
+      }
+    },
+    "cell_usageData_security_vendorContext": {
+      "prompt": "A device sends how you use your devices (for example, when you switch the lights on, or what you watch on TV) to the company that made it, to keep your home and the device secure (for example, detecting a break-in or a hacked device). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:usageData",
+        "purpose": "ppd:security",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "how you use your devices (for example, when you switch the lights on, or what you watch on TV)",
+        "light_plug": "how you use your devices (for example, when you switch your lights on and off)",
+        "tv_media": "how you use your devices (for example, what you watch on your TV)",
+        "thermostat_sensors": "how you use your devices (for example, when you change the temperature)",
+        "camera": "how you use your devices (for example, when you check your camera from your phone)",
+        "lock_entry": "how you use your devices (for example, when you lock and unlock your door)"
+      }
+    },
+    "cell_profileData_security_vendorContext": {
+      "prompt": "A device sends a profile of you (for example, your preferences and the daily routines a device has learned) to the company that made it, to keep your home and the device secure (for example, detecting a break-in or a hacked device). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:profileData",
+        "purpose": "ppd:security",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "a profile of you (for example, your preferences and the daily routines a device has learned)",
+        "thermostat_sensors": "a profile of you (for example, the heating schedule your thermostat has learned)",
+        "tv_media": "a profile of you (for example, the kinds of shows you like)"
+      }
+    },
+    "cell_contentData_coreFunctionality_vendorContext": {
+      "prompt": "A device sends video or audio (for example, a camera's video of your living room, or what you say to a voice assistant) to the company that made it, so the device works (for example, so you can control it from your phone). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:contentData",
+        "purpose": "ppd:coreFunctionality",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "video or audio (for example, a camera's video of your living room, or what you say to a voice assistant)",
+        "camera": "video or audio (for example, your camera's video of your living room)",
+        "voice_assistant": "video or audio (for example, what you say to your voice assistant)",
+        "lock_entry": "video or audio (for example, your doorbell's video of your front door)"
+      }
+    },
+    "cell_deviceAndNetworkData_advertisingAndMarketing_thirdPartyContext": {
+      "prompt": "A device's maker passes device and network details (for example, the device's settings, your Wi-Fi network and IP address) on to other companies, such as advertising or analytics firms, for advertising and marketing (for example, showing you ads based on what you watch). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:deviceAndNetworkData",
+        "purpose": "ppd:advertisingAndMarketing",
+        "handling_context": "ppd:thirdPartyContext"
+      },
+      "data_examples": {
+        "default": "device and network details (for example, the device's settings, your Wi-Fi network and IP address)"
+      }
+    },
+    "cell_deviceAndNetworkData_personalization_vendorContext": {
+      "prompt": "A device sends device and network details (for example, the device's settings, your Wi-Fi network and IP address) to the company that made it, to personalize what the device does or shows you (for example, heating that follows your routine). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:deviceAndNetworkData",
+        "purpose": "ppd:personalization",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "device and network details (for example, the device's settings, your Wi-Fi network and IP address)"
+      }
+    },
+    "cell_sensorData_personalization_thirdPartyContext": {
+      "prompt": "A device's maker passes sensor readings (for example, the temperature, motion, or whether someone is home) on to other companies, such as advertising or analytics firms, to personalize what the device does or shows you (for example, heating that follows your routine). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:sensorData",
+        "purpose": "ppd:personalization",
+        "handling_context": "ppd:thirdPartyContext"
+      },
+      "data_examples": {
+        "default": "sensor readings (for example, the temperature, motion, or whether someone is home)",
+        "thermostat_sensors": "sensor readings (for example, your home's temperature and whether someone is home)",
+        "camera": "sensor readings (for example, motion your camera detects)",
+        "lock_entry": "sensor readings (for example, when your door is opened)"
+      }
+    },
+    "cell_locationData_communicationsAndNotifications_vendorContext": {
+      "prompt": "A device sends your location (for example, your phone's location, to know when you are home or away) to the company that made it, to send you alerts and messages (for example, a doorbell or smoke alarm notification). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:locationData",
+        "purpose": "ppd:communicationsAndNotifications",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "your location (for example, your phone's location, to know when you are home or away)"
+      }
+    },
+    "cell_locationData_security_vendorContext": {
+      "prompt": "A device sends your location (for example, your phone's location, to know when you are home or away) to the company that made it, to keep your home and the device secure (for example, detecting a break-in or a hacked device). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:locationData",
+        "purpose": "ppd:security",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "your location (for example, your phone's location, to know when you are home or away)"
+      }
+    },
+    "cell_profileData_personalization_householdContext": {
+      "prompt": "A device uses a profile of you (for example, your preferences and the daily routines a device has learned) only inside your home, without it leaving your home, to personalize what the device does or shows you (for example, heating that follows your routine). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:profileData",
+        "purpose": "ppd:personalization",
+        "handling_context": "ppd:householdContext"
+      },
+      "data_examples": {
+        "default": "a profile of you (for example, your preferences and the daily routines a device has learned)",
+        "thermostat_sensors": "a profile of you (for example, the heating schedule your thermostat has learned)",
+        "tv_media": "a profile of you (for example, the kinds of shows you like)"
+      }
+    },
+    "cell_identifierData_personalization_householdContext": {
+      "prompt": "A device uses your account details (for example, your name, email address and account ID) only inside your home, without it leaving your home, to personalize what the device does or shows you (for example, heating that follows your routine). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:identifierData",
+        "purpose": "ppd:personalization",
+        "handling_context": "ppd:householdContext"
+      },
+      "data_examples": {
+        "default": "your account details (for example, your name, email address and account ID)"
+      }
+    },
+    "cell_locationData_diagnosticsAndMaintenance_vendorContext": {
+      "prompt": "A device sends your location (for example, your phone's location, to know when you are home or away) to the company that made it, to fix problems and update the device (for example, sending error reports). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:locationData",
+        "purpose": "ppd:diagnosticsAndMaintenance",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "your location (for example, your phone's location, to know when you are home or away)"
+      }
+    },
+    "cell_deviceAndNetworkData_advertisingAndMarketing_vendorContext": {
+      "prompt": "A device sends device and network details (for example, the device's settings, your Wi-Fi network and IP address) to the company that made it, for advertising and marketing (for example, showing you ads based on what you watch). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:deviceAndNetworkData",
+        "purpose": "ppd:advertisingAndMarketing",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "device and network details (for example, the device's settings, your Wi-Fi network and IP address)"
+      }
+    },
+    "cell_usageData_diagnosticsAndMaintenance_thirdPartyContext": {
+      "prompt": "A device's maker passes how you use your devices (for example, when you switch the lights on, or what you watch on TV) on to other companies, such as advertising or analytics firms, to fix problems and update the device (for example, sending error reports). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:usageData",
+        "purpose": "ppd:diagnosticsAndMaintenance",
+        "handling_context": "ppd:thirdPartyContext"
+      },
+      "data_examples": {
+        "default": "how you use your devices (for example, when you switch the lights on, or what you watch on TV)",
+        "light_plug": "how you use your devices (for example, when you switch your lights on and off)",
+        "tv_media": "how you use your devices (for example, what you watch on your TV)",
+        "thermostat_sensors": "how you use your devices (for example, when you change the temperature)",
+        "camera": "how you use your devices (for example, when you check your camera from your phone)",
+        "lock_entry": "how you use your devices (for example, when you lock and unlock your door)"
+      }
+    },
+    "cell_profileData_diagnosticsAndMaintenance_vendorContext": {
+      "prompt": "A device sends a profile of you (for example, your preferences and the daily routines a device has learned) to the company that made it, to fix problems and update the device (for example, sending error reports). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:profileData",
+        "purpose": "ppd:diagnosticsAndMaintenance",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "a profile of you (for example, your preferences and the daily routines a device has learned)",
+        "thermostat_sensors": "a profile of you (for example, the heating schedule your thermostat has learned)",
+        "tv_media": "a profile of you (for example, the kinds of shows you like)"
+      }
+    },
+    "cell_profileData_diagnosticsAndMaintenance_thirdPartyContext": {
+      "prompt": "A device's maker passes a profile of you (for example, your preferences and the daily routines a device has learned) on to other companies, such as advertising or analytics firms, to fix problems and update the device (for example, sending error reports). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:profileData",
+        "purpose": "ppd:diagnosticsAndMaintenance",
+        "handling_context": "ppd:thirdPartyContext"
+      },
+      "data_examples": {
+        "default": "a profile of you (for example, your preferences and the daily routines a device has learned)",
+        "thermostat_sensors": "a profile of you (for example, the heating schedule your thermostat has learned)",
+        "tv_media": "a profile of you (for example, the kinds of shows you like)"
+      }
+    },
+    "cell_contentData_communicationsAndNotifications_vendorContext": {
+      "prompt": "A device sends video or audio (for example, a camera's video of your living room, or what you say to a voice assistant) to the company that made it, to send you alerts and messages (for example, a doorbell or smoke alarm notification). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:contentData",
+        "purpose": "ppd:communicationsAndNotifications",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "video or audio (for example, a camera's video of your living room, or what you say to a voice assistant)",
+        "camera": "video or audio (for example, your camera's video of your living room)",
+        "voice_assistant": "video or audio (for example, what you say to your voice assistant)",
+        "lock_entry": "video or audio (for example, your doorbell's video of your front door)"
+      }
+    },
+    "cell_sensorData_advertisingAndMarketing_vendorContext": {
+      "prompt": "A device sends sensor readings (for example, the temperature, motion, or whether someone is home) to the company that made it, for advertising and marketing (for example, showing you ads based on what you watch). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:sensorData",
+        "purpose": "ppd:advertisingAndMarketing",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "sensor readings (for example, the temperature, motion, or whether someone is home)",
+        "thermostat_sensors": "sensor readings (for example, your home's temperature and whether someone is home)",
+        "camera": "sensor readings (for example, motion your camera detects)",
+        "lock_entry": "sensor readings (for example, when your door is opened)"
+      }
+    },
+    "cell_identifierData_diagnosticsAndMaintenance_thirdPartyContext": {
+      "prompt": "A device's maker passes your account details (for example, your name, email address and account ID) on to other companies, such as advertising or analytics firms, to fix problems and update the device (for example, sending error reports). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:identifierData",
+        "purpose": "ppd:diagnosticsAndMaintenance",
+        "handling_context": "ppd:thirdPartyContext"
+      },
+      "data_examples": {
+        "default": "your account details (for example, your name, email address and account ID)"
+      }
+    },
+    "cell_deviceAndNetworkData_personalization_thirdPartyContext": {
+      "prompt": "A device's maker passes device and network details (for example, the device's settings, your Wi-Fi network and IP address) on to other companies, such as advertising or analytics firms, to personalize what the device does or shows you (for example, heating that follows your routine). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:deviceAndNetworkData",
+        "purpose": "ppd:personalization",
+        "handling_context": "ppd:thirdPartyContext"
+      },
+      "data_examples": {
+        "default": "device and network details (for example, the device's settings, your Wi-Fi network and IP address)"
+      }
+    },
+    "cell_locationData_diagnosticsAndMaintenance_thirdPartyContext": {
+      "prompt": "A device's maker passes your location (for example, your phone's location, to know when you are home or away) on to other companies, such as advertising or analytics firms, to fix problems and update the device (for example, sending error reports). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:locationData",
+        "purpose": "ppd:diagnosticsAndMaintenance",
+        "handling_context": "ppd:thirdPartyContext"
+      },
+      "data_examples": {
+        "default": "your location (for example, your phone's location, to know when you are home or away)"
+      }
+    },
+    "cell_usageData_diagnosticsAndMaintenance_vendorContext": {
+      "prompt": "A device sends how you use your devices (for example, when you switch the lights on, or what you watch on TV) to the company that made it, to fix problems and update the device (for example, sending error reports). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:usageData",
+        "purpose": "ppd:diagnosticsAndMaintenance",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "how you use your devices (for example, when you switch the lights on, or what you watch on TV)",
+        "light_plug": "how you use your devices (for example, when you switch your lights on and off)",
+        "tv_media": "how you use your devices (for example, what you watch on your TV)",
+        "thermostat_sensors": "how you use your devices (for example, when you change the temperature)",
+        "camera": "how you use your devices (for example, when you check your camera from your phone)",
+        "lock_entry": "how you use your devices (for example, when you lock and unlock your door)"
+      }
+    },
+    "cell_identifierData_diagnosticsAndMaintenance_vendorContext": {
+      "prompt": "A device sends your account details (for example, your name, email address and account ID) to the company that made it, to fix problems and update the device (for example, sending error reports). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:identifierData",
+        "purpose": "ppd:diagnosticsAndMaintenance",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "your account details (for example, your name, email address and account ID)"
+      }
+    },
+    "cell_profileData_communicationsAndNotifications_vendorContext": {
+      "prompt": "A device sends a profile of you (for example, your preferences and the daily routines a device has learned) to the company that made it, to send you alerts and messages (for example, a doorbell or smoke alarm notification). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:profileData",
+        "purpose": "ppd:communicationsAndNotifications",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "a profile of you (for example, your preferences and the daily routines a device has learned)",
+        "thermostat_sensors": "a profile of you (for example, the heating schedule your thermostat has learned)",
+        "tv_media": "a profile of you (for example, the kinds of shows you like)"
+      }
+    },
+    "cell_identifierData_communicationsAndNotifications_vendorContext": {
+      "prompt": "A device sends your account details (for example, your name, email address and account ID) to the company that made it, to send you alerts and messages (for example, a doorbell or smoke alarm notification). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:identifierData",
+        "purpose": "ppd:communicationsAndNotifications",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "your account details (for example, your name, email address and account ID)"
+      }
+    },
+    "cell_profileData_analyticsAndImprovement_thirdPartyContext": {
+      "prompt": "A device's maker passes a profile of you (for example, your preferences and the daily routines a device has learned) on to other companies, such as advertising or analytics firms, to improve their products (for example, studying how people use the device). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:profileData",
+        "purpose": "ppd:analyticsAndImprovement",
+        "handling_context": "ppd:thirdPartyContext"
+      },
+      "data_examples": {
+        "default": "a profile of you (for example, your preferences and the daily routines a device has learned)",
+        "thermostat_sensors": "a profile of you (for example, the heating schedule your thermostat has learned)",
+        "tv_media": "a profile of you (for example, the kinds of shows you like)"
+      }
+    },
+    "cell_sensorData_advertisingAndMarketing_thirdPartyContext": {
+      "prompt": "A device's maker passes sensor readings (for example, the temperature, motion, or whether someone is home) on to other companies, such as advertising or analytics firms, for advertising and marketing (for example, showing you ads based on what you watch). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:sensorData",
+        "purpose": "ppd:advertisingAndMarketing",
+        "handling_context": "ppd:thirdPartyContext"
+      },
+      "data_examples": {
+        "default": "sensor readings (for example, the temperature, motion, or whether someone is home)",
+        "thermostat_sensors": "sensor readings (for example, your home's temperature and whether someone is home)",
+        "camera": "sensor readings (for example, motion your camera detects)",
+        "lock_entry": "sensor readings (for example, when your door is opened)"
+      }
+    },
+    "cell_usageData_personalization_vendorContext": {
+      "prompt": "A device sends how you use your devices (for example, when you switch the lights on, or what you watch on TV) to the company that made it, to personalize what the device does or shows you (for example, heating that follows your routine). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:usageData",
+        "purpose": "ppd:personalization",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "how you use your devices (for example, when you switch the lights on, or what you watch on TV)",
+        "light_plug": "how you use your devices (for example, when you switch your lights on and off)",
+        "tv_media": "how you use your devices (for example, what you watch on your TV)",
+        "thermostat_sensors": "how you use your devices (for example, when you change the temperature)",
+        "camera": "how you use your devices (for example, when you check your camera from your phone)",
+        "lock_entry": "how you use your devices (for example, when you lock and unlock your door)"
+      }
+    },
+    "cell_locationData_analyticsAndImprovement_vendorContext": {
+      "prompt": "A device sends your location (for example, your phone's location, to know when you are home or away) to the company that made it, to improve their products (for example, studying how people use the device). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:locationData",
+        "purpose": "ppd:analyticsAndImprovement",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "your location (for example, your phone's location, to know when you are home or away)"
+      }
+    },
+    "cell_contentData_personalization_householdContext": {
+      "prompt": "A device uses video or audio (for example, a camera's video of your living room, or what you say to a voice assistant) only inside your home, without it leaving your home, to personalize what the device does or shows you (for example, heating that follows your routine). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:contentData",
+        "purpose": "ppd:personalization",
+        "handling_context": "ppd:householdContext"
+      },
+      "data_examples": {
+        "default": "video or audio (for example, a camera's video of your living room, or what you say to a voice assistant)",
+        "camera": "video or audio (for example, your camera's video of your living room)",
+        "voice_assistant": "video or audio (for example, what you say to your voice assistant)",
+        "lock_entry": "video or audio (for example, your doorbell's video of your front door)"
+      }
+    },
+    "cell_identifierData_analyticsAndImprovement_vendorContext": {
+      "prompt": "A device sends your account details (for example, your name, email address and account ID) to the company that made it, to improve their products (for example, studying how people use the device). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:identifierData",
+        "purpose": "ppd:analyticsAndImprovement",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "your account details (for example, your name, email address and account ID)"
+      }
+    },
+    "cell_locationData_personalization_vendorContext": {
+      "prompt": "A device sends your location (for example, your phone's location, to know when you are home or away) to the company that made it, to personalize what the device does or shows you (for example, heating that follows your routine). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:locationData",
+        "purpose": "ppd:personalization",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "your location (for example, your phone's location, to know when you are home or away)"
+      }
+    },
+    "cell_contentData_diagnosticsAndMaintenance_vendorContext": {
+      "prompt": "A device sends video or audio (for example, a camera's video of your living room, or what you say to a voice assistant) to the company that made it, to fix problems and update the device (for example, sending error reports). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:contentData",
+        "purpose": "ppd:diagnosticsAndMaintenance",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "video or audio (for example, a camera's video of your living room, or what you say to a voice assistant)",
+        "camera": "video or audio (for example, your camera's video of your living room)",
+        "voice_assistant": "video or audio (for example, what you say to your voice assistant)",
+        "lock_entry": "video or audio (for example, your doorbell's video of your front door)"
+      }
+    },
+    "cell_identifierData_analyticsAndImprovement_thirdPartyContext": {
+      "prompt": "A device's maker passes your account details (for example, your name, email address and account ID) on to other companies, such as advertising or analytics firms, to improve their products (for example, studying how people use the device). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:identifierData",
+        "purpose": "ppd:analyticsAndImprovement",
+        "handling_context": "ppd:thirdPartyContext"
+      },
+      "data_examples": {
+        "default": "your account details (for example, your name, email address and account ID)"
+      }
+    },
+    "cell_usageData_analyticsAndImprovement_vendorContext": {
+      "prompt": "A device sends how you use your devices (for example, when you switch the lights on, or what you watch on TV) to the company that made it, to improve their products (for example, studying how people use the device). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:usageData",
+        "purpose": "ppd:analyticsAndImprovement",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "how you use your devices (for example, when you switch the lights on, or what you watch on TV)",
+        "light_plug": "how you use your devices (for example, when you switch your lights on and off)",
+        "tv_media": "how you use your devices (for example, what you watch on your TV)",
+        "thermostat_sensors": "how you use your devices (for example, when you change the temperature)",
+        "camera": "how you use your devices (for example, when you check your camera from your phone)",
+        "lock_entry": "how you use your devices (for example, when you lock and unlock your door)"
+      }
+    },
+    "cell_contentData_personalization_vendorContext": {
+      "prompt": "A device sends video or audio (for example, a camera's video of your living room, or what you say to a voice assistant) to the company that made it, to personalize what the device does or shows you (for example, heating that follows your routine). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:contentData",
+        "purpose": "ppd:personalization",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "video or audio (for example, a camera's video of your living room, or what you say to a voice assistant)",
+        "camera": "video or audio (for example, your camera's video of your living room)",
+        "voice_assistant": "video or audio (for example, what you say to your voice assistant)",
+        "lock_entry": "video or audio (for example, your doorbell's video of your front door)"
+      }
+    },
+    "cell_profileData_security_householdContext": {
+      "prompt": "A device uses a profile of you (for example, your preferences and the daily routines a device has learned) only inside your home, without it leaving your home, to keep your home and the device secure (for example, detecting a break-in or a hacked device). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:profileData",
+        "purpose": "ppd:security",
+        "handling_context": "ppd:householdContext"
+      },
+      "data_examples": {
+        "default": "a profile of you (for example, your preferences and the daily routines a device has learned)",
+        "thermostat_sensors": "a profile of you (for example, the heating schedule your thermostat has learned)",
+        "tv_media": "a profile of you (for example, the kinds of shows you like)"
+      }
+    },
+    "cell_locationData_personalization_thirdPartyContext": {
+      "prompt": "A device's maker passes your location (for example, your phone's location, to know when you are home or away) on to other companies, such as advertising or analytics firms, to personalize what the device does or shows you (for example, heating that follows your routine). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:locationData",
+        "purpose": "ppd:personalization",
+        "handling_context": "ppd:thirdPartyContext"
+      },
+      "data_examples": {
+        "default": "your location (for example, your phone's location, to know when you are home or away)"
+      }
+    },
+    "cell_contentData_analyticsAndImprovement_thirdPartyContext": {
+      "prompt": "A device's maker passes video or audio (for example, a camera's video of your living room, or what you say to a voice assistant) on to other companies, such as advertising or analytics firms, to improve their products (for example, studying how people use the device). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:contentData",
+        "purpose": "ppd:analyticsAndImprovement",
+        "handling_context": "ppd:thirdPartyContext"
+      },
+      "data_examples": {
+        "default": "video or audio (for example, a camera's video of your living room, or what you say to a voice assistant)",
+        "camera": "video or audio (for example, your camera's video of your living room)",
+        "voice_assistant": "video or audio (for example, what you say to your voice assistant)",
+        "lock_entry": "video or audio (for example, your doorbell's video of your front door)"
+      }
+    },
+    "cell_profileData_analyticsAndImprovement_vendorContext": {
+      "prompt": "A device sends a profile of you (for example, your preferences and the daily routines a device has learned) to the company that made it, to improve their products (for example, studying how people use the device). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:profileData",
+        "purpose": "ppd:analyticsAndImprovement",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "a profile of you (for example, your preferences and the daily routines a device has learned)",
+        "thermostat_sensors": "a profile of you (for example, the heating schedule your thermostat has learned)",
+        "tv_media": "a profile of you (for example, the kinds of shows you like)"
+      }
+    },
+    "cell_profileData_personalization_vendorContext": {
+      "prompt": "A device sends a profile of you (for example, your preferences and the daily routines a device has learned) to the company that made it, to personalize what the device does or shows you (for example, heating that follows your routine). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:profileData",
+        "purpose": "ppd:personalization",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "a profile of you (for example, your preferences and the daily routines a device has learned)",
+        "thermostat_sensors": "a profile of you (for example, the heating schedule your thermostat has learned)",
+        "tv_media": "a profile of you (for example, the kinds of shows you like)"
+      }
+    },
+    "cell_usageData_personalization_thirdPartyContext": {
+      "prompt": "A device's maker passes how you use your devices (for example, when you switch the lights on, or what you watch on TV) on to other companies, such as advertising or analytics firms, to personalize what the device does or shows you (for example, heating that follows your routine). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:usageData",
+        "purpose": "ppd:personalization",
+        "handling_context": "ppd:thirdPartyContext"
+      },
+      "data_examples": {
+        "default": "how you use your devices (for example, when you switch the lights on, or what you watch on TV)",
+        "light_plug": "how you use your devices (for example, when you switch your lights on and off)",
+        "tv_media": "how you use your devices (for example, what you watch on your TV)",
+        "thermostat_sensors": "how you use your devices (for example, when you change the temperature)",
+        "camera": "how you use your devices (for example, when you check your camera from your phone)",
+        "lock_entry": "how you use your devices (for example, when you lock and unlock your door)"
+      }
+    },
+    "cell_contentData_analyticsAndImprovement_vendorContext": {
+      "prompt": "A device sends video or audio (for example, a camera's video of your living room, or what you say to a voice assistant) to the company that made it, to improve their products (for example, studying how people use the device). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:contentData",
+        "purpose": "ppd:analyticsAndImprovement",
+        "handling_context": "ppd:vendorContext"
+      },
+      "data_examples": {
+        "default": "video or audio (for example, a camera's video of your living room, or what you say to a voice assistant)",
+        "camera": "video or audio (for example, your camera's video of your living room)",
+        "voice_assistant": "video or audio (for example, what you say to your voice assistant)",
+        "lock_entry": "video or audio (for example, your doorbell's video of your front door)"
+      }
+    },
+    "cell_locationData_analyticsAndImprovement_thirdPartyContext": {
+      "prompt": "A device's maker passes your location (for example, your phone's location, to know when you are home or away) on to other companies, such as advertising or analytics firms, to improve their products (for example, studying how people use the device). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:locationData",
+        "purpose": "ppd:analyticsAndImprovement",
+        "handling_context": "ppd:thirdPartyContext"
+      },
+      "data_examples": {
+        "default": "your location (for example, your phone's location, to know when you are home or away)"
+      }
+    },
+    "cell_contentData_diagnosticsAndMaintenance_thirdPartyContext": {
+      "prompt": "A device's maker passes video or audio (for example, a camera's video of your living room, or what you say to a voice assistant) on to other companies, such as advertising or analytics firms, to fix problems and update the device (for example, sending error reports). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:contentData",
+        "purpose": "ppd:diagnosticsAndMaintenance",
+        "handling_context": "ppd:thirdPartyContext"
+      },
+      "data_examples": {
+        "default": "video or audio (for example, a camera's video of your living room, or what you say to a voice assistant)",
+        "camera": "video or audio (for example, your camera's video of your living room)",
+        "voice_assistant": "video or audio (for example, what you say to your voice assistant)",
+        "lock_entry": "video or audio (for example, your doorbell's video of your front door)"
+      }
+    },
+    "cell_profileData_personalization_thirdPartyContext": {
+      "prompt": "A device's maker passes a profile of you (for example, your preferences and the daily routines a device has learned) on to other companies, such as advertising or analytics firms, to personalize what the device does or shows you (for example, heating that follows your routine). Would you allow this?",
+      "options": [
+        {
+          "id": "no",
+          "label": "No"
+        },
+        {
+          "id": "depends",
+          "label": "It depends"
+        },
+        {
+          "id": "yes",
+          "label": "Yes"
+        }
+      ],
+      "situation": {
+        "data_type": "ppd:profileData",
+        "purpose": "ppd:personalization",
+        "handling_context": "ppd:thirdPartyContext"
+      },
+      "data_examples": {
+        "default": "a profile of you (for example, your preferences and the daily routines a device has learned)",
+        "thermostat_sensors": "a profile of you (for example, the heating schedule your thermostat has learned)",
+        "tv_media": "a profile of you (for example, the kinds of shows you like)"
+      }
+    }
+  },
+  "walk": "Stage 1: show the root question; follow the branch whose 'answers' contain the chosen option; repeat until a node has 'preset'. A question can come back further down a path: reuse the earlier answer, never ask twice. Stage 2: ask the leaf's 'follow_ups' in order, at most 'follow_up_budget' of them (the cap minus the questions asked in stage 1). Skip any follow-up already answered in stage 1.",
+  "rules": "Copy the preset's rules from presets.json. For every situation question answered 'yes' or 'no' (stage 1 or 2), where the rule covering that situation says otherwise, split that rule around the situation (at most three pieces: other data types; this data type with other purposes; this data type and purpose with other handling contexts) and add a rule with the answer for the situation itself ('yes' = allow, 'no' = never; origin kind 'answer'). 'It depends' keeps the preset. Rules never overlap, so exactly one decides each flow.",
+  "rerun": "Rerunning the questionnaire starts over: the household's rules are rebuilt from the new answers; manual edits are replaced after a warning.",
   "root": {
-    "question": "real_personalized_heating",
+    "question": "cell_usageData_communicationsAndNotifications_vendorContext",
     "branches": [
       {
         "answers": [
-          "no"
+          "no",
+          "depends"
         ],
         "next": {
-          "question": "purpose_personal",
+          "question": "cell_sensorData_diagnosticsAndMaintenance_thirdPartyContext",
           "branches": [
             {
               "answers": [
-                "never",
-                "ask"
+                "no",
+                "depends"
               ],
               "next": {
-                "question": "real_usage_improve",
+                "question": "cell_identifierData_security_vendorContext",
                 "branches": [
                   {
                     "answers": [
                       "no",
-                      "with_limits"
+                      "depends"
                     ],
                     "next": {
-                      "question": "data_usage",
+                      "question": "cell_deviceAndNetworkData_analyticsAndImprovement_thirdPartyContext",
                       "branches": [
                         {
                           "answers": [
-                            "never",
-                            "ask"
+                            "no",
+                            "depends"
                           ],
                           "next": {
-                            "question": "real_video_cloud",
+                            "question": "cell_locationData_personalization_householdContext",
                             "branches": [
                               {
                                 "answers": [
                                   "no",
-                                  "with_limits"
+                                  "depends"
                                 ],
                                 "next": {
-                                  "preset": "k8-p0"
+                                  "question": "cell_contentData_communicationsAndNotifications_householdContext",
+                                  "branches": [
+                                    {
+                                      "answers": [
+                                        "no",
+                                        "depends"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p0",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_locationData_communicationsAndNotifications_householdContext",
+                                          "cell_usageData_coreFunctionality_vendorContext",
+                                          "cell_identifierData_communicationsAndNotifications_householdContext",
+                                          "cell_deviceAndNetworkData_communicationsAndNotifications_vendorContext",
+                                          "cell_profileData_communicationsAndNotifications_householdContext",
+                                          "cell_deviceAndNetworkData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_usageData_communicationsAndNotifications_householdContext",
+                                          "cell_profileData_coreFunctionality_vendorContext",
+                                          "cell_deviceAndNetworkData_personalization_householdContext"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "answers": [
+                                        "yes"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p0",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_sensorData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_profileData_coreFunctionality_vendorContext",
+                                          "cell_deviceAndNetworkData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_locationData_communicationsAndNotifications_householdContext",
+                                          "cell_identifierData_communicationsAndNotifications_householdContext",
+                                          "cell_usageData_coreFunctionality_vendorContext",
+                                          "cell_profileData_communicationsAndNotifications_householdContext",
+                                          "cell_deviceAndNetworkData_communicationsAndNotifications_vendorContext",
+                                          "cell_deviceAndNetworkData_diagnosticsAndMaintenance_vendorContext"
+                                        ]
+                                      }
+                                    }
+                                  ]
                                 }
                               },
                               {
@@ -227,7 +1952,50 @@
                                   "yes"
                                 ],
                                 "next": {
-                                  "preset": "k8-p1"
+                                  "question": "cell_sensorData_diagnosticsAndMaintenance_vendorContext",
+                                  "branches": [
+                                    {
+                                      "answers": [
+                                        "no",
+                                        "depends"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p0",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_deviceAndNetworkData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_profileData_coreFunctionality_vendorContext",
+                                          "cell_locationData_communicationsAndNotifications_householdContext",
+                                          "cell_usageData_personalization_householdContext",
+                                          "cell_contentData_communicationsAndNotifications_householdContext",
+                                          "cell_identifierData_communicationsAndNotifications_householdContext",
+                                          "cell_usageData_coreFunctionality_vendorContext",
+                                          "cell_profileData_communicationsAndNotifications_householdContext",
+                                          "cell_deviceAndNetworkData_communicationsAndNotifications_vendorContext"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "answers": [
+                                        "yes"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p1",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_usageData_personalization_householdContext",
+                                          "cell_sensorData_analyticsAndImprovement_vendorContext",
+                                          "cell_deviceAndNetworkData_analyticsAndImprovement_vendorContext",
+                                          "cell_contentData_security_vendorContext",
+                                          "cell_sensorData_personalization_vendorContext",
+                                          "cell_deviceAndNetworkData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_sensorData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_usageData_security_vendorContext",
+                                          "cell_profileData_security_vendorContext"
+                                        ]
+                                      }
+                                    }
+                                  ]
                                 }
                               }
                             ]
@@ -235,26 +2003,112 @@
                         },
                         {
                           "answers": [
-                            "fine"
+                            "yes"
                           ],
                           "next": {
-                            "question": "real_profile_ads",
+                            "question": "cell_locationData_personalization_householdContext",
                             "branches": [
                               {
                                 "answers": [
                                   "no"
                                 ],
                                 "next": {
-                                  "preset": "k8-p1"
+                                  "question": "cell_contentData_coreFunctionality_vendorContext",
+                                  "branches": [
+                                    {
+                                      "answers": [
+                                        "no",
+                                        "depends"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p0",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_profileData_coreFunctionality_vendorContext",
+                                          "cell_sensorData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_locationData_communicationsAndNotifications_householdContext",
+                                          "cell_deviceAndNetworkData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_identifierData_communicationsAndNotifications_householdContext",
+                                          "cell_usageData_coreFunctionality_vendorContext",
+                                          "cell_contentData_communicationsAndNotifications_householdContext",
+                                          "cell_profileData_communicationsAndNotifications_householdContext",
+                                          "cell_deviceAndNetworkData_communicationsAndNotifications_vendorContext"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "answers": [
+                                        "yes"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p1",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_usageData_personalization_householdContext",
+                                          "cell_deviceAndNetworkData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_sensorData_analyticsAndImprovement_vendorContext",
+                                          "cell_deviceAndNetworkData_analyticsAndImprovement_vendorContext",
+                                          "cell_sensorData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_profileData_coreFunctionality_vendorContext",
+                                          "cell_contentData_security_vendorContext",
+                                          "cell_sensorData_personalization_vendorContext",
+                                          "cell_sensorData_analyticsAndImprovement_thirdPartyContext"
+                                        ]
+                                      }
+                                    }
+                                  ]
                                 }
                               },
                               {
                                 "answers": [
-                                  "with_limits",
+                                  "depends",
                                   "yes"
                                 ],
                                 "next": {
-                                  "preset": "k8-p3"
+                                  "question": "cell_deviceAndNetworkData_advertisingAndMarketing_thirdPartyContext",
+                                  "branches": [
+                                    {
+                                      "answers": [
+                                        "no"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p1",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_usageData_personalization_householdContext",
+                                          "cell_sensorData_analyticsAndImprovement_vendorContext",
+                                          "cell_deviceAndNetworkData_analyticsAndImprovement_vendorContext",
+                                          "cell_contentData_security_vendorContext",
+                                          "cell_sensorData_personalization_vendorContext",
+                                          "cell_deviceAndNetworkData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_sensorData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_usageData_security_vendorContext",
+                                          "cell_profileData_security_vendorContext"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "answers": [
+                                        "depends",
+                                        "yes"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p1",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_sensorData_personalization_vendorContext",
+                                          "cell_usageData_security_vendorContext",
+                                          "cell_sensorData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_contentData_security_vendorContext",
+                                          "cell_deviceAndNetworkData_analyticsAndImprovement_vendorContext",
+                                          "cell_profileData_security_vendorContext",
+                                          "cell_deviceAndNetworkData_personalization_vendorContext",
+                                          "cell_sensorData_analyticsAndImprovement_vendorContext",
+                                          "cell_sensorData_personalization_thirdPartyContext"
+                                        ]
+                                      }
+                                    }
+                                  ]
                                 }
                               }
                             ]
@@ -268,39 +2122,230 @@
                       "yes"
                     ],
                     "next": {
-                      "question": "purpose_personal",
+                      "question": "cell_deviceAndNetworkData_analyticsAndImprovement_thirdPartyContext",
                       "branches": [
                         {
                           "answers": [
-                            "never"
+                            "no"
                           ],
                           "next": {
-                            "preset": "k8-p1"
-                          }
-                        },
-                        {
-                          "answers": [
-                            "ask",
-                            "fine"
-                          ],
-                          "next": {
-                            "question": "data_usage",
+                            "question": "cell_profileData_security_vendorContext",
                             "branches": [
                               {
                                 "answers": [
-                                  "never",
-                                  "ask"
+                                  "no",
+                                  "depends"
                                 ],
                                 "next": {
-                                  "preset": "k8-p7"
+                                  "question": "cell_profileData_communicationsAndNotifications_householdContext",
+                                  "branches": [
+                                    {
+                                      "answers": [
+                                        "no",
+                                        "depends"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p0",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_profileData_coreFunctionality_vendorContext",
+                                          "cell_sensorData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_locationData_communicationsAndNotifications_householdContext",
+                                          "cell_deviceAndNetworkData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_identifierData_communicationsAndNotifications_householdContext",
+                                          "cell_usageData_coreFunctionality_vendorContext",
+                                          "cell_contentData_communicationsAndNotifications_householdContext",
+                                          "cell_deviceAndNetworkData_communicationsAndNotifications_vendorContext",
+                                          "cell_deviceAndNetworkData_diagnosticsAndMaintenance_vendorContext"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "answers": [
+                                        "yes"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p1",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_deviceAndNetworkData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_usageData_personalization_householdContext",
+                                          "cell_sensorData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_profileData_coreFunctionality_vendorContext",
+                                          "cell_sensorData_analyticsAndImprovement_vendorContext",
+                                          "cell_deviceAndNetworkData_analyticsAndImprovement_vendorContext",
+                                          "cell_locationData_communicationsAndNotifications_householdContext",
+                                          "cell_sensorData_personalization_vendorContext",
+                                          "cell_contentData_security_vendorContext"
+                                        ]
+                                      }
+                                    }
+                                  ]
                                 }
                               },
                               {
                                 "answers": [
-                                  "fine"
+                                  "yes"
                                 ],
                                 "next": {
-                                  "preset": "k8-p1"
+                                  "question": "cell_deviceAndNetworkData_personalization_householdContext",
+                                  "branches": [
+                                    {
+                                      "answers": [
+                                        "no"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p1",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_deviceAndNetworkData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_usageData_personalization_householdContext",
+                                          "cell_sensorData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_profileData_coreFunctionality_vendorContext",
+                                          "cell_sensorData_analyticsAndImprovement_vendorContext",
+                                          "cell_deviceAndNetworkData_analyticsAndImprovement_vendorContext",
+                                          "cell_locationData_communicationsAndNotifications_householdContext",
+                                          "cell_sensorData_personalization_vendorContext",
+                                          "cell_contentData_communicationsAndNotifications_householdContext"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "answers": [
+                                        "depends",
+                                        "yes"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p1",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_deviceAndNetworkData_analyticsAndImprovement_vendorContext",
+                                          "cell_contentData_security_vendorContext",
+                                          "cell_sensorData_personalization_vendorContext",
+                                          "cell_usageData_security_vendorContext",
+                                          "cell_sensorData_analyticsAndImprovement_vendorContext",
+                                          "cell_sensorData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_usageData_personalization_householdContext",
+                                          "cell_locationData_personalization_householdContext",
+                                          "cell_deviceAndNetworkData_personalization_vendorContext"
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "answers": [
+                            "depends",
+                            "yes"
+                          ],
+                          "next": {
+                            "question": "cell_deviceAndNetworkData_advertisingAndMarketing_thirdPartyContext",
+                            "branches": [
+                              {
+                                "answers": [
+                                  "no"
+                                ],
+                                "next": {
+                                  "question": "cell_profileData_communicationsAndNotifications_householdContext",
+                                  "branches": [
+                                    {
+                                      "answers": [
+                                        "no"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p1",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_deviceAndNetworkData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_usageData_personalization_householdContext",
+                                          "cell_sensorData_analyticsAndImprovement_vendorContext",
+                                          "cell_sensorData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_profileData_coreFunctionality_vendorContext",
+                                          "cell_deviceAndNetworkData_analyticsAndImprovement_vendorContext",
+                                          "cell_sensorData_personalization_vendorContext",
+                                          "cell_contentData_security_vendorContext",
+                                          "cell_locationData_communicationsAndNotifications_householdContext"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "answers": [
+                                        "depends",
+                                        "yes"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p1",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_sensorData_personalization_vendorContext",
+                                          "cell_usageData_security_vendorContext",
+                                          "cell_contentData_security_vendorContext",
+                                          "cell_deviceAndNetworkData_analyticsAndImprovement_vendorContext",
+                                          "cell_sensorData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_profileData_security_vendorContext",
+                                          "cell_sensorData_analyticsAndImprovement_vendorContext",
+                                          "cell_locationData_personalization_householdContext",
+                                          "cell_deviceAndNetworkData_personalization_vendorContext"
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "answers": [
+                                  "depends",
+                                  "yes"
+                                ],
+                                "next": {
+                                  "question": "cell_locationData_communicationsAndNotifications_vendorContext",
+                                  "branches": [
+                                    {
+                                      "answers": [
+                                        "no",
+                                        "depends"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p1",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_deviceAndNetworkData_personalization_vendorContext",
+                                          "cell_locationData_security_vendorContext",
+                                          "cell_locationData_personalization_householdContext",
+                                          "cell_sensorData_personalization_thirdPartyContext",
+                                          "cell_profileData_security_vendorContext",
+                                          "cell_sensorData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_profileData_personalization_householdContext",
+                                          "cell_sensorData_personalization_vendorContext",
+                                          "cell_usageData_security_vendorContext"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "answers": [
+                                        "yes"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p3",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_identifierData_personalization_householdContext",
+                                          "cell_locationData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_deviceAndNetworkData_advertisingAndMarketing_vendorContext",
+                                          "cell_usageData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_profileData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_profileData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_contentData_communicationsAndNotifications_vendorContext",
+                                          "cell_sensorData_advertisingAndMarketing_vendorContext",
+                                          "cell_identifierData_diagnosticsAndMaintenance_thirdPartyContext"
+                                        ]
+                                      }
+                                    }
+                                  ]
                                 }
                               }
                             ]
@@ -314,26 +2359,484 @@
             },
             {
               "answers": [
-                "fine"
+                "yes"
               ],
               "next": {
-                "question": "real_usage_improve",
+                "question": "cell_locationData_security_vendorContext",
                 "branches": [
                   {
                     "answers": [
-                      "no",
-                      "with_limits"
+                      "no"
                     ],
                     "next": {
-                      "preset": "k8-p6"
+                      "question": "cell_profileData_coreFunctionality_vendorContext",
+                      "branches": [
+                        {
+                          "answers": [
+                            "no"
+                          ],
+                          "next": {
+                            "question": "cell_usageData_communicationsAndNotifications_householdContext",
+                            "branches": [
+                              {
+                                "answers": [
+                                  "no",
+                                  "depends"
+                                ],
+                                "next": {
+                                  "question": "cell_sensorData_personalization_vendorContext",
+                                  "branches": [
+                                    {
+                                      "answers": [
+                                        "no"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p0",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_locationData_communicationsAndNotifications_householdContext",
+                                          "cell_usageData_coreFunctionality_vendorContext",
+                                          "cell_identifierData_communicationsAndNotifications_householdContext",
+                                          "cell_deviceAndNetworkData_communicationsAndNotifications_vendorContext",
+                                          "cell_contentData_communicationsAndNotifications_householdContext",
+                                          "cell_profileData_communicationsAndNotifications_householdContext",
+                                          "cell_deviceAndNetworkData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_deviceAndNetworkData_personalization_householdContext",
+                                          "cell_contentData_coreFunctionality_vendorContext"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "answers": [
+                                        "depends",
+                                        "yes"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p0",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_sensorData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_deviceAndNetworkData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_locationData_communicationsAndNotifications_householdContext",
+                                          "cell_identifierData_communicationsAndNotifications_householdContext",
+                                          "cell_contentData_communicationsAndNotifications_householdContext",
+                                          "cell_usageData_coreFunctionality_vendorContext",
+                                          "cell_profileData_communicationsAndNotifications_householdContext",
+                                          "cell_deviceAndNetworkData_communicationsAndNotifications_vendorContext",
+                                          "cell_deviceAndNetworkData_diagnosticsAndMaintenance_vendorContext"
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "answers": [
+                                  "yes"
+                                ],
+                                "next": {
+                                  "question": "cell_deviceAndNetworkData_personalization_thirdPartyContext",
+                                  "branches": [
+                                    {
+                                      "answers": [
+                                        "no"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p0",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_deviceAndNetworkData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_sensorData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_locationData_communicationsAndNotifications_householdContext",
+                                          "cell_identifierData_security_vendorContext",
+                                          "cell_contentData_communicationsAndNotifications_householdContext",
+                                          "cell_identifierData_communicationsAndNotifications_householdContext",
+                                          "cell_usageData_personalization_householdContext",
+                                          "cell_usageData_coreFunctionality_vendorContext",
+                                          "cell_profileData_communicationsAndNotifications_householdContext"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "answers": [
+                                        "depends",
+                                        "yes"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p1",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_identifierData_security_vendorContext",
+                                          "cell_usageData_personalization_householdContext",
+                                          "cell_sensorData_analyticsAndImprovement_vendorContext",
+                                          "cell_deviceAndNetworkData_analyticsAndImprovement_vendorContext",
+                                          "cell_contentData_security_vendorContext",
+                                          "cell_deviceAndNetworkData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_sensorData_personalization_vendorContext",
+                                          "cell_sensorData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_usageData_security_vendorContext"
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "answers": [
+                            "depends",
+                            "yes"
+                          ],
+                          "next": {
+                            "question": "cell_identifierData_communicationsAndNotifications_householdContext",
+                            "branches": [
+                              {
+                                "answers": [
+                                  "no"
+                                ],
+                                "next": {
+                                  "question": "cell_contentData_security_vendorContext",
+                                  "branches": [
+                                    {
+                                      "answers": [
+                                        "no",
+                                        "depends"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p1",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_deviceAndNetworkData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_sensorData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_identifierData_security_vendorContext",
+                                          "cell_locationData_communicationsAndNotifications_householdContext",
+                                          "cell_usageData_personalization_householdContext",
+                                          "cell_contentData_communicationsAndNotifications_householdContext",
+                                          "cell_usageData_coreFunctionality_vendorContext",
+                                          "cell_profileData_communicationsAndNotifications_householdContext",
+                                          "cell_deviceAndNetworkData_diagnosticsAndMaintenance_vendorContext"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "answers": [
+                                        "yes"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p1",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_usageData_personalization_householdContext",
+                                          "cell_identifierData_security_vendorContext",
+                                          "cell_sensorData_analyticsAndImprovement_vendorContext",
+                                          "cell_deviceAndNetworkData_analyticsAndImprovement_vendorContext",
+                                          "cell_sensorData_personalization_vendorContext",
+                                          "cell_deviceAndNetworkData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_sensorData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_usageData_security_vendorContext",
+                                          "cell_deviceAndNetworkData_analyticsAndImprovement_thirdPartyContext"
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "answers": [
+                                  "depends",
+                                  "yes"
+                                ],
+                                "next": {
+                                  "question": "cell_deviceAndNetworkData_personalization_thirdPartyContext",
+                                  "branches": [
+                                    {
+                                      "answers": [
+                                        "no"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p1",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_identifierData_security_vendorContext",
+                                          "cell_usageData_personalization_householdContext",
+                                          "cell_sensorData_analyticsAndImprovement_vendorContext",
+                                          "cell_deviceAndNetworkData_analyticsAndImprovement_vendorContext",
+                                          "cell_deviceAndNetworkData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_contentData_security_vendorContext",
+                                          "cell_sensorData_personalization_vendorContext",
+                                          "cell_sensorData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_usageData_security_vendorContext"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "answers": [
+                                        "depends",
+                                        "yes"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p1",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_profileData_security_vendorContext",
+                                          "cell_sensorData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_deviceAndNetworkData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_deviceAndNetworkData_personalization_vendorContext",
+                                          "cell_locationData_personalization_householdContext",
+                                          "cell_sensorData_personalization_vendorContext",
+                                          "cell_usageData_security_vendorContext",
+                                          "cell_sensorData_personalization_thirdPartyContext",
+                                          "cell_contentData_security_vendorContext"
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
                     }
                   },
                   {
                     "answers": [
+                      "depends",
                       "yes"
                     ],
                     "next": {
-                      "preset": "k8-p5"
+                      "question": "cell_profileData_diagnosticsAndMaintenance_thirdPartyContext",
+                      "branches": [
+                        {
+                          "answers": [
+                            "no",
+                            "depends"
+                          ],
+                          "next": {
+                            "question": "cell_identifierData_personalization_householdContext",
+                            "branches": [
+                              {
+                                "answers": [
+                                  "no",
+                                  "depends"
+                                ],
+                                "next": {
+                                  "question": "cell_locationData_diagnosticsAndMaintenance_thirdPartyContext",
+                                  "branches": [
+                                    {
+                                      "answers": [
+                                        "no"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p1",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_contentData_security_vendorContext",
+                                          "cell_deviceAndNetworkData_analyticsAndImprovement_vendorContext",
+                                          "cell_sensorData_personalization_vendorContext",
+                                          "cell_usageData_security_vendorContext",
+                                          "cell_sensorData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_sensorData_analyticsAndImprovement_vendorContext",
+                                          "cell_deviceAndNetworkData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_profileData_security_vendorContext",
+                                          "cell_usageData_personalization_householdContext"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "answers": [
+                                        "depends",
+                                        "yes"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p1",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_locationData_personalization_householdContext",
+                                          "cell_deviceAndNetworkData_personalization_vendorContext",
+                                          "cell_sensorData_personalization_thirdPartyContext",
+                                          "cell_deviceAndNetworkData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_profileData_security_vendorContext",
+                                          "cell_sensorData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_profileData_personalization_householdContext",
+                                          "cell_usageData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_sensorData_personalization_vendorContext"
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "answers": [
+                                  "yes"
+                                ],
+                                "next": {
+                                  "question": "cell_deviceAndNetworkData_personalization_thirdPartyContext",
+                                  "branches": [
+                                    {
+                                      "answers": [
+                                        "no"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p1",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_profileData_security_vendorContext",
+                                          "cell_sensorData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_deviceAndNetworkData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_deviceAndNetworkData_personalization_vendorContext",
+                                          "cell_locationData_personalization_householdContext",
+                                          "cell_sensorData_personalization_vendorContext",
+                                          "cell_usageData_security_vendorContext",
+                                          "cell_sensorData_personalization_thirdPartyContext",
+                                          "cell_contentData_security_vendorContext"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "answers": [
+                                        "depends",
+                                        "yes"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p3",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_identifierData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_locationData_communicationsAndNotifications_vendorContext",
+                                          "cell_profileData_communicationsAndNotifications_vendorContext",
+                                          "cell_identifierData_communicationsAndNotifications_vendorContext",
+                                          "cell_contentData_communicationsAndNotifications_vendorContext",
+                                          "cell_profileData_personalization_householdContext",
+                                          "cell_usageData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_usageData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_profileData_diagnosticsAndMaintenance_vendorContext"
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "answers": [
+                            "yes"
+                          ],
+                          "next": {
+                            "question": "cell_profileData_analyticsAndImprovement_thirdPartyContext",
+                            "branches": [
+                              {
+                                "answers": [
+                                  "no",
+                                  "depends"
+                                ],
+                                "next": {
+                                  "question": "cell_sensorData_advertisingAndMarketing_thirdPartyContext",
+                                  "branches": [
+                                    {
+                                      "answers": [
+                                        "no",
+                                        "depends"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p3",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_identifierData_communicationsAndNotifications_vendorContext",
+                                          "cell_profileData_communicationsAndNotifications_vendorContext",
+                                          "cell_deviceAndNetworkData_personalization_thirdPartyContext",
+                                          "cell_profileData_personalization_householdContext",
+                                          "cell_usageData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_identifierData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_locationData_communicationsAndNotifications_vendorContext",
+                                          "cell_sensorData_personalization_thirdPartyContext",
+                                          "cell_contentData_communicationsAndNotifications_vendorContext"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "answers": [
+                                        "yes"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p3",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_deviceAndNetworkData_advertisingAndMarketing_thirdPartyContext",
+                                          "cell_sensorData_advertisingAndMarketing_vendorContext",
+                                          "cell_identifierData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_identifierData_personalization_householdContext",
+                                          "cell_locationData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_usageData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_usageData_personalization_vendorContext",
+                                          "cell_locationData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_deviceAndNetworkData_advertisingAndMarketing_vendorContext"
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "answers": [
+                                  "yes"
+                                ],
+                                "next": {
+                                  "question": "cell_locationData_diagnosticsAndMaintenance_thirdPartyContext",
+                                  "branches": [
+                                    {
+                                      "answers": [
+                                        "no",
+                                        "depends"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p3",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_deviceAndNetworkData_advertisingAndMarketing_thirdPartyContext",
+                                          "cell_identifierData_personalization_householdContext",
+                                          "cell_sensorData_advertisingAndMarketing_vendorContext",
+                                          "cell_identifierData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_usageData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_locationData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_deviceAndNetworkData_advertisingAndMarketing_vendorContext",
+                                          "cell_profileData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_usageData_personalization_vendorContext"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "answers": [
+                                        "yes"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p2",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_locationData_analyticsAndImprovement_vendorContext",
+                                          "cell_sensorData_advertisingAndMarketing_thirdPartyContext",
+                                          "cell_contentData_personalization_householdContext",
+                                          "cell_identifierData_analyticsAndImprovement_vendorContext",
+                                          "cell_locationData_personalization_vendorContext",
+                                          "cell_contentData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_identifierData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_usageData_analyticsAndImprovement_vendorContext",
+                                          "cell_usageData_personalization_vendorContext"
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
                     }
                   }
                 ]
@@ -344,79 +2847,134 @@
       },
       {
         "answers": [
-          "with_limits",
           "yes"
         ],
         "next": {
-          "question": "real_profile_ads",
+          "question": "cell_identifierData_analyticsAndImprovement_thirdPartyContext",
           "branches": [
             {
               "answers": [
                 "no"
               ],
               "next": {
-                "question": "real_usage_improve",
+                "question": "cell_contentData_personalization_vendorContext",
                 "branches": [
                   {
                     "answers": [
-                      "no"
+                      "no",
+                      "depends"
                     ],
                     "next": {
-                      "question": "concern",
+                      "question": "cell_locationData_diagnosticsAndMaintenance_thirdPartyContext",
                       "branches": [
                         {
                           "answers": [
-                            "1",
-                            "2",
-                            "3"
+                            "no"
                           ],
                           "next": {
-                            "preset": "k8-p6"
-                          }
-                        },
-                        {
-                          "answers": [
-                            "4",
-                            "5"
-                          ],
-                          "next": {
-                            "preset": "k8-p0"
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "answers": [
-                      "with_limits",
-                      "yes"
-                    ],
-                    "next": {
-                      "question": "concern",
-                      "branches": [
-                        {
-                          "answers": [
-                            "1",
-                            "2"
-                          ],
-                          "next": {
-                            "question": "purpose_analytics",
+                            "question": "cell_deviceAndNetworkData_personalization_thirdPartyContext",
                             "branches": [
                               {
                                 "answers": [
-                                  "never"
+                                  "no"
                                 ],
                                 "next": {
-                                  "preset": "k8-p6"
+                                  "question": "cell_profileData_security_householdContext",
+                                  "branches": [
+                                    {
+                                      "answers": [
+                                        "no",
+                                        "depends"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p1",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_sensorData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_identifierData_security_vendorContext",
+                                          "cell_deviceAndNetworkData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_usageData_personalization_householdContext",
+                                          "cell_sensorData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_sensorData_analyticsAndImprovement_vendorContext",
+                                          "cell_profileData_coreFunctionality_vendorContext",
+                                          "cell_deviceAndNetworkData_analyticsAndImprovement_vendorContext",
+                                          "cell_locationData_communicationsAndNotifications_householdContext"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "answers": [
+                                        "yes"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p1",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_sensorData_personalization_vendorContext",
+                                          "cell_usageData_security_vendorContext",
+                                          "cell_sensorData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_contentData_security_vendorContext",
+                                          "cell_deviceAndNetworkData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_profileData_security_vendorContext",
+                                          "cell_deviceAndNetworkData_analyticsAndImprovement_vendorContext",
+                                          "cell_locationData_personalization_householdContext",
+                                          "cell_deviceAndNetworkData_personalization_vendorContext"
+                                        ]
+                                      }
+                                    }
+                                  ]
                                 }
                               },
                               {
                                 "answers": [
-                                  "ask",
-                                  "fine"
+                                  "depends",
+                                  "yes"
                                 ],
                                 "next": {
-                                  "preset": "k8-p5"
+                                  "question": "cell_profileData_diagnosticsAndMaintenance_vendorContext",
+                                  "branches": [
+                                    {
+                                      "answers": [
+                                        "no"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p1",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_deviceAndNetworkData_personalization_vendorContext",
+                                          "cell_locationData_security_vendorContext",
+                                          "cell_locationData_personalization_householdContext",
+                                          "cell_deviceAndNetworkData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_sensorData_personalization_thirdPartyContext",
+                                          "cell_profileData_security_vendorContext",
+                                          "cell_sensorData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_profileData_personalization_householdContext",
+                                          "cell_sensorData_personalization_vendorContext"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "answers": [
+                                        "depends",
+                                        "yes"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p3",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_locationData_communicationsAndNotifications_vendorContext",
+                                          "cell_identifierData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_profileData_communicationsAndNotifications_vendorContext",
+                                          "cell_contentData_communicationsAndNotifications_vendorContext",
+                                          "cell_identifierData_communicationsAndNotifications_vendorContext",
+                                          "cell_profileData_personalization_householdContext",
+                                          "cell_usageData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_usageData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_deviceAndNetworkData_advertisingAndMarketing_vendorContext"
+                                        ]
+                                      }
+                                    }
+                                  ]
                                 }
                               }
                             ]
@@ -424,12 +2982,263 @@
                         },
                         {
                           "answers": [
-                            "3",
-                            "4",
-                            "5"
+                            "depends",
+                            "yes"
                           ],
                           "next": {
-                            "preset": "k8-p7"
+                            "question": "cell_locationData_personalization_thirdPartyContext",
+                            "branches": [
+                              {
+                                "answers": [
+                                  "no",
+                                  "depends"
+                                ],
+                                "next": {
+                                  "question": "cell_contentData_analyticsAndImprovement_thirdPartyContext",
+                                  "branches": [
+                                    {
+                                      "answers": [
+                                        "no",
+                                        "depends"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p3",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_locationData_communicationsAndNotifications_vendorContext",
+                                          "cell_identifierData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_deviceAndNetworkData_personalization_thirdPartyContext",
+                                          "cell_profileData_communicationsAndNotifications_vendorContext",
+                                          "cell_contentData_communicationsAndNotifications_vendorContext",
+                                          "cell_identifierData_communicationsAndNotifications_vendorContext",
+                                          "cell_profileData_personalization_householdContext",
+                                          "cell_usageData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_usageData_diagnosticsAndMaintenance_vendorContext"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "answers": [
+                                        "yes"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p3",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_contentData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_usageData_personalization_vendorContext",
+                                          "cell_sensorData_advertisingAndMarketing_thirdPartyContext",
+                                          "cell_contentData_personalization_householdContext",
+                                          "cell_identifierData_analyticsAndImprovement_vendorContext",
+                                          "cell_identifierData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_sensorData_advertisingAndMarketing_vendorContext",
+                                          "cell_profileData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_locationData_analyticsAndImprovement_vendorContext"
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "answers": [
+                                  "yes"
+                                ],
+                                "next": {
+                                  "question": "cell_sensorData_advertisingAndMarketing_vendorContext",
+                                  "branches": [
+                                    {
+                                      "answers": [
+                                        "no"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p3",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_locationData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_deviceAndNetworkData_advertisingAndMarketing_vendorContext",
+                                          "cell_identifierData_personalization_householdContext",
+                                          "cell_usageData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_profileData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_contentData_communicationsAndNotifications_vendorContext",
+                                          "cell_deviceAndNetworkData_advertisingAndMarketing_thirdPartyContext",
+                                          "cell_profileData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_identifierData_diagnosticsAndMaintenance_thirdPartyContext"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "answers": [
+                                        "depends",
+                                        "yes"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p2",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_contentData_personalization_householdContext",
+                                          "cell_sensorData_advertisingAndMarketing_thirdPartyContext",
+                                          "cell_identifierData_analyticsAndImprovement_vendorContext",
+                                          "cell_contentData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_locationData_analyticsAndImprovement_vendorContext",
+                                          "cell_usageData_personalization_vendorContext",
+                                          "cell_locationData_personalization_vendorContext",
+                                          "cell_identifierData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_profileData_diagnosticsAndMaintenance_thirdPartyContext"
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "answers": [
+                      "yes"
+                    ],
+                    "next": {
+                      "question": "cell_sensorData_advertisingAndMarketing_thirdPartyContext",
+                      "branches": [
+                        {
+                          "answers": [
+                            "no"
+                          ],
+                          "next": {
+                            "question": "cell_profileData_diagnosticsAndMaintenance_thirdPartyContext",
+                            "branches": [
+                              {
+                                "answers": [
+                                  "no",
+                                  "depends"
+                                ],
+                                "next": {
+                                  "preset": "k4-p3",
+                                  "follow_up_budget": 10,
+                                  "follow_ups": [
+                                    "cell_identifierData_personalization_householdContext",
+                                    "cell_locationData_diagnosticsAndMaintenance_vendorContext",
+                                    "cell_deviceAndNetworkData_advertisingAndMarketing_vendorContext",
+                                    "cell_usageData_diagnosticsAndMaintenance_thirdPartyContext",
+                                    "cell_deviceAndNetworkData_advertisingAndMarketing_thirdPartyContext",
+                                    "cell_profileData_diagnosticsAndMaintenance_vendorContext",
+                                    "cell_sensorData_advertisingAndMarketing_vendorContext",
+                                    "cell_identifierData_diagnosticsAndMaintenance_thirdPartyContext",
+                                    "cell_contentData_communicationsAndNotifications_vendorContext",
+                                    "cell_locationData_diagnosticsAndMaintenance_thirdPartyContext"
+                                  ]
+                                }
+                              },
+                              {
+                                "answers": [
+                                  "yes"
+                                ],
+                                "next": {
+                                  "preset": "k4-p2",
+                                  "follow_up_budget": 10,
+                                  "follow_ups": [
+                                    "cell_contentData_diagnosticsAndMaintenance_vendorContext",
+                                    "cell_contentData_personalization_householdContext",
+                                    "cell_identifierData_analyticsAndImprovement_vendorContext",
+                                    "cell_usageData_personalization_vendorContext",
+                                    "cell_locationData_analyticsAndImprovement_vendorContext",
+                                    "cell_locationData_diagnosticsAndMaintenance_thirdPartyContext",
+                                    "cell_identifierData_diagnosticsAndMaintenance_thirdPartyContext",
+                                    "cell_sensorData_advertisingAndMarketing_vendorContext",
+                                    "cell_locationData_personalization_vendorContext",
+                                    "cell_deviceAndNetworkData_advertisingAndMarketing_thirdPartyContext"
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "answers": [
+                            "depends",
+                            "yes"
+                          ],
+                          "next": {
+                            "question": "cell_usageData_analyticsAndImprovement_vendorContext",
+                            "branches": [
+                              {
+                                "answers": [
+                                  "no"
+                                ],
+                                "next": {
+                                  "preset": "k4-p2",
+                                  "follow_up_budget": 10,
+                                  "follow_ups": [
+                                    "cell_contentData_diagnosticsAndMaintenance_vendorContext",
+                                    "cell_contentData_personalization_householdContext",
+                                    "cell_identifierData_analyticsAndImprovement_vendorContext",
+                                    "cell_usageData_personalization_vendorContext",
+                                    "cell_locationData_analyticsAndImprovement_vendorContext",
+                                    "cell_locationData_diagnosticsAndMaintenance_thirdPartyContext",
+                                    "cell_identifierData_diagnosticsAndMaintenance_thirdPartyContext",
+                                    "cell_sensorData_advertisingAndMarketing_vendorContext",
+                                    "cell_locationData_personalization_vendorContext",
+                                    "cell_profileData_diagnosticsAndMaintenance_thirdPartyContext"
+                                  ]
+                                }
+                              },
+                              {
+                                "answers": [
+                                  "depends",
+                                  "yes"
+                                ],
+                                "next": {
+                                  "question": "cell_identifierData_diagnosticsAndMaintenance_thirdPartyContext",
+                                  "branches": [
+                                    {
+                                      "answers": [
+                                        "no",
+                                        "depends"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p2",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_locationData_personalization_vendorContext",
+                                          "cell_locationData_analyticsAndImprovement_vendorContext",
+                                          "cell_profileData_analyticsAndImprovement_vendorContext",
+                                          "cell_profileData_personalization_vendorContext",
+                                          "cell_usageData_personalization_thirdPartyContext",
+                                          "cell_contentData_analyticsAndImprovement_vendorContext",
+                                          "cell_contentData_personalization_householdContext",
+                                          "cell_locationData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_identifierData_analyticsAndImprovement_vendorContext"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "answers": [
+                                        "yes"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p2",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_locationData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_usageData_personalization_thirdPartyContext",
+                                          "cell_profileData_personalization_vendorContext",
+                                          "cell_contentData_analyticsAndImprovement_vendorContext",
+                                          "cell_profileData_analyticsAndImprovement_vendorContext",
+                                          "cell_contentData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_locationData_personalization_vendorContext",
+                                          "cell_profileData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_locationData_personalization_thirdPartyContext"
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
                           }
                         }
                       ]
@@ -440,43 +3249,97 @@
             },
             {
               "answers": [
-                "with_limits",
+                "depends",
                 "yes"
               ],
               "next": {
-                "question": "real_usage_improve",
+                "question": "cell_deviceAndNetworkData_advertisingAndMarketing_vendorContext",
                 "branches": [
                   {
                     "answers": [
                       "no"
                     ],
                     "next": {
-                      "question": "concern",
+                      "question": "cell_profileData_personalization_thirdPartyContext",
                       "branches": [
                         {
                           "answers": [
-                            "1",
-                            "2",
-                            "3"
+                            "no"
                           ],
                           "next": {
-                            "question": "real_viewing_advertisers",
+                            "question": "cell_contentData_diagnosticsAndMaintenance_vendorContext",
                             "branches": [
                               {
                                 "answers": [
-                                  "no"
+                                  "no",
+                                  "depends"
                                 ],
                                 "next": {
-                                  "preset": "k8-p6"
+                                  "question": "cell_profileData_diagnosticsAndMaintenance_thirdPartyContext",
+                                  "branches": [
+                                    {
+                                      "answers": [
+                                        "no"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p3",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_deviceAndNetworkData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_profileData_security_vendorContext",
+                                          "cell_sensorData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_deviceAndNetworkData_personalization_vendorContext",
+                                          "cell_locationData_personalization_householdContext",
+                                          "cell_locationData_security_vendorContext",
+                                          "cell_sensorData_personalization_thirdPartyContext",
+                                          "cell_sensorData_personalization_vendorContext",
+                                          "cell_usageData_security_vendorContext"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "answers": [
+                                        "depends",
+                                        "yes"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p3",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_contentData_communicationsAndNotifications_vendorContext",
+                                          "cell_locationData_communicationsAndNotifications_vendorContext",
+                                          "cell_usageData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_identifierData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_profileData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_deviceAndNetworkData_personalization_thirdPartyContext",
+                                          "cell_profileData_communicationsAndNotifications_vendorContext",
+                                          "cell_identifierData_communicationsAndNotifications_vendorContext",
+                                          "cell_locationData_diagnosticsAndMaintenance_vendorContext"
+                                        ]
+                                      }
+                                    }
+                                  ]
                                 }
                               },
                               {
                                 "answers": [
-                                  "with_limits",
                                   "yes"
                                 ],
                                 "next": {
-                                  "preset": "k8-p3"
+                                  "preset": "k4-p3",
+                                  "follow_up_budget": 10,
+                                  "follow_ups": [
+                                    "cell_deviceAndNetworkData_advertisingAndMarketing_thirdPartyContext",
+                                    "cell_profileData_diagnosticsAndMaintenance_thirdPartyContext",
+                                    "cell_sensorData_advertisingAndMarketing_vendorContext",
+                                    "cell_identifierData_diagnosticsAndMaintenance_thirdPartyContext",
+                                    "cell_locationData_diagnosticsAndMaintenance_thirdPartyContext",
+                                    "cell_identifierData_personalization_householdContext",
+                                    "cell_usageData_personalization_vendorContext",
+                                    "cell_usageData_diagnosticsAndMaintenance_thirdPartyContext",
+                                    "cell_locationData_diagnosticsAndMaintenance_vendorContext",
+                                    "cell_sensorData_advertisingAndMarketing_thirdPartyContext"
+                                  ]
                                 }
                               }
                             ]
@@ -484,27 +3347,53 @@
                         },
                         {
                           "answers": [
-                            "4",
-                            "5"
+                            "depends",
+                            "yes"
                           ],
                           "next": {
-                            "question": "real_viewing_advertisers",
+                            "question": "cell_locationData_diagnosticsAndMaintenance_thirdPartyContext",
                             "branches": [
                               {
                                 "answers": [
-                                  "no"
+                                  "no",
+                                  "depends"
                                 ],
                                 "next": {
-                                  "preset": "k8-p0"
+                                  "preset": "k4-p3",
+                                  "follow_up_budget": 10,
+                                  "follow_ups": [
+                                    "cell_sensorData_advertisingAndMarketing_vendorContext",
+                                    "cell_profileData_diagnosticsAndMaintenance_thirdPartyContext",
+                                    "cell_identifierData_diagnosticsAndMaintenance_thirdPartyContext",
+                                    "cell_deviceAndNetworkData_advertisingAndMarketing_thirdPartyContext",
+                                    "cell_usageData_personalization_vendorContext",
+                                    "cell_identifierData_personalization_householdContext",
+                                    "cell_contentData_diagnosticsAndMaintenance_vendorContext",
+                                    "cell_sensorData_advertisingAndMarketing_thirdPartyContext",
+                                    "cell_contentData_personalization_householdContext",
+                                    "cell_usageData_diagnosticsAndMaintenance_thirdPartyContext"
+                                  ]
                                 }
                               },
                               {
                                 "answers": [
-                                  "with_limits",
                                   "yes"
                                 ],
                                 "next": {
-                                  "preset": "k8-p2"
+                                  "preset": "k4-p2",
+                                  "follow_up_budget": 10,
+                                  "follow_ups": [
+                                    "cell_locationData_analyticsAndImprovement_vendorContext",
+                                    "cell_sensorData_advertisingAndMarketing_thirdPartyContext",
+                                    "cell_identifierData_analyticsAndImprovement_vendorContext",
+                                    "cell_contentData_personalization_householdContext",
+                                    "cell_contentData_diagnosticsAndMaintenance_vendorContext",
+                                    "cell_locationData_personalization_vendorContext",
+                                    "cell_usageData_personalization_vendorContext",
+                                    "cell_usageData_analyticsAndImprovement_vendorContext",
+                                    "cell_profileData_analyticsAndImprovement_vendorContext",
+                                    "cell_profileData_personalization_vendorContext"
+                                  ]
                                 }
                               }
                             ]
@@ -515,43 +3404,204 @@
                   },
                   {
                     "answers": [
-                      "with_limits",
+                      "depends",
                       "yes"
                     ],
                     "next": {
-                      "question": "purpose_personal",
+                      "question": "cell_identifierData_personalization_householdContext",
                       "branches": [
                         {
                           "answers": [
-                            "never"
+                            "no"
                           ],
                           "next": {
-                            "preset": "k8-p2"
-                          }
-                        },
-                        {
-                          "answers": [
-                            "ask",
-                            "fine"
-                          ],
-                          "next": {
-                            "question": "real_viewing_advertisers",
+                            "question": "cell_profileData_diagnosticsAndMaintenance_vendorContext",
                             "branches": [
                               {
                                 "answers": [
                                   "no"
                                 ],
                                 "next": {
-                                  "preset": "k8-p7"
+                                  "preset": "k4-p3",
+                                  "follow_up_budget": 10,
+                                  "follow_ups": [
+                                    "cell_identifierData_communicationsAndNotifications_vendorContext",
+                                    "cell_profileData_communicationsAndNotifications_vendorContext",
+                                    "cell_deviceAndNetworkData_personalization_thirdPartyContext",
+                                    "cell_identifierData_diagnosticsAndMaintenance_vendorContext",
+                                    "cell_profileData_personalization_householdContext",
+                                    "cell_locationData_communicationsAndNotifications_vendorContext",
+                                    "cell_usageData_diagnosticsAndMaintenance_vendorContext",
+                                    "cell_contentData_communicationsAndNotifications_vendorContext",
+                                    "cell_sensorData_personalization_thirdPartyContext",
+                                    "cell_locationData_personalization_householdContext"
+                                  ]
                                 }
                               },
                               {
                                 "answers": [
-                                  "with_limits",
+                                  "depends",
                                   "yes"
                                 ],
                                 "next": {
-                                  "preset": "k8-p4"
+                                  "question": "cell_locationData_diagnosticsAndMaintenance_thirdPartyContext",
+                                  "branches": [
+                                    {
+                                      "answers": [
+                                        "no",
+                                        "depends"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p3",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_deviceAndNetworkData_advertisingAndMarketing_thirdPartyContext",
+                                          "cell_profileData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_sensorData_advertisingAndMarketing_vendorContext",
+                                          "cell_identifierData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_usageData_personalization_vendorContext",
+                                          "cell_usageData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_contentData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_locationData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_sensorData_advertisingAndMarketing_thirdPartyContext"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "answers": [
+                                        "yes"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p2",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_locationData_analyticsAndImprovement_vendorContext",
+                                          "cell_locationData_personalization_vendorContext",
+                                          "cell_sensorData_advertisingAndMarketing_thirdPartyContext",
+                                          "cell_contentData_personalization_householdContext",
+                                          "cell_identifierData_analyticsAndImprovement_vendorContext",
+                                          "cell_usageData_analyticsAndImprovement_vendorContext",
+                                          "cell_profileData_analyticsAndImprovement_vendorContext",
+                                          "cell_contentData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_profileData_personalization_vendorContext"
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "answers": [
+                            "depends",
+                            "yes"
+                          ],
+                          "next": {
+                            "question": "cell_locationData_diagnosticsAndMaintenance_thirdPartyContext",
+                            "branches": [
+                              {
+                                "answers": [
+                                  "no"
+                                ],
+                                "next": {
+                                  "question": "cell_contentData_personalization_vendorContext",
+                                  "branches": [
+                                    {
+                                      "answers": [
+                                        "no"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p3",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_sensorData_advertisingAndMarketing_vendorContext",
+                                          "cell_profileData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_identifierData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_deviceAndNetworkData_advertisingAndMarketing_thirdPartyContext",
+                                          "cell_usageData_personalization_vendorContext",
+                                          "cell_contentData_diagnosticsAndMaintenance_vendorContext",
+                                          "cell_sensorData_advertisingAndMarketing_thirdPartyContext",
+                                          "cell_contentData_personalization_householdContext",
+                                          "cell_usageData_diagnosticsAndMaintenance_thirdPartyContext"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "answers": [
+                                        "depends",
+                                        "yes"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p2",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_usageData_analyticsAndImprovement_vendorContext",
+                                          "cell_profileData_analyticsAndImprovement_vendorContext",
+                                          "cell_locationData_personalization_vendorContext",
+                                          "cell_profileData_personalization_vendorContext",
+                                          "cell_contentData_analyticsAndImprovement_vendorContext",
+                                          "cell_usageData_personalization_thirdPartyContext",
+                                          "cell_locationData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_locationData_analyticsAndImprovement_vendorContext",
+                                          "cell_contentData_diagnosticsAndMaintenance_thirdPartyContext"
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "answers": [
+                                  "depends",
+                                  "yes"
+                                ],
+                                "next": {
+                                  "question": "cell_contentData_analyticsAndImprovement_thirdPartyContext",
+                                  "branches": [
+                                    {
+                                      "answers": [
+                                        "no"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p2",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_locationData_personalization_vendorContext",
+                                          "cell_locationData_analyticsAndImprovement_vendorContext",
+                                          "cell_usageData_analyticsAndImprovement_vendorContext",
+                                          "cell_profileData_analyticsAndImprovement_vendorContext",
+                                          "cell_sensorData_advertisingAndMarketing_thirdPartyContext",
+                                          "cell_profileData_personalization_vendorContext",
+                                          "cell_usageData_personalization_thirdPartyContext",
+                                          "cell_contentData_analyticsAndImprovement_vendorContext",
+                                          "cell_contentData_personalization_householdContext"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "answers": [
+                                        "depends",
+                                        "yes"
+                                      ],
+                                      "next": {
+                                        "preset": "k4-p2",
+                                        "follow_up_budget": 9,
+                                        "follow_ups": [
+                                          "cell_usageData_personalization_thirdPartyContext",
+                                          "cell_locationData_analyticsAndImprovement_thirdPartyContext",
+                                          "cell_profileData_personalization_vendorContext",
+                                          "cell_contentData_analyticsAndImprovement_vendorContext",
+                                          "cell_usageData_analyticsAndImprovement_vendorContext",
+                                          "cell_profileData_analyticsAndImprovement_vendorContext",
+                                          "cell_contentData_diagnosticsAndMaintenance_thirdPartyContext",
+                                          "cell_locationData_personalization_vendorContext",
+                                          "cell_profileData_analyticsAndImprovement_thirdPartyContext"
+                                        ]
+                                      }
+                                    }
+                                  ]
                                 }
                               }
                             ]

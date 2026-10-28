@@ -1,4 +1,4 @@
-import { constraintKeys, type Constraints } from './taxonomy'
+import { CORE_TERMS, FIELDS, constraintKeys, type Constraints } from './taxonomy'
 import type { Flow, Rule, RuleCondition, RuleScope, Taxonomy } from './types'
 
 /**
@@ -45,3 +45,20 @@ export function conditionConstraints(c: RuleCondition): Constraints {
 
 /** A flow "leaves the home" when a company (the maker, its services, or someone else) handles it. */
 export const leavesHome = (flow: Flow) => flow.taxonomy.handling_context !== 'ppd:householdContext'
+
+/** Never, then allowed only if, then allowed: the order in which disagreeing rules win. */
+export const strictness = (r: Rule) => (r.effect === 'dont_allow' ? 2 : conditionOf(r) ? 1 : 0)
+
+/**
+ * True when some dataflow could be covered by both rules (both enabled). Each field's terms must intersect; a
+ * processing-boundary condition narrows its rule to use and inference. Constraint filters are left out: one flow can
+ * declare several constraints, so they never keep two rules apart.
+ */
+export function rulesOverlap(a: Rule, b: Rule): boolean {
+  if (!a.enabled || !b.enabled) return false
+  const terms = (r: Rule, f: (typeof FIELDS)[number]) => {
+    const all = r.scope[f]?.length ? r.scope[f]! : Object.keys(CORE_TERMS[f])
+    return f === 'action' && conditionOf(r)?.startsWith('processing_boundary=') ? all.filter((t) => BOUNDARY_ACTIONS.includes(t)) : all
+  }
+  return FIELDS.every((f) => terms(a, f).some((t) => terms(b, f).includes(t)))
+}

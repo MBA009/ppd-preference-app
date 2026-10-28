@@ -1,4 +1,4 @@
-import type { Rule, RuleCondition, RuleEffect, RuleScope } from '../api'
+import type { Rule, RuleCondition, RuleEffect } from '../api'
 
 /** Plain-language choices the rule editor offers. Each maps to one or more taxonomy terms. */
 export interface Choice { id: string; label: string; iris: string[] }
@@ -59,6 +59,13 @@ export const isBoundary = (c: RuleCondition | null | undefined) => !!c?.startsWi
 export type RuleKind = 'never' | 'limited' | 'allow'
 export const kindOf = (r: Rule): RuleKind => (r.effect === 'dont_allow' ? 'never' : r.condition ? 'limited' : 'allow')
 
+/** The rules page's groups: their titles and colours. */
+export const KIND: Record<RuleKind, { title: string; color: string }> = {
+  never: { title: 'Never', color: '#B3261E' },
+  limited: { title: 'Allowed only if', color: '#0B57D0' },
+  allow: { title: 'Allowed', color: '#1E7D34' },
+}
+
 export const isOn = (list: string[] | undefined, c: Choice) => !!list?.length && c.iris.every((i) => list.includes(i))
 
 export function toggle(list: string[] | undefined, c: Choice): string[] | undefined {
@@ -67,14 +74,3 @@ export function toggle(list: string[] | undefined, c: Choice): string[] | undefi
   return next.length ? next : undefined
 }
 
-/** A readable starting title for a rule that has none, built from its scope. */
-export function autoTitle(effect: RuleEffect, scope: RuleScope, condition?: RuleCondition | null): string {
-  const names = (choices: Choice[], list?: string[]) => choices.filter((c) => isOn(list, c)).map((c) => c.label.toLowerCase())
-  const parts = [
-    names(DATA_CHOICES, scope.data_type).join(', '),
-    names(PURPOSE_CHOICES, scope.purpose).join(', ') && 'for ' + names(PURPOSE_CHOICES, scope.purpose).join(' or '),
-    names(WHO_CHOICES, scope.handling_context).join(' or ') && '· ' + names(WHO_CHOICES, scope.handling_context).join(' or '),
-  ].filter(Boolean)
-  const lead = effect === 'dont_allow' ? 'Never' : condition ? `Allow only if ${CONDITION_TEXT[condition]}` : 'Allow'
-  return `${lead}: ${parts.join(' ') || 'any data flow'}`
-}

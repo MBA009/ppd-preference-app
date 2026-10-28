@@ -56,6 +56,11 @@ export class AppContext {
     } catch {
       /* gateway unreachable: show the stored household */
     }
+    // A household on a preset that has since been rebuilt goes back to the questions (its rules came from the old one).
+    const stored = this.store.get()
+    if (stored && hh.retirePreset(stored, this.fixtures.presets) !== stored) {
+      this.store.update('preset_retired', this.seed, (h) => hh.retirePreset(h, this.fixtures.presets), stored.preset_id ?? undefined, 'app-api')
+    }
     const fresh = devices.filter((d) => d.registered_at && this.store.liveSeen(d.device_id) !== d.registered_at)
     if (!fresh.length) return this.store.get() ?? this.store.update('seed', this.seed, (h) => h)
     return this.store.update(

@@ -35,8 +35,11 @@ export function operatorRoutes(app: FastifyInstance, ctx: AppContext): void {
   app.get('/api/overview', async (): Promise<Overview> => {
     const meta = await ctx.gateway.serviceMetadata().catch(() => null)
     try {
-      const { summary: s } = await ctx.live.snapshot()
+      const { summary: s, devices } = await ctx.live.snapshot()
       const n = (v: number | undefined) => v ?? 0
+      // Counted per device, so one device never counts twice: it holds the rules (associated, no runtime conflict
+      // reported) or it needs attention.
+      const holding = devices.filter((d) => d.association_status === 'associated' && !d.conflict_active).length
       return {
         gateway: { reachable: true, security: meta?.security_profile ?? 'unknown', mutual_tls_required: !!s.mutual_tls_required, tls_enabled: !!s.tls_enabled, freshness_interval: s.association_freshness_interval ?? null, error: null },
         counts: {
@@ -45,14 +48,16 @@ export function operatorRoutes(app: FastifyInstance, ctx: AppContext): void {
           stale: n(s.stale_association_devices), broken: n(s.broken_association_devices), policy_conflict: n(s.policy_conflict_devices),
           overrides: n(s.override_devices), authenticated: n(s.authenticated_devices), compatibility_mode: n(s.compatibility_mode_devices),
           network_observed: n(s.network_observed_devices), unmanaged: n(s.unmanaged_devices),
-          // The CableLabs dashboard's "Need attention": known devices not currently associated, plus runtime conflicts.
-          need_attention: Math.max(n(s.known_devices) - n(s.associated_devices), 0) + n(s.policy_conflict_devices),
+          // The CableLabs dashboard's "Need attention": known devices that don't hold the rules (not associated, or a
+          // runtime conflict), each counted once.
+          need_attention: Math.max(n(s.known_devices) - holding, 0),
+          have_rules: holding,
         },
         household_policy: { policy_id: s.default_policy_id ?? null, updated_at: s.default_policy_updated_at ?? null, published_by_app: !!s.default_policy_id && ctx.store.publishedByApp(s.default_policy_id) },
         updated_at: new Date().toISOString(),
       }
     } catch (e) {
-      const zero = { known: 0, registered: 0, declared: 0, policy_retrieved: 0, acknowledged: 0, associated: 0, needs_reassociation: 0, stale: 0, broken: 0, policy_conflict: 0, overrides: 0, authenticated: 0, compatibility_mode: 0, network_observed: 0, unmanaged: 0, need_attention: 0 }
+      const zero = { known: 0, registered: 0, declared: 0, policy_retrieved: 0, acknowledged: 0, associated: 0, needs_reassociation: 0, stale: 0, broken: 0, policy_conflict: 0, overrides: 0, authenticated: 0, compatibility_mode: 0, network_observed: 0, unmanaged: 0, need_attention: 0, have_rules: 0 }
       return {
         gateway: { reachable: false, security: 'unknown', mutual_tls_required: false, tls_enabled: false, freshness_interval: null, error: e instanceof Error ? e.message : 'unreachable' },
         counts: zero,

@@ -7,7 +7,7 @@ import type { Fixtures } from '../fixtures'
 import type { LiveDirectory, RegistryEntry } from '../live'
 import type { HouseholdStore } from '../store'
 import { MODELS, type DeviceModel, type DeviceState } from './models'
-import { Participant, type ParticipantIdentity, type ParticipantTls } from './participant'
+import { Participant, type ParticipantIdentity, type ParticipantTls, type RuntimeReport } from './participant'
 
 /**
  * The demo device simulator. Each simulated device comes from a research fixture and either joins through
@@ -29,6 +29,8 @@ interface SimSlot {
   behavior: SimConsole['behavior']
   events: SimEvent[]
   lastPeriodic: number
+  /** Purposes it has sent data for against the rules and reported to the gateway (cleared when it follows again). */
+  conflicting: Set<string>
 }
 
 const MAX_EVENTS = 100
@@ -53,7 +55,7 @@ export class Simulator {
     for (const entry of registry) {
       if (entry.kind !== 'simulated' || !entry.simulator || !entry.fixture || !fixtures.devices.has(entry.fixture)) continue
       const model = MODELS[entry.fixture] ?? null
-      this.slots.set(entry.device_id, { entry: entry as SimSlot['entry'], wanted: 'off', participant: null, model, state: { ...model?.initial }, behavior: 'follows', events: [], lastPeriodic: 0 })
+      this.slots.set(entry.device_id, { entry: entry as SimSlot['entry'], wanted: 'off', participant: null, model, state: { ...model?.initial }, behavior: 'follows', events: [], lastPeriodic: 0, conflicting: new Set() })
     }
   }
 
@@ -105,9 +107,10 @@ export class Simulator {
   /** Everything off: participants stopped, simulated leases removed. */
   reset(): SimDevice[] {
     for (const slot of this.slots.values()) {
+      this.clearConflict(slot)
       slot.participant?.stop()
       slot.wanted = 'off'
-      Object.assign(slot, { state: { ...slot.model?.initial }, behavior: 'follows', events: [], lastPeriodic: 0 })
+      Object.assign(slot, { state: { ...slot.model?.initial }, behavior: 'follows', events: [], lastPeriodic: 0, conflicting: new Set() })
       this.store.setSimWanted(slot.entry.device_id, 'off')
     }
     this.writeLeases()
@@ -129,8 +132,9 @@ export class Simulator {
       for (const f of e.flows) {
         if (f.outcome === 'kept_home') continue
         const key = f.recipient + '|' + f.purpose
-        const t = totals.get(key) ?? { recipient: f.recipient, purpose: f.purpose, sent: 0, blocked: 0 }
+        const t = totals.get(key) ?? { recipient: f.recipient, purpose: f.purpose, sent: 0, blocked: 0, against: 0 }
         if (f.outcome === 'blocked' || f.outcome === 'held_back') t.blocked++
+        else if (f.outcome === 'sent_against_rules') t.against++
         else t.sent++
         totals.set(key, t)
       }
@@ -159,12 +163,32 @@ export class Simulator {
     return this.console(id)
   }
 
-  /** Follows the household's rules, or ignores them (to show that receiving a policy is not obeying it). */
+  /**
+   * Follows the household's rules, or ignores them (to show that receiving a policy is not obeying it). Back to
+   * following clears the device's runtime conflict at the gateway; ignoring raises it only once the device actually
+   * sends something against the rules (fire).
+   */
   setBehavior(id: string, mode: SimConsole['behavior']): SimConsole {
     const slot = this.anySlot(id)
     if (slot.entry.simulator.mode !== 'ppd') throw Object.assign(new Error(`${id} does not support PPD, so it has no rules to follow.`), { statusCode: 400 })
     slot.behavior = mode
+    if (mode === 'follows') this.clearConflict(slot)
     return this.console(id)
+  }
+
+  /** What the device is doing now, as its runtime report says it (the CableLabs gateway's demo extension, not PPD). */
+  private runtime(slot: SimSlot): RuntimeReport {
+    return { conflict_active: slot.conflicting.size > 0, behavior_mode: slot.behavior, conflicting_purposes: [...slot.conflicting] }
+  }
+
+  /**
+   * Tells the gateway the device no longer acts against its rules. Sent even when this process remembers no conflict:
+   * the gateway keeps the last report on disk, across app-api restarts. A device that is unplugged sends it with its
+   * next acknowledgement instead.
+   */
+  private clearConflict(slot: SimSlot): void {
+    slot.conflicting.clear()
+    if (slot.participant?.state === 'associated') void slot.participant.reportRuntime(this.runtime(slot))
   }
 
   /** Empties the device's activity log and totals; its state and behaviour stay. */
@@ -199,6 +223,7 @@ export class Simulator {
     const ppd = slot.entry.simulator.mode === 'ppd'
     const rules = slot.participant?.policy?.rules ?? []
     const flows: SimEvent['flows'] = []
+    const against: string[] = []
     for (const sid of statementIds) {
       const flow = fixture.flows.find((f) => f.id === `${fixture.id}.${sid}`)
       // A PPD device only does what it declared.
@@ -209,12 +234,19 @@ export class Simulator {
       let outcome: SimOutcome
       if (!ppd) outcome = 'sent_no_ppd'
       else if (rule?.effect === 'allow') outcome = home ? 'kept_home' : 'sent'
-      else if (slot.behavior === 'ignores') outcome = 'sent_against_rules'
+      else if (slot.behavior === 'ignores') { outcome = 'sent_against_rules'; against.push(t.purpose) }
       else outcome = rule ? 'blocked' : 'held_back'
       const condition = rule?.effect === 'allow' ? [rule.constraints?.retention, rule.constraints?.processing_boundary].map((v) => (v ? CONDITION[v] : undefined)).filter(Boolean).join(', ') || null : null
       flows.push({ title: flow.title, recipient: termLabel('handling_context', t.handling_context), purpose: termLabel('purpose', t.purpose), outcome, condition })
     }
     slot.events = [{ at: new Date().toISOString(), label, flows }, ...slot.events].slice(0, MAX_EVENTS)
+    // Something went out against the rules: the device reports it (gateway demo extension, outside PPD), so the
+    // household app can say the device is doing something its rules don't allow.
+    if (against.length) {
+      const before = slot.conflicting.size
+      for (const p of against) slot.conflicting.add(p)
+      if (slot.conflicting.size !== before) void slot.participant?.reportRuntime({ conflict_active: true, behavior_mode: 'ignores', conflicting_purposes: [...slot.conflicting] })
+    }
   }
 
   private anySlot(id: string): SimSlot {
@@ -240,7 +272,7 @@ export class Simulator {
   }
 
   private participant(slot: SimSlot): Participant {
-    slot.participant ??= new Participant(this.config.gatewayUrl, this.identity(slot), this.tls(slot.entry.device_id), () => this.live.invalidate())
+    slot.participant ??= new Participant(this.config.gatewayUrl, this.identity(slot), this.tls(slot.entry.device_id), () => this.live.invalidate(), () => this.runtime(slot))
     return slot.participant
   }
 

@@ -33,7 +33,7 @@ async function getJson<T>(path: string): Promise<T> {
 const offline = () => Promise.reject(new Error('This needs the PPD gateway, which is not available in offline mode.'))
 const noGateway: Overview = {
   gateway: { reachable: false, security: 'unknown', mutual_tls_required: false, tls_enabled: false, freshness_interval: null, error: 'offline mode' },
-  counts: { known: 0, registered: 0, declared: 0, policy_retrieved: 0, acknowledged: 0, associated: 0, needs_reassociation: 0, stale: 0, broken: 0, policy_conflict: 0, overrides: 0, authenticated: 0, compatibility_mode: 0, network_observed: 0, unmanaged: 0, need_attention: 0 },
+  counts: { known: 0, registered: 0, declared: 0, policy_retrieved: 0, acknowledged: 0, associated: 0, needs_reassociation: 0, stale: 0, broken: 0, policy_conflict: 0, overrides: 0, authenticated: 0, compatibility_mode: 0, network_observed: 0, unmanaged: 0, need_attention: 0, have_rules: 0 },
   household_policy: { policy_id: null, updated_at: null, published_by_app: false },
   updated_at: new Date().toISOString(),
 }
@@ -64,7 +64,10 @@ const presets = async () => (await getJson<{ presets: HouseholdPreset[] }>('hous
 
 let memory: Household | null = null
 async function current(): Promise<Household> {
-  return memory ?? read() ?? write(await seed())
+  const h = memory ?? read() ?? write(await seed())
+  // A household on a preset that has since been rebuilt goes back to the questions.
+  const next = hh.retirePreset(h, await presets())
+  return next === h ? h : write(next)
 }
 
 export const mockClient: PpdApi = {
@@ -72,10 +75,8 @@ export const mockClient: PpdApi = {
     return getJson<Onboarding>('onboarding.json')
   },
   listHouseholdPresets: presets,
-  async choosePreset({ preset_id, answers }) {
-    const preset = (await presets()).find((p) => p.id === preset_id)
-    if (!preset) throw new Error(`Preset ${preset_id} not found.`)
-    return write(hh.choosePreset(await current(), preset, answers))
+  async finishOnboarding({ answers }) {
+    return write(hh.finishOnboarding(await current(), await getJson<Onboarding>('onboarding.json'), await presets(), answers))
   },
   async saveProfile(profile) {
     return write(hh.saveProfile(await current(), profile))

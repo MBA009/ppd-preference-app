@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
 import { after, before, beforeEach, describe, test } from 'node:test'
 import type { FastifyInstance } from 'fastify'
-import type { Device, Household, HouseholdPreset, Onboarding, Policy, PublishPreview, Rule } from '../../shared/types'
+import type { Answers, Device, Household, HouseholdPreset, Onboarding, Policy, PublishPreview, Rule } from '../../shared/types'
+import { followUps, walk } from '../../shared/onboarding'
 import { buildApp } from '../src/app'
 import { Authenticator } from '../src/auth'
 import { loadConfig, type Config } from '../src/config'
@@ -22,6 +23,16 @@ const config: Config = {
 
 let app: FastifyInstance
 let store: HouseholdStore
+
+/** Answers that finish the questionnaire: the first option at every tree question, then `followUp` to every follow-up. */
+function finishingAnswers(tree: Onboarding, followUp = 'depends'): Answers {
+  const answers: Answers = {}
+  for (let step = walk(tree, answers); 'question' in step; step = walk(tree, answers)) answers[step.question] = tree.questions[step.question].options[0].id
+  const step = walk(tree, answers)
+  if ('leaf' in step) for (const q of followUps(tree, step.leaf, answers)) answers[q] = followUp
+  return answers
+}
+const ANSWERS = finishingAnswers((await loadFixtures(config.fixturesDir)).onboarding)
 
 const reset = async () => {
   store = new HouseholdStore(':memory:')
@@ -107,25 +118,38 @@ describe('household (fixtures)', () => {
     assert.deepEqual(h.devices, [])
   })
 
-  test('onboarding walks to a preset; choosing one replaces the previous preset and keeps custom rules', async () => {
+  test('finishing the questionnaire assigns a preset and rebuilds the rules from it and the answers (start over)', async () => {
     const tree = await json<Onboarding>('GET', '/api/onboarding')
     const presets = await json<HouseholdPreset[]>('GET', '/api/household-presets')
     assert.ok('question' in tree.root)
-    assert.equal(presets.length, 8)
+    assert.ok(tree.splash.text && tree.source.total_questions_cap === 15)
+    assert.equal(presets.length, 4)
+    assert.ok(presets.every((p) => p.shown_to_households === false))
     await json<Household>('PUT', '/api/household/rules/r-mine', rule('r-mine', 'dont_allow', { purpose: ['ppd:advertisingAndMarketing'] }))
-    const [first, second] = presets
-    let h = await json<Household>('PUT', '/api/household/preset', { preset_id: first.id, answers: { concern: '5' } })
-    assert.equal(h.preset_id, first.id)
-    assert.deepEqual(h.answers, { concern: '5' })
-    assert.equal(h.rules.length, first.rules.length + 1)
-    assert.ok(h.rules.slice(0, -1).every((r) => r.origin.kind === 'preset' && r.origin.preset_id === first.id))
-    h = await json<Household>('PUT', '/api/household/preset', { preset_id: second.id })
-    assert.equal(h.preset_id, second.id)
-    assert.deepEqual(h.answers, { concern: '5' }) // kept when none are sent
-    assert.ok(!h.rules.some((r) => r.origin.kind === 'preset' && r.origin.preset_id === first.id))
-    assert.ok(h.rules.some((r) => r.id === 'r-mine'))
-    await json('PUT', '/api/household/preset', { preset_id: 'k8-nope' }, 404)
-    await json<Household>('DELETE', '/api/household/rules/r-mine')
+    const answers = finishingAnswers(tree, 'yes')
+    const step = walk(tree, answers)
+    assert.ok('leaf' in step)
+    let h = await json<Household>('PUT', '/api/household/onboarding', { answers })
+    assert.equal(h.preset_id, step.leaf.preset)
+    assert.deepEqual(h.answers, answers)
+    assert.ok(!h.rules.some((r) => r.id === 'r-mine'), 'starting over replaces the rules the person added')
+    assert.ok(h.rules.every((r) => r.origin.kind === 'preset' || r.origin.kind === 'answer'))
+    // Answering "It depends" to every follow-up keeps the preset's rules (stage 1 answers can still split some).
+    h = await json<Household>('PUT', '/api/household/onboarding', { answers: finishingAnswers(tree, 'depends') })
+    assert.ok(h.rules.length >= presets.find((p) => p.id === h.preset_id)!.rules.length)
+    // Unknown questions or answers, and answers that stop halfway, are refused.
+    await json('PUT', '/api/household/onboarding', { answers: { nope: 'yes' } }, 400)
+    await json('PUT', '/api/household/onboarding', { answers: { [Object.keys(answers)[0]]: 'maybe' } }, 400)
+    await json('PUT', '/api/household/onboarding', { answers: {} }, 400)
+  })
+
+  test('a household on a preset that has since been rebuilt goes back to the questions', async () => {
+    store.update('test', () => { throw new Error('unused') }, (h) => ({ ...h, preset_id: 'k8-p0', answers: { concern: '5' }, rules: [neverRule] }))
+    const h = await json<Household>('GET', '/api/household')
+    assert.equal(h.preset_id, null)
+    assert.equal(h.answers, null)
+    assert.deepEqual(h.rules, [])
+    await json<Household>('PUT', '/api/household/onboarding', { answers: ANSWERS })
   })
 
   test('profile settings are saved on their own', async () => {
@@ -212,8 +236,7 @@ describe('gateway devices', () => {
   })
 
   test('publishing sends a -04 policy, reads it back, and records it', async () => {
-    const [preset] = await json<HouseholdPreset[]>('GET', '/api/household-presets')
-    await json<Household>('PUT', '/api/household/preset', { preset_id: preset.id, answers: {} })
+    await json<Household>('PUT', '/api/household/onboarding', { answers: ANSWERS })
     await json<Household>('PUT', '/api/household/rules/allow-monitoring', rule('allow-monitoring', 'allow', { data_type: ['ppd:sensorData'], purpose: ['ppd:coreFunctionality'] }))
     await json<Household>('PUT', '/api/household/rules/no-analytics', rule('no-analytics', 'dont_allow', { purpose: ['ppd:analyticsAndImprovement'] }))
     const result = await json<{ policy_id: string; rules: number }>('POST', '/api/household/publish', {})
@@ -249,11 +272,10 @@ describe('gateway devices', () => {
   })
 
   test('the household policy is sent automatically after a preset is chosen, and only when it changes', async () => {
-    const [preset] = await json<HouseholdPreset[]>('GET', '/api/household-presets')
     // No preset yet: nothing is sent, even after a rule change.
     await json<Household>('PUT', '/api/household/rules/r-x', rule('r-x', 'dont_allow', { purpose: ['ppd:advertisingAndMarketing'] }))
     assert.equal(gateway.puts.length, 0)
-    await json<Household>('PUT', '/api/household/preset', { preset_id: preset.id, answers: {} })
+    await json<Household>('PUT', '/api/household/onboarding', { answers: ANSWERS })
     assert.equal(gateway.puts.length, 1)
     assert.equal(gateway.puts[0].rules.length, 3) // the test bulb's three distinct dataflows
     // A rule that changes nothing the bulb does sends nothing.
@@ -271,8 +293,7 @@ describe('gateway devices', () => {
     const timed = buildApp({ ...config, autoPublishIntervalMs: 50 }, await loadFixtures(config.fixturesDir), new HouseholdStore(':memory:'))
     await timed.ready()
     try {
-      const [preset] = (await timed.inject({ method: 'GET', url: '/api/household-presets' })).json() as HouseholdPreset[]
-      await timed.inject({ method: 'PUT', url: '/api/household/preset', payload: { preset_id: preset.id, answers: {} }, headers: { 'x-ppd-client': 'web' } })
+      await timed.inject({ method: 'PUT', url: '/api/household/onboarding', payload: { answers: ANSWERS }, headers: { 'x-ppd-client': 'web' } })
       assert.equal(gateway.puts.at(-1)!.rules.length, 3)
       const base = bulb()
       gateway.devices = [base, bulb({

@@ -65,6 +65,11 @@ export class FakeGateway {
         device.policy_retrieved = true
         return this.send(res, 200, { policy_id: 'effective-' + device.device_id, policy_hash: 'sha256:1', renewal_interval: 6, rules: this.policy.rules })
       }
+      // The gateway's demo extension (outside PPD): a device reports what it actually does.
+      if (path === '/ppd/v1/device/runtime-status') {
+        Object.assign(device, { conflict_active: body.conflict_active, behavior_mode: body.behavior_mode, conflicting_purposes: body.conflicting_purposes })
+        return this.send(res, 200, { device_id: body.device_id, status: 'stored' })
+      }
       if (path === '/ppd/v1/device/ack') {
         Object.assign(device, { acknowledged: true, associated: true, association_status: 'associated' })
         return this.send(res, 200, { association_status: 'associated', renewal_interval: 6 })

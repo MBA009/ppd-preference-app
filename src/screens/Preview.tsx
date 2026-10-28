@@ -12,9 +12,9 @@ export default function Preview() {
   const dev = useDevice(id)
   const rules = useRules(true)
 
-  if (dev.error) return <><AppBar title="Preview" back="/scan" /><ErrorBox error={dev.error} /></>
+  if (dev.error) return <><AppBar title="Check a device" back="/scan" /><ErrorBox error={dev.error} /></>
   const d = dev.data
-  if (!d || !household) return <><AppBar title="Preview" back="/scan" /><Loading /></>
+  if (!d || !household) return <><AppBar title="Check a device" back="/scan" /><Loading /></>
 
   const inHome = household.devices.some((h) => h.device_id === d.id)
   const saved = household.saved.includes(d.id)
@@ -22,7 +22,7 @@ export default function Preview() {
 
   return (
     <div className="screen">
-      <AppBar title="Preview" back="/scan" />
+      <AppBar title="Check a device" back="/scan" />
       <Group style={{ marginTop: 4 }}>
         <Cell className="t" chevron={false} style={{ padding: '14px 16px' }}>
           <DeviceTile device={d} size="hero" />

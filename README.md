@@ -3,17 +3,21 @@
 A phone-first progressive web app for the privacy preference authoring tool: scan a device's privacy code, see what the
 device says it does with your data compared with your household rules, and see where they conflict.
 
-**First launch places the household in a preset.** Before anything else the app asks a few questions (at most five), walking
-a decision tree to one of eight **household presets**: a short set of rules, each *Never*, *Allowed only if* (not kept,
-processed in the home, or on the device) or *Allowed*. The person sees the preset, can pick another, and can then change,
-switch off, delete or add rules. The household is never asked about single flows (CableLabs guidance): its preset and rules
-decide, and devices receive them. The presets and the tree come from clustering thousands of synthetic households built from
-published IoT privacy studies, following Smullen et al. 2020; see
+**First launch sets up the household's rules from at most 15 questions.** After a short introduction, each question is a
+concrete situation with an example from a device the household owns ("A device sends video or audio (for example, your
+camera's video of your living room) to the company that made it, so the device works…": No / It depends / Yes).
+Stage 1 walks a decision tree to one of four internal **household presets**; stage 2 ("help me refine my settings") asks
+the situations households like this one are split on, up to the cap. Every yes or no is then written into the preset's
+rules, so the household starts with its own rules (about 43). The person never sees or picks a preset (CableLabs, week 9:
+a list invites self-perception bias); they can change, switch off, delete or add rules, rerun the follow-ups as a privacy
+checkup, or answer everything again, which starts over. The household is never asked about single flows when a device
+joins: its rules decide, and devices receive them. The presets, tree and follow-ups come from clustering synthetic
+households built from published IoT privacy studies, following Smullen et al. 2020; see
 [ppd-household-presets](https://github.com/baktistr/ppd-household-presets).
 
 It implements the nine phone screens from the design canvas (1a Scan, 1b/1c Preview, 2a New device, 2b Flow detail,
-3a My home, 3b Device library, 3c Device detail, 3d Household rules), plus the onboarding questions, the preset picker,
-the rule editor and a page on how the presets were made. Its backend is **app-api** (`server/`), which stores the household and computes the verdicts;
+3a My home, 3b Device library, 3c Device detail, 3d Household rules), plus the questionnaire,
+the rule editor and a page on how the questions were made. Its backend is **app-api** (`server/`), which stores the household and computes the verdicts;
 an offline mock mode answers the same calls from static JSON in `public/mock/`.
 
 App: https://ppd-preference-app.vercel.app/#/rules
@@ -106,8 +110,8 @@ Everything the screens need goes through one interface, `PpdApi` in `shared/type
 
 | Call | Returns |
 | --- | --- |
-| `getOnboarding()`, `listHouseholdPresets()` | the onboarding tree and the presets (`public/mock/onboarding.json`, `household-presets.json`) |
-| `choosePreset({preset_id, answers})`, `saveProfile(profile)` | the household's preset (its rules replace the previous preset's; custom rules stay) |
+| `getOnboarding()`, `listHouseholdPresets()` | the questionnaire and the internal presets (`public/mock/onboarding.json`, `household-presets.json`) |
+| `finishOnboarding({answers})`, `saveProfile(profile)` | finishes the questionnaire: app-api walks the tree with the answers to a preset and rebuilds the household's rules from it and the answers (starts over: earlier rules and edits are replaced) |
 | `listRules()`, `upsertRule`, `deleteRule` | the household's rules |
 | `listLibrary()` / `getDevice(id)` | device summaries / a device with all its flows and verdicts |
 | `resolveCode(text)` | which device a scanned code points to |
@@ -184,8 +188,13 @@ use and inference (taxonomy-05 section 6.7.2), so such a rule covers only those 
 
 `public/mock/household-presets.json` and `public/mock/onboarding.json` are copied from `export/` in
 [ppd-household-presets](https://github.com/baktistr/ppd-household-presets) (notebook 07). `shared/onboarding.ts` walks
-the tree; a question that comes back lower down reuses its first answer. To change them, rerun the notebooks and copy the two
-files again; `server/test/presets.test.ts` checks every path ends in a preset and every preset is reachable.
+the tree (a question that comes back lower down reuses its first answer), lists the leaf's follow-ups within the cap,
+picks the example for a device the household owns, and writes the answers into the preset's rules (`rulesFromAnswers`):
+a yes or no splits the preset rule covering that situation and adds a rule with the answer, so rules never overlap and
+exactly one decides each flow (the same result notebook 07 checks against every synthetic household). A household on a
+preset that has since been rebuilt goes back to the questions. To change them, rerun the notebooks and copy the two files
+again; `server/test/presets.test.ts` checks every path, the cap, and that the rules from any answers still decide every
+one of the 6,272 core dataflows exactly once, with each answered situation set to its answer.
 
 The data is synthetic, built from published studies; the questions and presets are not user-tested.
 
@@ -200,14 +209,14 @@ The data is synthetic, built from published studies; the questions and presets a
 
 ## Where this differs from the design canvas
 
-- Counts come from the fixtures and from the household's preset, so they differ from the mock-up numbers.
-- The canvas shows five fixed rules. The app has no fixed rules: the household's rules come from its preset.
+- Counts come from the fixtures and from the household's rules, so they differ from the mock-up numbers.
+- The canvas shows five fixed rules. The app has no fixed rules: the household's rules come from its answers.
 - The canvas's per-flow preference form (2b) is gone: the flow screen is read-only, per CableLabs guidance.
 - Navigable rows have a small chevron.
 - Added: "Type the code instead" on Scan (useful without a camera), a "Saved" tag in the library, a "Remove from my home" row,
   an "About this declaration" block on the device screen, and the Test tools page.
-- Added: the onboarding questions, the preset picker, the policy review page, the rule editor, and the page on how the presets
-  were made (none are in the canvas).
+- Added: the questionnaire (introduction, stage 1, follow-ups), the policy review page, the rule editor, and the page on how
+  the questions were made (none are in the canvas).
 - Added: live devices from the PPD gateway, System status, sending rules to devices, demo presets and controls, and a
   desktop layout (navigation rail and list-beside-detail panes from 1200 px).
 - Not built: sending the summaries and warnings chosen on the rules page, push notifications.
@@ -222,19 +231,19 @@ services on Coolify together with the gateway and repository images from the `ha
 ## Project map
 
 ```
-shared/            used by the app and app-api: the contract (types.ts), core taxonomy, household changes, verdict engine, rule matching, onboarding walk
+shared/            used by the app and app-api: the contract (types.ts), core taxonomy, household changes, verdict engine, rule matching, the questionnaire and answers into rules
 server/            app-api: routes (src/routes/), policy compiler, gateway client, live devices, demo simulator, SQLite store, sign-in, tests
 deploy/            compose.example.yaml for the cloud deployment (Coolify)
 scripts/           dev-stack.sh: the whole demo stack on one machine
 src/api/           app-api client, offline mock client, the switch between them (index.ts)
 src/scanner/       camera + QR decoding
-src/screens/       one file per screen (Onboarding, ChoosePreset, Rules and RuleEditor make up the household policy)
+src/screens/       one file per screen (Onboarding, Rules and RuleEditor make up the household policy)
 src/policy/        choices.ts (editor wording)
 src/components/    app bars, lists, chips, form controls, the shared device report
 src/lib/           verdict labels and counting, device helpers
 src/state/         household store and data hooks
 src/styles/app.css design tokens and component styles from the canvas
-public/mock/       generated fixtures, and the presets and onboarding tree from ppd-household-presets
+public/mock/       generated fixtures, and the presets and questionnaire from ppd-household-presets
 tools/             fixture builder, icon generator
 docs/              deployment guide
 ```

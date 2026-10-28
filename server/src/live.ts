@@ -46,6 +46,18 @@ const STATE: Record<string, DeclarationState> = {
   broken: 'broken',
 }
 
+/** Wording for a device that lost its association after reporting a runtime conflict (see liveState). */
+const STALE_ATTENTION: Partial<Record<AssociationStatus, string>> = {
+  stale_association: 'The device did not renew acknowledgement of the current policy before the freshness deadline.',
+  needs_reassociation: 'The device needs to reassociate before it holds the current policy again.',
+  broken: 'The association is broken.',
+}
+const STALE_NEXT: Partial<Record<AssociationStatus, string>> = {
+  stale_association: 'Waiting for renewed receipt acknowledgement',
+  needs_reassociation: 'Needs reassociation',
+  broken: 'Association state needs review',
+}
+
 const ASSOCIATION_LABEL: Record<AssociationStatus, [string, Tone]> = {
   associated: ['Associated', 'good'],
   policy_conflict: ['Associated · runtime conflict', 'warn'],
@@ -229,6 +241,9 @@ function liveState(d: GatewayDevice, kind: 'real' | 'simulated', publishedPolicy
       ? 'current'
       : 'waiting'
   const at = (v: string | undefined) => v || null
+  // The CableLabs gateway's attention text and next step put a runtime conflict ahead of staleness, and say the
+  // association "is still current" either way. For a device that is no longer associated, say what is true now.
+  const lostWithConflict = !!d.conflict_active && status !== 'associated' && status !== 'policy_conflict'
   return {
     kind,
     association: {
@@ -236,8 +251,10 @@ function liveState(d: GatewayDevice, kind: 'real' | 'simulated', publishedPolicy
       label,
       tone: statusTone,
       explanation: d.association_explanation ?? '',
-      next_step: d.next_step_summary ?? '',
-      attention: d.attention_reason || null,
+      next_step: lostWithConflict ? STALE_NEXT[status] ?? d.next_step_summary ?? '' : d.next_step_summary ?? '',
+      attention: lostWithConflict
+        ? `${STALE_ATTENTION[status] ?? 'The device is no longer associated.'} Before that, it reported runtime behavior that conflicts with the effective policy.`
+        : d.attention_reason || null,
       fresh_until: at(d.association_fresh_until),
       renewed_at: at(d.last_association_renewed_at),
       freshness_interval: at(d.association_freshness_interval),

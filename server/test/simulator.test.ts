@@ -211,7 +211,17 @@ describe('simulator', () => {
     c = await json<SimConsole>('POST', '/api/simulator/devices/level-lock-01/behavior', { mode: 'ignores' })
     c = await json<SimConsole>('POST', '/api/simulator/devices/level-lock-01/actions', { action: 'door' })
     assert.equal(outcome(c, 'Lock/unlock activity communicated'), 'sent_against_rules')
-    assert.ok(c.totals.some((t) => t.recipient === 'The maker or its services' && t.blocked === 1 && t.sent === 1))
+    assert.ok(c.totals.some((t) => t.recipient === 'The maker or its services' && t.blocked === 1 && t.against === 1))
+    // Sending against the rules raises a runtime conflict at the gateway (its demo extension); following again clears it.
+    const lockAt = () => gateway.devices.find((d) => d.device_id === 'level-lock-01')!
+    await until(async () => lockAt().conflict_active === true)
+    assert.deepEqual(lockAt().conflicting_purposes, [lock.flows.find((f) => f.id === 'level-lock.lock-unlock-activity-communicated-to-level-services')!.taxonomy.purpose])
+    await json<SimConsole>('POST', '/api/simulator/devices/level-lock-01/behavior', { mode: 'follows' })
+    await until(async () => lockAt().conflict_active === false)
+    // A conflict the gateway still holds from before (an app-api restart forgets what was reported) is cleared at
+    // the device's next renewal, since every acknowledgement reports what the device is doing now.
+    lockAt().conflict_active = true
+    await until(async () => lockAt().conflict_active === false, 8000)
 
     // The TV has no PPD: everything goes out, and it has no rules to follow.
     await json<SimDevice>('POST', '/api/simulator/devices/lg-oled65c6pua-c6-01/network', { present: true })
