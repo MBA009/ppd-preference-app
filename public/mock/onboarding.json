@@ -2,7 +2,7 @@
   "version": "3.0.0",
   "kind": "tree+follow_ups",
   "source": {
-    "generated": "2026-10-28",
+    "generated": "2026-10-29",
     "by": "ppd-household-presets notebooks 01-07",
     "data": "synthetic households (not survey data); see data/DATACARD.md",
     "k": 4,
@@ -37,7 +37,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -67,7 +67,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -95,7 +95,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -120,7 +120,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -145,7 +145,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -170,7 +170,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -198,7 +198,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -223,7 +223,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -253,7 +253,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -278,7 +278,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -303,7 +303,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -330,7 +330,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -355,7 +355,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -385,7 +385,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -412,7 +412,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -437,7 +437,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -465,7 +465,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -490,7 +490,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -520,7 +520,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -548,7 +548,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -573,7 +573,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -601,7 +601,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -629,7 +629,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -657,7 +657,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -687,7 +687,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -714,7 +714,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -742,7 +742,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -767,7 +767,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -792,7 +792,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -820,7 +820,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -845,7 +845,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -870,7 +870,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -897,7 +897,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -922,7 +922,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -947,7 +947,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -972,7 +972,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1002,7 +1002,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1029,7 +1029,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1056,7 +1056,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1084,7 +1084,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1112,7 +1112,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1137,7 +1137,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1162,7 +1162,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1187,7 +1187,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1217,7 +1217,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1242,7 +1242,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1269,7 +1269,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1294,7 +1294,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1321,7 +1321,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1349,7 +1349,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1379,7 +1379,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1404,7 +1404,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1432,7 +1432,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1457,7 +1457,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1482,7 +1482,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1510,7 +1510,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1535,7 +1535,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1565,7 +1565,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1593,7 +1593,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1620,7 +1620,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1645,7 +1645,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1673,7 +1673,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1700,7 +1700,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1727,7 +1727,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1757,7 +1757,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1785,7 +1785,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1810,7 +1810,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1838,7 +1838,7 @@
         },
         {
           "id": "depends",
-          "label": "It depends"
+          "label": "Not sure"
         },
         {
           "id": "yes",
@@ -1858,7 +1858,7 @@
     }
   },
   "walk": "Stage 1: show the root question; follow the branch whose 'answers' contain the chosen option; repeat until a node has 'preset'. A question can come back further down a path: reuse the earlier answer, never ask twice. Stage 2: ask the leaf's 'follow_ups' in order, at most 'follow_up_budget' of them (the cap minus the questions asked in stage 1). Skip any follow-up already answered in stage 1.",
-  "rules": "Copy the preset's rules from presets.json. For every situation question answered 'yes' or 'no' (stage 1 or 2), where the rule covering that situation says otherwise, split that rule around the situation (at most three pieces: other data types; this data type with other purposes; this data type and purpose with other handling contexts) and add a rule with the answer for the situation itself ('yes' = allow, 'no' = never; origin kind 'answer'). 'It depends' keeps the preset. Rules never overlap, so exactly one decides each flow.",
+  "rules": "Copy the preset's rules from presets.json. For every situation question answered 'yes' or 'no' (stage 1 or 2), where the rule covering that situation says otherwise, split that rule around the situation (at most three pieces: other data types; this data type with other purposes; this data type and purpose with other handling contexts) and add a rule with the answer for the situation itself ('yes' = allow, 'no' = never; origin kind 'answer'). 'Not sure' keeps the preset. Rules never overlap, so exactly one decides each flow.",
   "rerun": "Rerunning the questionnaire starts over: the household's rules are rebuilt from the new answers; manual edits are replaced after a warning.",
   "root": {
     "question": "cell_usageData_communicationsAndNotifications_vendorContext",

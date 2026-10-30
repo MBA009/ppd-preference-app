@@ -148,7 +148,7 @@ const ANSWER_DECISION: Record<string, 0 | 1> = { yes: 1, no: 0 }
  * context) is a block of flows. Where the rule covering it says otherwise than the answer, that rule is split around
  * the situation, keeping everything else it decided (at most three pieces: the other data types; this data type with
  * the other purposes; this data type and purpose with the other handling contexts), and a rule with the answer is added
- * for the situation itself. "It depends" keeps the preset. Rules still never overlap, so no rule has to win over another.
+ * for the situation itself. "Not sure" keeps the preset. Rules still never overlap, so no rule has to win over another.
  * Same result as notebook 07's write_answers, which checks it against every synthetic household.
  */
 export function rulesFromAnswers(preset: HouseholdPreset, answers: Answers, questions: Record<string, OnboardingQuestion>): Rule[] {

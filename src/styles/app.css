@@ -289,3 +289,6 @@ button.cell:active, a.cell:active { background: #f1f3f6; }
   .split > .pane-list { width: 480px; }
 }
 
+.cell.xr { text-align: left; }
+.xr-tag { flex: none; align-self: center; margin: 0 16px 0 8px; padding: 2px 8px; border-radius: 8px; background: #e8f0fe; color: #0066CC; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; line-height: 16px; }
+.json.xr-json { margin: 0 12px 10px; max-height: 50vh; }

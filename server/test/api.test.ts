@@ -134,7 +134,7 @@ describe('household (fixtures)', () => {
     assert.deepEqual(h.answers, answers)
     assert.ok(!h.rules.some((r) => r.id === 'r-mine'), 'starting over replaces the rules the person added')
     assert.ok(h.rules.every((r) => r.origin.kind === 'preset' || r.origin.kind === 'answer'))
-    // Answering "It depends" to every follow-up keeps the preset's rules (stage 1 answers can still split some).
+    // Answering "Not sure" to every follow-up keeps the preset's rules (stage 1 answers can still split some).
     h = await json<Household>('PUT', '/api/household/onboarding', { answers: finishingAnswers(tree, 'depends') })
     assert.ok(h.rules.length >= presets.find((p) => p.id === h.preset_id)!.rules.length)
     // Unknown questions or answers, and answers that stop halfway, are refused.

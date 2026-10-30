@@ -5,7 +5,7 @@ device says it does with your data compared with your household rules, and see w
 
 **First launch sets up the household's rules from at most 15 questions.** After a short introduction, each question is a
 concrete situation with an example from a device the household owns ("A device sends video or audio (for example, your
-camera's video of your living room) to the company that made it, so the device works…": No / It depends / Yes).
+camera's video of your living room) to the company that made it, so the device works…": No / Not sure / Yes).
 Stage 1 walks a decision tree to one of four internal **household presets**; stage 2 ("help me refine my settings") asks
 the situations households like this one are split on, up to the cap. Every yes or no is then written into the preset's
 rules, so the household starts with its own rules (about 43). The person never sees or picks a preset (CableLabs, week 9:

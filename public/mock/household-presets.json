@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
   "source": {
-    "generated": "2026-10-28",
+    "generated": "2026-10-29",
     "by": "ppd-household-presets notebooks 01-07",
     "data": "synthetic households (not survey data); see data/DATACARD.md",
     "k": 4,
