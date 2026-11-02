@@ -14,7 +14,9 @@ export const flowPath = (deviceId: string, flowId: string) => `/device/${encodeU
 export function ProvenanceCard({ device, ruleCount, sub, stacked }: {
   device: Device; ruleCount: number; sub?: string; stacked?: boolean
 }) {
+  const counts = countVerdicts(device)
   if (declaredNothing(device)) {
+    const kind = `${device.category_label.toLowerCase()}s`
     return (
       <Group>
         <Cell className="t" chevron={false}>
@@ -22,14 +24,21 @@ export function ProvenanceCard({ device, ruleCount, sub, stacked }: {
           <div className="cb">
             <span className="ttl">No declaration from the device</span>
             <span className="sub">
-              {sub ? `${sub}. ` : ''}{device.short_name} hasn’t said what it does with your data, so there is nothing to compare with your rules. That’s allowed in PPD: it still gets your rules, and they apply to everything it does.
+              {sub ? `${sub}. ` : ''}{device.short_name} hasn’t said what it does with your data. That’s allowed in PPD: it still gets your rules.{' '}
+              {device.expected_from
+                ? `These ${device.flows.length} flows are what ${kind} like the ${device.expected_from.short_name} do, from our research. Your rules are checked against them, and the device gets rules for them.`
+                : 'There is nothing to compare with your rules, and they apply to everything it does.'}
             </span>
           </div>
         </Cell>
+        {device.expected_from && (
+          <Cell chevron={false} style={{ padding: '10px 16px' }}>
+            <VerdictChips counts={counts} order={VERDICT_ORDER} />
+          </Cell>
+        )}
       </Group>
     )
   }
-  const counts = countVerdicts(device)
   const checked =`${device.flows.length} flows checked against your ${ruleCount} ${ruleCount === 1 ? 'rule' : 'rules'}`
   const declared = device.source === 'declared'
   const example = declared && device.kind === 'research'

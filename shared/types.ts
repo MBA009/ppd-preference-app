@@ -211,6 +211,11 @@ export interface DeviceSummary {
 
 export interface Device extends DeviceSummary {
   flows: Flow[]
+  /**
+   * Set when the device declared nothing: its flows are what a researched device in the same category does
+   * (from our library), so the household policy covers them. Not something the device said.
+   */
+  expected_from?: { id: string; short_name: string }
   /** Present for devices known to the PPD gateway (real hardware or simulated participants). */
   live?: LiveState
 }

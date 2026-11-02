@@ -63,6 +63,19 @@
    },
    "declaration_id_example": "reolink-e1-zoom-01",
    "flow_count": 26
+  },
+  {
+   "id": "tp-link-kasa-kp125m",
+   "name": "TP-Link Kasa KP125M",
+   "short_name": "Kasa Smart Plug KP125M",
+   "category": "smart_plug",
+   "category_label": "Smart plug",
+   "icon": "plug",
+   "matter": true,
+   "source": "advisory",
+   "declaration": null,
+   "declaration_id_example": "tp-link-kasa-kp125m-01",
+   "flow_count": 20
   }
  ]
 }

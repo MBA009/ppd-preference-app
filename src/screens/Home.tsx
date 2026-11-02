@@ -167,13 +167,12 @@ function DeviceRow({ device: d }: { device: Device }) {
           <span>{d.live && !hasRules(d) ? d.live.association.label : stateLabel(d)}</span>
         </span>
         <span className="ln">
-          {declaredNothing(d) ? (
-            <span className="sub" style={{ fontSize: 13 }}>No declaration</span>
-          ) : attention ? (
+          {declaredNothing(d) && <span className="sub" style={{ fontSize: 13 }}>{d.expected_from ? 'No declaration · expected:' : 'No declaration'}</span>}
+          {(!declaredNothing(d) || d.expected_from) && (attention ? (
             <VerdictChips counts={counts} order={['unsatisfiable']} />
           ) : (
             <VerdictChip verdict="compatible" n={(counts.compatible ?? 0) + (counts.conditionally_satisfiable ?? 0)} />
-          )}
+          ))}
         </span>
       </div>
     </Cell>

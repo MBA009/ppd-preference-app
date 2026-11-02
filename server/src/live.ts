@@ -185,10 +185,25 @@ export class LiveDirectory {
     }
   }
 
-  /** The full device: flows from the declaration (evaluated against `rules`) and the gateway's live view. */
+  /**
+   * The full device: flows from the declaration (evaluated against `rules`) and the gateway's live view.
+   * A device that declares nothing (optional in PPD) gets the source-linked flows of a researched device in its
+   * category instead, marked expected_from, so the household policy has rules for what such devices do.
+   */
   device(d: GatewayDevice, rules: Rule[], publishedPolicyId: string | null): Device {
     const entry = this.entryFor(d)
     const fixture = entry?.fixture ? this.fixtures.devices.get(entry.fixture) : undefined
+    const summary = this.summary(d)
+    if (!d.declaration_statements?.length) {
+      const research = this.categoryResearch(summary.category)
+      if (research) {
+        const flows = research.flows
+          .filter((f) => f.evidence === 'source_linked')
+          .map((f) => ({ ...f, id: `${d.device_id}.${f.id.slice(research.id.length + 1)}` }))
+        const expected_from = { id: research.id, short_name: research.short_name }
+        return evaluateDevice({ ...summary, flows, expected_from, live: liveState(d, entry?.kind ?? 'real', publishedPolicyId) }, rules)
+      }
+    }
     const flows: Flow[] = (d.declaration_statements ?? []).map((s) => {
       const taxonomy = { data_type: s.data_type, purpose: s.purpose, action: s.action, source: s.source, handling_context: s.handling_context, constraints: (s.constraints ?? {}) as Constraints }
       const id = `${d.device_id}.${s.statement_id}`
@@ -197,7 +212,12 @@ export class LiveDirectory {
       if (researched) return { ...researched, id, taxonomy }
       return statementFlow(id, s.statement_id, taxonomy, entry?.statements?.[s.statement_id])
     })
-    return evaluateDevice({ ...this.summary(d), flows, live: liveState(d, entry?.kind ?? 'real', publishedPolicyId) }, rules)
+    return evaluateDevice({ ...summary, flows, live: liveState(d, entry?.kind ?? 'real', publishedPolicyId) }, rules)
+  }
+
+  /** The first researched device (by id) in a category, used for devices that declare nothing. */
+  private categoryResearch(category: string) {
+    return [...this.fixtures.devices.values()].filter((f) => f.category === category).sort((a, b) => a.id.localeCompare(b.id))[0]
   }
 }
 

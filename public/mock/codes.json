@@ -3,7 +3,8 @@
   "https://ppd.example/d/aqara-w200-01": "aqara-w200",
   "https://ppd.example/d/level-lock-01": "level-lock",
   "https://ppd.example/d/lg-oled65c6pua-c6-01": "lg-oled65c6pua-c6",
-  "https://ppd.example/d/reolink-e1-zoom-01": "reolink-e1-zoom"
+  "https://ppd.example/d/reolink-e1-zoom-01": "reolink-e1-zoom",
+  "https://ppd.example/d/tp-link-kasa-kp125m-01": "tp-link-kasa-kp125m"
  },
  "note": "Placeholder privacy-code payloads. A real code would point at the device's declaration endpoint."
 }

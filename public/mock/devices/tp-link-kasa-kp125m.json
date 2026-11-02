@@ -1,0 +1,935 @@
+{
+ "id": "tp-link-kasa-kp125m",
+ "name": "TP-Link Kasa KP125M",
+ "short_name": "Kasa Smart Plug KP125M",
+ "category": "smart_plug",
+ "category_label": "Smart plug",
+ "icon": "plug",
+ "matter": true,
+ "source": "advisory",
+ "declaration": null,
+ "declaration_id_example": "tp-link-kasa-kp125m-01",
+ "flow_count": 20,
+ "flows": [
+  {
+   "id": "tp-link-kasa-kp125m.setup-tp-link-id-account",
+   "title": "TP-Link ID account",
+   "workbook_text": "Setup: TP-Link ID account (email and password) created or signed in to in the Kasa app",
+   "summary": "Collected by TP-Link · account setup",
+   "summary_parts": {
+    "who": "Collected by TP-Link",
+    "purpose": "account setup"
+   },
+   "phase": "setup",
+   "taxonomy": {
+    "data_type": "ppd:identifierData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
+   },
+   "display": {
+    "what": "Names, accounts or device IDs",
+    "why": "Setting up your account",
+    "what_happens": "Collected",
+    "comes_from": "You",
+    "handled_by": "TP-Link",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-a323000c",
+    "label": "Identifiers and accounts collected by a vendor"
+   },
+   "control": {
+    "type": "setup_step",
+    "type_label": "Provided during setup",
+    "necessity": "required_for_feature",
+    "note": "You sign in with a TP-Link ID, or create one, when you set up the plug in the Kasa app."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:identifierData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "tp-link-kasa-kp125m.setup-wi-fi-credential",
+   "title": "Wi-Fi network name and password given to the plug during setup",
+   "workbook_text": "Setup: Wi-Fi network name and password given to the plug during setup",
+   "summary": "Stays in your home · setup",
+   "summary_parts": {
+    "who": "Stays in your home",
+    "purpose": "setup"
+   },
+   "phase": "setup",
+   "taxonomy": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:householdContext",
+    "constraints": {}
+   },
+   "display": {
+    "what": "Your Wi-Fi password",
+    "why": "Setting up the device",
+    "what_happens": "Collected",
+    "comes_from": "You",
+    "handled_by": "Your household",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-8d3ef5b3",
+    "label": "Device and network details collected at home"
+   },
+   "control": {
+    "type": "setup_step",
+    "type_label": "Provided during setup",
+    "necessity": "required_for_feature",
+    "note": "You give the plug your 2.4 GHz Wi-Fi details while setting it up."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:householdContext"
+   }
+  },
+  {
+   "id": "tp-link-kasa-kp125m.setup-matter-setup-code",
+   "title": "Matter setup code scanned over Bluetooth by your smart-home app",
+   "workbook_text": "Setup: Matter setup code scanned over Bluetooth by your smart-home app",
+   "summary": "Stays in your home · setup",
+   "summary_parts": {
+    "who": "Stays in your home",
+    "purpose": "setup"
+   },
+   "phase": "setup",
+   "taxonomy": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:householdContext",
+    "constraints": {}
+   },
+   "display": {
+    "what": "A pairing code",
+    "why": "Setting up the device",
+    "what_happens": "Collected",
+    "comes_from": "You",
+    "handled_by": "Your household",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-8d3ef5b3",
+    "label": "Device and network details collected at home"
+   },
+   "control": {
+    "type": "setup_step",
+    "type_label": "Provided during setup",
+    "necessity": "required_for_feature",
+    "note": "You scan the plug's Matter code in Apple Home, Google Home, Alexa or SmartThings to add it there."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:householdContext"
+   }
+  },
+  {
+   "id": "tp-link-kasa-kp125m.setup-device-binding",
+   "title": "Device identifier and credentials bound to your TP-Link account",
+   "workbook_text": "Setup: Device identifier and credentials bound to your TP-Link account",
+   "summary": "Goes to TP-Link · setup",
+   "summary_parts": {
+    "who": "Goes to TP-Link",
+    "purpose": "setup"
+   },
+   "phase": "setup",
+   "taxonomy": {
+    "data_type": "ppd:identifierData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
+   },
+   "display": {
+    "what": "Names, accounts or device IDs",
+    "why": "Setting up the device",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "TP-Link",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-7c56cc04",
+    "label": "Identifiers and accounts sent to a vendor"
+   },
+   "control": {
+    "type": "setup_step",
+    "type_label": "Provided during setup",
+    "necessity": "required_for_feature",
+    "note": "Adding the plug in the Kasa app links its identifier to your TP-Link account."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:identifierData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "tp-link-kasa-kp125m.device-network-details-to-tp-link",
+   "title": "Device MAC address and IP address collected by TP-Link",
+   "workbook_text": "Device MAC address and IP address collected by TP-Link",
+   "summary": "Goes to TP-Link Cloud · remote control",
+   "summary_parts": {
+    "who": "Goes to TP-Link Cloud",
+    "purpose": "remote control"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
+   },
+   "display": {
+    "what": "Wi-Fi connection details",
+    "why": "Controlling the device away from home",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "TP-Link Cloud",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-5aedaaf3",
+    "label": "Device and network details sent to a vendor"
+   },
+   "control": {
+    "type": "none_documented",
+    "type_label": "No control found",
+    "necessity": "unknown",
+    "note": "No setting to stop this was found in the user guide or the Kasa privacy policy."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "tp-link-kasa-kp125m.remote-on-off-through-kasa",
+   "title": "On/off command from the Kasa app sent through TP-Link Cloud when you are away",
+   "workbook_text": "On/off command from the Kasa app sent through TP-Link Cloud when you are away",
+   "summary": "Collected by TP-Link Cloud · remote control",
+   "summary_parts": {
+    "who": "Collected by TP-Link Cloud",
+    "purpose": "remote control"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
+   },
+   "display": {
+    "what": "Commands to your devices",
+    "why": "Controlling the device away from home",
+    "what_happens": "Collected",
+    "comes_from": "You",
+    "handled_by": "TP-Link Cloud",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-b019ee2b",
+    "label": "Device and network details collected by a vendor"
+   },
+   "control": {
+    "type": "user_initiated",
+    "type_label": "Happens only when you do it",
+    "necessity": "required_for_feature",
+    "note": "Happens when you switch the plug from the Kasa app away from home."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "tp-link-kasa-kp125m.plug-state-reported-to-tp-link",
+   "title": "On/off state and usage reported by the plug to TP-Link's services",
+   "workbook_text": "On/off state and usage reported by the plug to TP-Link's services",
+   "summary": "Goes to TP-Link · remote control",
+   "summary_parts": {
+    "who": "Goes to TP-Link",
+    "purpose": "remote control"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
+   },
+   "display": {
+    "what": "The state of your home devices",
+    "why": "Controlling the device away from home",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "TP-Link",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-5aedaaf3",
+    "label": "Device and network details sent to a vendor"
+   },
+   "control": {
+    "type": "none_documented",
+    "type_label": "No control found",
+    "necessity": "required_for_feature",
+    "note": "The plug reports its state to TP-Link so the Kasa app can show it."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "tp-link-kasa-kp125m.button-on-off",
+   "title": "Turning the plug on and off with its button",
+   "workbook_text": "Turning the plug on and off with its button",
+   "summary": "Stays in your home · remote control",
+   "summary_parts": {
+    "who": "Stays in your home",
+    "purpose": "remote control"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:householdContext",
+    "constraints": {}
+   },
+   "display": {
+    "what": "Commands to your devices",
+    "why": "Controlling the device away from home",
+    "what_happens": "Collected",
+    "comes_from": "You",
+    "handled_by": "Your household",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-8d3ef5b3",
+    "label": "Device and network details collected at home"
+   },
+   "control": {
+    "type": "user_initiated",
+    "type_label": "Happens only when you do it",
+    "necessity": "optional",
+    "note": "Happens only when you press the button on the plug."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:householdContext"
+   }
+  },
+  {
+   "id": "tp-link-kasa-kp125m.energy-use-measured",
+   "title": "Power and energy use of the plugged-in appliance measured by the plug",
+   "workbook_text": "Power and energy use of the plugged-in appliance measured by the plug",
+   "summary": "Stays in your home · energy use",
+   "summary_parts": {
+    "who": "Stays in your home",
+    "purpose": "energy use"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:sensorData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:participantObserved",
+    "handling_context": "ppd:householdContext",
+    "constraints": {}
+   },
+   "display": {
+    "what": "Power and energy use",
+    "why": "Tracking energy use",
+    "what_happens": "Collected",
+    "comes_from": "Observed by the device",
+    "handled_by": "Your household",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-42c4986b",
+    "label": "Sensor readings collected at home"
+   },
+   "control": {
+    "type": "none_documented",
+    "type_label": "No control found",
+    "necessity": "required_for_feature",
+    "note": "The plug measures how much power the plugged-in appliance uses."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:sensorData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:participantObserved",
+    "handling_context": "ppd:householdContext"
+   }
+  },
+  {
+   "id": "tp-link-kasa-kp125m.energy-history-in-kasa-app",
+   "title": "Energy-use history sent to the Kasa app",
+   "workbook_text": "Energy-use history sent to the Kasa app",
+   "summary": "Goes to TP-Link · energy use",
+   "summary_parts": {
+    "who": "Goes to TP-Link",
+    "purpose": "energy use"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:sensorData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
+   },
+   "display": {
+    "what": "Power and energy use",
+    "why": "Tracking energy use",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "TP-Link",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-154ccf7a",
+    "label": "Sensor readings sent to a vendor"
+   },
+   "control": {
+    "type": "unknown",
+    "type_label": "Not checked, or sources silent",
+    "necessity": "required_for_feature",
+    "note": "Not checked: whether energy history goes through TP-Link or stays on the plug."
+   },
+   "evidence": "needs_source",
+   "core": {
+    "data_type": "ppd:sensorData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "tp-link-kasa-kp125m.schedules-and-away-mode",
+   "title": "Schedules, timer, auto-off and Away Mode set in the Kasa app and run by the…",
+   "workbook_text": "Schedules, timer, auto-off and Away Mode set in the Kasa app and run by the plug",
+   "summary": "Stays in your home · schedules",
+   "summary_parts": {
+    "who": "Stays in your home",
+    "purpose": "schedules"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:use",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:householdContext",
+    "constraints": {}
+   },
+   "display": {
+    "what": "Schedules and timers",
+    "why": "Running schedules and timers",
+    "what_happens": "Used",
+    "comes_from": "You",
+    "handled_by": "Your household",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-cb918fa7",
+    "label": "Device and network details used at home"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "Happens only if you set a schedule, timer, auto-off or Away Mode in the Kasa app."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:use",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:householdContext"
+   }
+  },
+  {
+   "id": "tp-link-kasa-kp125m.location-for-sunrise-sunset",
+   "title": "Location and time zone from the Kasa app used for sunrise and sunset schedules",
+   "workbook_text": "Location and time zone from the Kasa app used for sunrise and sunset schedules",
+   "summary": "Collected by TP-Link · schedules",
+   "summary_parts": {
+    "who": "Collected by TP-Link",
+    "purpose": "schedules"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:locationData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
+   },
+   "display": {
+    "what": "Location",
+    "why": "Running schedules and timers",
+    "what_happens": "Collected",
+    "comes_from": "You",
+    "handled_by": "TP-Link",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-3a2fb945",
+    "label": "Location collected by a vendor"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "required_for_feature",
+    "note": "Set or synced in the Kasa app under Location and Time; used for sunrise and sunset schedules."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:locationData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "tp-link-kasa-kp125m.geofencing-phone-location",
+   "title": "Precise phone location collected for Geofencing Smart Actions",
+   "workbook_text": "Precise phone location collected for Geofencing Smart Actions",
+   "summary": "Collected by TP-Link · control",
+   "summary_parts": {
+    "who": "Collected by TP-Link",
+    "purpose": "control"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:locationData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
+   },
+   "display": {
+    "what": "Location",
+    "why": "Controlling other devices",
+    "what_happens": "Collected",
+    "comes_from": "Your phone's location",
+    "handled_by": "TP-Link",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-3a2fb945",
+    "label": "Location collected by a vendor"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "Happens only if you turn on a Geofencing Smart Action in the Kasa app."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:locationData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:userProvided",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "tp-link-kasa-kp125m.matter-controller-commands",
+   "title": "On/off commands received from a Matter controller in your home",
+   "workbook_text": "On/off commands received from a Matter controller in your home (Apple Home, Google Home, Alexa, SmartThings)",
+   "summary": "Stays in your home · integration",
+   "summary_parts": {
+    "who": "Stays in your home",
+    "purpose": "integration"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:householdProvided",
+    "handling_context": "ppd:householdContext",
+    "constraints": {}
+   },
+   "display": {
+    "what": "Commands to your devices",
+    "why": "Working with your smart-home app",
+    "what_happens": "Collected",
+    "comes_from": "Your smart-home app",
+    "handled_by": "Your household",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-7f16e5e4",
+    "label": "Device and network details collected at home"
+   },
+   "control": {
+    "type": "user_initiated",
+    "type_label": "Happens only when you do it",
+    "necessity": "optional",
+    "note": "Happens when you control the plug from a Matter app or voice assistant you added it to."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:collection",
+    "source": "ppd:householdProvided",
+    "handling_context": "ppd:householdContext"
+   }
+  },
+  {
+   "id": "tp-link-kasa-kp125m.linked-assistant-integrations",
+   "title": "Plug list, names and state shared with Alexa, Google Assistant, SmartThings…",
+   "workbook_text": "Plug list, names and state shared with Alexa, Google Assistant, SmartThings or IFTTT when you link them",
+   "summary": "Goes to your smart-home app · integration",
+   "summary_parts": {
+    "who": "Goes to your smart-home app",
+    "purpose": "integration"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:thirdPartyContext",
+    "constraints": {}
+   },
+   "display": {
+    "what": "The state of your home devices",
+    "why": "Working with your smart-home app",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "Your smart-home app (Alexa, Google…)",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-e8b6b621",
+    "label": "Device and network details sent to a third party"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "Happens only if you link the Kasa account to Alexa, Google Assistant, SmartThings or IFTTT."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:thirdPartyContext"
+   }
+  },
+  {
+   "id": "tp-link-kasa-kp125m.ohmconnect-power-data",
+   "title": "Device status and power data shared with OhmConnect when you link it",
+   "workbook_text": "Device status and power data shared with OhmConnect when you link it",
+   "summary": "Goes to OhmConnect · energy program",
+   "summary_parts": {
+    "who": "Goes to OhmConnect",
+    "purpose": "energy program"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:sensorData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:thirdPartyContext",
+    "constraints": {}
+   },
+   "display": {
+    "what": "Power and energy use",
+    "why": "An energy-saving program you link",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "An energy-program partner (OhmConnect)",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-ae0a7a0d",
+    "label": "Sensor readings sent to a third party"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "Happens only if you link OhmConnect to your Kasa account."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:sensorData",
+    "purpose": "ppd:coreFunctionality",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:thirdPartyContext"
+   }
+  },
+  {
+   "id": "tp-link-kasa-kp125m.user-experience-program",
+   "title": "Phone details and app feature use sent to TP-Link through the User Experience…",
+   "workbook_text": "Phone details and app feature use sent to TP-Link through the User Experience Program",
+   "summary": "Goes to TP-Link · research",
+   "summary_parts": {
+    "who": "Goes to TP-Link",
+    "purpose": "research"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:usageData",
+    "purpose": "ppd:analyticsAndImprovement",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
+   },
+   "display": {
+    "what": "How you use the device",
+    "why": "Product research",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "TP-Link",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-976049b7",
+    "label": "Usage data sent to a vendor"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "Only if you join the User Experience Program; you can leave it in the Kasa app under Settings > About."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:usageData",
+    "purpose": "ppd:analyticsAndImprovement",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "tp-link-kasa-kp125m.marketing-from-usage",
+   "title": "Device usage and app activity used for marketing messages",
+   "workbook_text": "Device usage and app activity used for marketing messages",
+   "summary": "Used by TP-Link · advertising",
+   "summary_parts": {
+    "who": "Used by TP-Link",
+    "purpose": "advertising"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:usageData",
+    "purpose": "ppd:advertisingAndMarketing",
+    "action": "ppd:use",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
+   },
+   "display": {
+    "what": "How you use the device",
+    "why": "Advertising and marketing",
+    "what_happens": "Used",
+    "comes_from": "The device",
+    "handled_by": "TP-Link",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-029b6b8e",
+    "label": "Usage data used by a vendor"
+   },
+   "control": {
+    "type": "user_setting",
+    "type_label": "Change in settings",
+    "necessity": "optional",
+    "note": "Based on your consent; you can object to personalized ads and content."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:usageData",
+    "purpose": "ppd:advertisingAndMarketing",
+    "action": "ppd:use",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "tp-link-kasa-kp125m.support-device-logs",
+   "title": "Device logs sent to TP-Link with a support request",
+   "workbook_text": "Device logs sent to TP-Link with a support request",
+   "summary": "Goes to TP-Link · support",
+   "summary_parts": {
+    "who": "Goes to TP-Link",
+    "purpose": "support"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:diagnosticsAndMaintenance",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext",
+    "constraints": {}
+   },
+   "display": {
+    "what": "Device logs and status",
+    "why": "Customer support",
+    "what_happens": "Sent to another party",
+    "comes_from": "The device",
+    "handled_by": "TP-Link",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-d0fc350e",
+    "label": "Device and network details sent to a vendor"
+   },
+   "control": {
+    "type": "user_initiated",
+    "type_label": "Happens only when you do it",
+    "necessity": "optional",
+    "note": "Happens only when you send feedback or a support request."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:deviceAndNetworkData",
+    "purpose": "ppd:diagnosticsAndMaintenance",
+    "action": "ppd:transfer",
+    "source": "ppd:participantGenerated",
+    "handling_context": "ppd:vendorContext"
+   }
+  },
+  {
+   "id": "tp-link-kasa-kp125m.aggregated-statistics-partners",
+   "title": "Aggregated statistics shared with TP-Link's authorized partners",
+   "workbook_text": "Aggregated statistics shared with TP-Link's authorized partners",
+   "summary": "Goes to partners · research",
+   "summary_parts": {
+    "who": "Goes to partners",
+    "purpose": "research"
+   },
+   "phase": "runtime",
+   "taxonomy": {
+    "data_type": "ppd:usageData",
+    "purpose": "ppd:analyticsAndImprovement",
+    "action": "ppd:transfer",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "ppd:thirdPartyContext",
+    "constraints": {}
+   },
+   "display": {
+    "what": "How you use the device",
+    "why": "Product research",
+    "what_happens": "Sent to another party",
+    "comes_from": "Worked out from earlier data",
+    "handled_by": "A third-party service",
+    "kept": "Not stated",
+    "limit": null
+   },
+   "core_group": {
+    "id": "ck-456311d7",
+    "label": "Usage data sent to a third party"
+   },
+   "control": {
+    "type": "none_documented",
+    "type_label": "No control found",
+    "necessity": "optional",
+    "note": "No setting to stop this was found in the Kasa privacy policy."
+   },
+   "evidence": "source_linked",
+   "core": {
+    "data_type": "ppd:usageData",
+    "purpose": "ppd:analyticsAndImprovement",
+    "action": "ppd:transfer",
+    "source": "ppd:derivedFromPriorData",
+    "handling_context": "ppd:thirdPartyContext"
+   }
+  }
+ ]
+}
