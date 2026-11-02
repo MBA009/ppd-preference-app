@@ -262,9 +262,11 @@ describe('gateway devices', () => {
     assert.equal(monitoring.effect, 'allow')
     // The rule's condition replaces the retention the device declared.
     assert.deepEqual(monitoring.constraints, { retention: 'ppd:ephemeral' })
+    assert.equal(monitoring.limited, true)
     // Analytics is a transfer: the in-home rule does not cover it, so the default (deny) applies.
     const analytics = preview.rules.find((x) => x.purpose === 'ppd:analyticsAndImprovement')!
     assert.equal(analytics.effect, 'deny')
+    assert.equal(analytics.limited, false)
     const d = await json<Device>('GET', '/api/devices/superduperlight-bulb-esp32')
     const flow = d.flows.find((f) => f.id.endsWith('temperature-remote-monitoring-cloud'))!
     assert.equal(flow.evaluation.verdict, 'conditionally_satisfiable')

@@ -12,20 +12,21 @@ import { checkDataflow, constraintKeys } from './taxonomy'
  *   2. A matching rule says never                         -> unsatisfiable ("Conflicts")
  *   3. A matching rule allows it only under a condition
  *      (not kept, in the home, on the device)             -> conditionally_satisfiable ("With limits")
- *   4. The flow itself declares a limit (on-device only,
- *      in-home only, or not kept)                         -> conditionally_satisfiable ("With limits")
- *   5. A matching rule allows it                          -> compatible ("Matches")
- *   6. Nothing matches: stays at home -> compatible, leaves the home -> unsatisfiable (devices are told no)
+ *   4. A matching rule allows it                          -> compatible ("Matches")
+ *   5. Nothing matches: stays at home -> compatible, leaves the home -> unsatisfiable (devices are told no)
+ * "With limits" always names the household rule that sets the condition. A limit the device declares about itself
+ * (on-device only, in-home only, not kept) is not a verdict: it is only said in the reason.
  * The household is never asked about a single flow: its preset and rules decide (CableLabs guidance).
  * Among rules with the same effect the first one in the policy is cited.
  */
 
-const LIMITS = ['processing_boundary=ppd:onDeviceOnly', 'processing_boundary=ppd:inHomeOnly', 'retention=ppd:ephemeral']
-const LIMIT_TEXT: Record<string, string> = {
-  'processing_boundary=ppd:onDeviceOnly': 'Fine only because it stays on the device.',
-  'processing_boundary=ppd:inHomeOnly': 'Fine only because it stays in your home.',
-  'retention=ppd:ephemeral': 'Fine only because it is not kept.',
+/** What the device says about its own limits, as a sentence after the verdict's reason. */
+const DECLARED_TEXT: Record<string, string> = {
+  'processing_boundary=ppd:onDeviceOnly': 'The device says it stays on the device.',
+  'processing_boundary=ppd:inHomeOnly': 'The device says it stays in your home.',
+  'retention=ppd:ephemeral': 'The device says it is not kept.',
 }
+const declared = (keys: string[]) => keys.filter((k) => DECLARED_TEXT[k]).map((k) => ` ${DECLARED_TEXT[k]}`).join('')
 /** How a rule condition reads after "only if". */
 export const CONDITION_TEXT: Record<string, string> = {
   'processing_boundary=ppd:onDeviceOnly': 'it is processed on the device',
@@ -51,13 +52,11 @@ export function evaluateFlow(flow: Flow, rules: Rule[]): Flow['evaluation'] {
     const said = keys.includes(c) ? ' The device says it is.' : ' Your devices are told so.'
     return { verdict: 'conditionally_satisfiable', rule_id: limited.id, reason: `Your rule “${limited.title}” allows this only if ${CONDITION_TEXT[c]}.${said}` }
   }
-  const limit = LIMITS.find((l) => keys.includes(l))
-  if (limit) return { verdict: 'conditionally_satisfiable', rule_id: null, reason: LIMIT_TEXT[limit] }
   const yes = hits.find((r) => r.effect === 'allow')
-  if (yes) return { verdict: 'compatible', rule_id: yes.id, reason: `Your rule “${yes.title}” allows this.` }
+  if (yes) return { verdict: 'compatible', rule_id: yes.id, reason: `Your rule “${yes.title}” allows this.${declared(keys)}` }
   return leavesHome(flow)
     ? { verdict: 'unsatisfiable', rule_id: null, reason: 'None of your rules allows this, so your devices are told no.' }
-    : { verdict: 'compatible', rule_id: null, reason: 'It stays in your home.' }
+    : { verdict: 'compatible', rule_id: null, reason: `None of your rules covers this, and it stays in your home.${declared(keys)}` }
 }
 
 const SEVERITY: Record<Verdict, number> = { unsatisfiable: 0, indeterminate: 1, conditionally_satisfiable: 2, compatible: 3 }

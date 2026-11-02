@@ -102,15 +102,29 @@ describe('network view and CableLabs cards', () => {
 })
 
 describe('simulator', () => {
-  test('lists the four demo devices, all off', async () => {
+  test('lists the five demo devices, all off', async () => {
     gateway.devices = []
     const list = await json<SimDevice[]>('GET', '/api/simulator/devices')
     assert.deepEqual(list.map((d) => [d.id, d.mode, d.state]), [
       ['aqara-w200-01', 'ppd', 'off'],
       ['reolink-e1-zoom-01', 'ppd', 'off'],
       ['level-lock-01', 'ppd', 'off'],
+      ['plugwell-p1-01', 'ppd', 'off'],
       ['lg-oled65c6pua-c6-01', 'network', 'off'],
     ])
+  })
+
+  test('a device without a fixture speaks PPD but never declares; it still gets and confirms the rules', async () => {
+    gateway.participantCalls = []
+    await json<SimDevice>('POST', '/api/simulator/devices/plugwell-p1-01/connect')
+    await until(async () => (await json<SimDevice[]>('GET', '/api/simulator/devices')).find((d) => d.id === 'plugwell-p1-01')!.state === 'associated')
+    const calls = gateway.participantCalls.filter((c) => !c.includes('well-known'))
+    assert.deepEqual(calls.slice(0, 3), ['POST /ppd/v1/device/register', 'GET /ppd/v1/policy/effective/plugwell-p1-01', 'POST /ppd/v1/device/ack'])
+    const d = await json<Device>('GET', '/api/devices/plugwell-p1-01')
+    assert.equal(d.name, 'Plugwell Smart Plug P1')
+    assert.equal(d.declaration, null)
+    assert.equal(d.flows.length, 0)
+    await json<SimDevice>('POST', '/api/simulator/devices/plugwell-p1-01/disconnect')
   })
 
   test('connect joins the network and runs the full PPD lifecycle through the gateway', async () => {

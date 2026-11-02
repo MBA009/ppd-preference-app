@@ -100,7 +100,7 @@ export default function DemoDevices() {
         <>
           <SectionHeader>Join through PPD</SectionHeader>
           <Group>{ppd.map(card)}</Group>
-          <Footnote>Connect: the device joins the network, registers, declares what it does, receives your rules and confirms them. Unplug: it stops renewing and turns stale once its receipt expires.</Footnote>
+          <Footnote>Connect: the device joins the network, registers, declares what it does, receives your rules and confirms them. The Plugwell plug skips the declaration, which PPD allows: it still receives and confirms your rules. Unplug: it stops renewing and turns stale once its receipt expires.</Footnote>
 
           <SectionHeader>On the network without PPD</SectionHeader>
           <Group>{network.map(card)}</Group>

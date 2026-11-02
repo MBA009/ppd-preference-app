@@ -147,6 +147,13 @@ test('verdicts: never beats "allowed only if", which beats allowed; nothing allo
   assert.equal(evaluateFlow(asFlow(sensorUse), [r('a', 'allow')]).verdict, 'compatible')
   assert.equal(evaluateFlow(asFlow(sensorUse), []).verdict, 'unsatisfiable')
   assert.equal(evaluateFlow(asFlow({ ...sensorUse, handling_context: 'ppd:householdContext' }), []).verdict, 'compatible')
+  // A limit the device declares is not "With limits": that verdict always names a household rule.
+  const onDevice = { ...sensorUse, handling_context: 'ppd:householdContext', constraints: { processing_boundary: 'ppd:onDeviceOnly' } }
+  const own = evaluateFlow(asFlow(onDevice), [])
+  assert.equal(own.verdict, 'compatible')
+  assert.match(own.reason, /The device says it stays on the device\./)
+  assert.equal(evaluateFlow(asFlow(onDevice), [r('a', 'allow')]).verdict, 'compatible')
+  assert.equal(evaluateFlow(asFlow({ ...sensorUse, constraints: { retention: 'ppd:ephemeral' } }), []).verdict, 'unsatisfiable')
   // A processing boundary means nothing for a transfer, so that rule does not cover it.
   assert.equal(evaluateFlow(asFlow({ ...sensorUse, action: 'ppd:transfer' }), [r('l', 'allow', 'processing_boundary=ppd:inHomeOnly')]).verdict, 'unsatisfiable')
 })

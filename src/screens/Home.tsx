@@ -2,7 +2,7 @@ import { AppBar, Cell, DeviceTile, Footnote, Group, SectionHeader, Tile, Verdict
 import { DashedCircle, Icon, SmallCheck } from '../components/icons'
 import { useDevices, useHousehold, useOverview, useUnmanaged } from '../state/data'
 import { countVerdicts, plural } from '../lib/verdicts'
-import { hasRules, isConnected, stateLabel, timeAgo } from '../lib/device'
+import { declaredNothing, hasRules, isConnected, stateLabel, timeAgo } from '../lib/device'
 import type { Device, Overview, UnmanagedDevice } from '../api'
 
 type Notice = { key: string; tone: 'red' | 'orange' | 'blue'; icon: 'status' | 'plus' | 'publish'; title: string; sub: string; to?: string }
@@ -167,7 +167,13 @@ function DeviceRow({ device: d }: { device: Device }) {
           <span>{d.live && !hasRules(d) ? d.live.association.label : stateLabel(d)}</span>
         </span>
         <span className="ln">
-          {attention ? <VerdictChips counts={counts} order={['unsatisfiable']} /> : <VerdictChip verdict="compatible" n={(counts.compatible ?? 0) + (counts.conditionally_satisfiable ?? 0)} />}
+          {declaredNothing(d) ? (
+            <span className="sub" style={{ fontSize: 13 }}>No declaration</span>
+          ) : attention ? (
+            <VerdictChips counts={counts} order={['unsatisfiable']} />
+          ) : (
+            <VerdictChip verdict="compatible" n={(counts.compatible ?? 0) + (counts.conditionally_satisfiable ?? 0)} />
+          )}
         </span>
       </div>
     </Cell>

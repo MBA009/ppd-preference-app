@@ -1,5 +1,5 @@
 {
-  "note": "How app-api presents devices that the PPD gateway knows, and the demo simulator's devices. 'real' is hardware. 'simulated' devices are played by app-api's simulator (SIMULATOR=1) from a research fixture: mode 'ppd' joins through PPD, mode 'network' only appears on the home network (unmanaged). Simulated addresses use the documentation range 192.0.2.0/24 and locally administered MACs. Devices not listed here are shown as real devices, named from their registration.",
+  "note": "How app-api presents devices that the PPD gateway knows, and the demo simulator's devices. 'real' is hardware. 'simulated' devices are played by app-api's simulator (SIMULATOR=1) from a research fixture: mode 'ppd' joins through PPD, mode 'network' only appears on the home network (unmanaged). A 'ppd' device without a fixture (named here) joins without a declaration, which PPD allows. Simulated addresses use the documentation range 192.0.2.0/24 and locally administered MACs. Devices not listed here are shown as real devices, named from their registration.",
   "devices": [
     {
       "device_id": "superduperlight-bulb-esp32",
@@ -73,6 +73,21 @@
         "mac": "02:50:50:00:00:03",
         "ip": "192.0.2.33",
         "hostname": "level-lock"
+      }
+    },
+    {
+      "device_id": "plugwell-p1-01",
+      "kind": "simulated",
+      "name": "Plugwell Smart Plug P1",
+      "short_name": "Plugwell Plug",
+      "category": "plug",
+      "category_label": "Smart plug",
+      "icon": "plug",
+      "simulator": {
+        "mode": "ppd",
+        "mac": "02:50:50:00:00:05",
+        "ip": "192.0.2.35",
+        "hostname": "plugwell-p1"
       }
     },
     {

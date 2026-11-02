@@ -81,7 +81,7 @@ export function compileHouseholdPolicy(household: Household, devices: Device[], 
     const rule: PolicyRule = { rule_id: ruleId(key), ...g.fields, effect: strictest.effect, ...(constraints ? { constraints } : {}) }
     const old = before.get(key)
     const change = !old ? 'added' : old.effect !== rule.effect || !sameConstraints(old.constraints, rule.constraints) ? 'changed' : 'unchanged'
-    rules.push({ ...rule, reason: strictest.reason, flows: g.flows, change })
+    rules.push({ ...rule, reason: strictest.reason, flows: g.flows, change, limited: strictest.effect === 'allow' && !!strictest.constraints })
   }
   rules.sort((a, b) => a.rule_id.localeCompare(b.rule_id))
 
@@ -91,7 +91,7 @@ export function compileHouseholdPolicy(household: Household, devices: Device[], 
   const policy: Omit<Policy, 'policy_id'> = {
     taxonomy: { release: TAXONOMY_RELEASE },
     scope: 'home',
-    rules: rules.map(({ reason: _r, flows: _f, change: _c, ...rule }) => rule),
+    rules: rules.map(({ reason: _r, flows: _f, change: _c, limited: _l, ...rule }) => rule),
   }
   return { preview: { base_policy_id: published?.policy_id ?? null, rules, removed, warnings, devices: devices.length }, policy }
 }

@@ -29,7 +29,7 @@ export type DeclarationState =
   | 'needs_reassociation'
   | 'broken'
 
-export type DeviceIcon = 'thermostat' | 'lock' | 'tv' | 'camera' | 'bulb'
+export type DeviceIcon = 'thermostat' | 'lock' | 'tv' | 'camera' | 'bulb' | 'plug'
 
 /** What a rule says to do with a flow it matches (a PPD rule effect). Stricter wins: dont_allow beats allow. */
 export type RuleEffect = 'allow' | 'dont_allow'
@@ -384,6 +384,11 @@ export interface CompiledRule extends PolicyRule {
   /** Which device flows produced it. */
   flows: { device_id: string; flow_id: string; title: string }[]
   change: 'added' | 'changed' | 'unchanged'
+  /**
+   * True when a household rule's condition ("allow only if …") set the constraints. Constraints the device declared
+   * itself are copied into the rule too, but those are not a household limit.
+   */
+  limited: boolean
 }
 
 export interface PublishPreview {

@@ -5,7 +5,7 @@ import { FlowRow, ProvenanceCard, nounOf } from '../components/DeviceReport'
 import { Icon } from '../components/icons'
 import { useDevice, useHousehold, useRules } from '../state/data'
 import { needsAttention } from '../lib/verdicts'
-import { timeAgo } from '../lib/device'
+import { declaredNothing, timeAgo } from '../lib/device'
 
 /** Screen 2a: a device that supports PPD joined the home and sent its declaration. */
 export default function NewDevice() {
@@ -28,6 +28,7 @@ export default function NewDevice() {
   const rest = conflicts.slice(3)
   const others = d.flows.length - conflicts.length
   const ruleCount = rules.length
+  const silent = declaredNothing(d)
 
   return (
     <div className="screen">
@@ -37,14 +38,14 @@ export default function NewDevice() {
           <Tile tone="green" style={{ marginTop: 12 }}><Icon name="check" size={20} /></Tile>
           <div className="cb">
             <span className="ttl" style={{ fontWeight: 500 }}>{d.short_name} joined your home</span>
-            <span className="sub">It registered {timeAgo(entry.added_at)} and sent its declaration.</span>
+            <span className="sub">It registered {timeAgo(entry.added_at)} {silent ? 'without a declaration.' : 'and sent its declaration.'}</span>
           </div>
         </Cell>
       </Group>
       <div className="gap" />
       <ProvenanceCard device={d} ruleCount={ruleCount} sub={`${d.category_label} · Gets your rules`} stacked />
       <div className="sf">
-        <b>Nothing was changed on {nounOf(d)}.</b> These verdicts compare what it says it does with your rules. The app can’t switch anything on or off in the device, or check that it follows your rules.
+        <b>Nothing was changed on {nounOf(d)}.</b> {silent ? '' : 'These verdicts compare what it says it does with your rules. '}The app can’t switch anything on or off in the device, or check that it follows your rules.
       </div>
 
       {conflicts.length > 0 && (

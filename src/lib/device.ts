@@ -14,6 +14,9 @@ export const STATE_LABEL: Record<DeclarationState, string> = {
 /** True for devices that talk to the PPD gateway (real or simulated); research entries never do. */
 export const isConnected = (d: DeviceSummary) => d.kind === 'real' || d.kind === 'simulated'
 
+/** A connected device that speaks PPD but sent no declaration (optional in PPD): it gets the rules, there is nothing to compare. */
+export const declaredNothing = (d: DeviceSummary) => isConnected(d) && !d.declaration
+
 /** A connected device that currently holds the household rules: associated, and not reporting behaviour against them. */
 export const hasRules = (d: Device) => d.live?.association.status === 'associated' && !d.live.runtime.conflict_active
 
@@ -26,8 +29,13 @@ export function forgetBlocker(d: Device): string | null {
 }
 
 /** A device's rules status. Research entries are never connected, whatever their example declaration says. */
-export function stateLabel(d: DeviceSummary) {
+export function stateLabel(d: DeviceSummary | Device) {
   if (d.kind === 'research') return d.source === 'declared' ? 'Example declaration · not connected' : 'Advisory · not connected'
+  // A connected device without a declaration still gets the rules: say how that is going, not "advisory".
+  if (declaredNothing(d)) {
+    if (!('live' in d) || !d.live) return 'Gets your rules · no declaration'
+    return d.live.association.status === 'associated' ? STATE_LABEL.rules_confirmed : d.live.association.label
+  }
   return STATE_LABEL[d.declaration?.state ?? 'advisory']
 }
 

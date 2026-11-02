@@ -82,6 +82,9 @@ export function PublishedRules() {
 
   // Which device flows each sent rule covers, from the compile (same rule ids: one per exact dataflow).
   const flowsOf = new Map((preview?.rules ?? []).map((r) => [r.rule_id, r.flows]))
+  // Rules whose constraints a household condition set; the rest only repeat what the device declared.
+  const limitedIds = new Set((preview?.rules ?? []).filter((r) => r.limited).map((r) => r.rule_id))
+  const limitText = (r: PolicyRule) => (limitedIds.has(r.rule_id) ? conditionText(r) : '')
   const name = (id: string) => devices?.find((d) => d.id === id)?.short_name ?? id
   const byDevice = new Map<string, { rule: PolicyRule; titles: string[] }[]>()
   for (const rule of policy.rules) {
@@ -139,7 +142,7 @@ export function PublishedRules() {
             <div key={id}>
               <Expander open={open === id} onToggle={() => toggle(id)} sub={`${exact(list.length)} apply · ${parts.join(' · ')}${both ? ` · ${both} shared with ${byDevice.size > 2 ? 'other devices' : 'the other device'}` : ''}`}>{name(id)}</Expander>
               {open === id && list.sort((a, b) => (a.rule.effect === b.rule.effect ? 0 : a.rule.effect === 'deny' ? -1 : 1)).map(({ rule, titles }) => (
-                <ExactRule key={rule.rule_id} rule={rule} indent open={raw === `${id}:${rule.rule_id}`} onToggle={() => setRaw(raw === `${id}:${rule.rule_id}` ? null : `${id}:${rule.rule_id}`)}
+                <ExactRule key={rule.rule_id} rule={rule} limited={!!limitText(rule)} indent open={raw === `${id}:${rule.rule_id}`} onToggle={() => setRaw(raw === `${id}:${rule.rule_id}` ? null : `${id}:${rule.rule_id}`)}
                   title={<>{rule.effect === 'deny' ? 'Never' : 'Allowed'}{limitText(rule)}</>} sub={titles.join(' · ')} />
               ))}
             </div>
@@ -147,7 +150,7 @@ export function PublishedRules() {
         })}
         <Expander open={open === 'all'} onToggle={() => toggle('all')} sub="As the gateway and the CableLabs dashboard show them">{`All ${exact(policy.rules.length)} in PPD terms`}</Expander>
         {open === 'all' && policy.rules.map((r) => (
-          <ExactRule key={r.rule_id} rule={r} open={raw === `all:${r.rule_id}`} onToggle={() => setRaw(raw === `all:${r.rule_id}` ? null : `all:${r.rule_id}`)}
+          <ExactRule key={r.rule_id} rule={r} limited={!!limitText(r)} open={raw === `all:${r.rule_id}`} onToggle={() => setRaw(raw === `all:${r.rule_id}` ? null : `all:${r.rule_id}`)}
             title={<>{r.effect === 'deny' ? 'Never' : 'Allowed'} <span className="sub mono" style={{ fontWeight: 400 }}>{r.rule_id}</span></>} sub={ruleText(r)} />
         ))}
       </Group>
@@ -157,8 +160,8 @@ export function PublishedRules() {
 }
 
 /** One exact rule as a row; tapping it shows the rule as the gateway serves it, in raw JSON. */
-function ExactRule({ rule, title, sub, indent, open, onToggle }: { rule: PolicyRule; title: ReactNode; sub: string; indent?: boolean; open: boolean; onToggle: () => void }) {
-  const color = rule.effect === 'deny' ? KIND.never.color : limitText(rule) ? KIND.limited.color : KIND.allow.color
+function ExactRule({ rule, limited, title, sub, indent, open, onToggle }: { rule: PolicyRule; limited: boolean; title: ReactNode; sub: string; indent?: boolean; open: boolean; onToggle: () => void }) {
+  const color = rule.effect === 'deny' ? KIND.never.color : limited ? KIND.limited.color : KIND.allow.color
   return (
     <>
       <button className="cell xr" aria-expanded={open} onClick={onToggle} style={indent ? { paddingLeft: 32 } : undefined}>
@@ -173,8 +176,8 @@ function ExactRule({ rule, title, sub, indent, open, onToggle }: { rule: PolicyR
   )
 }
 
-/** A household limit a rule carries (protocol-04 section 7.12), as " · only if …". */
-function limitText(r: PolicyRule): string {
+/** A household limit a rule carries (protocol-04 section 7.12), as " · only if …". Only for rules a household condition limited. */
+function conditionText(r: PolicyRule): string {
   if (r.effect !== 'allow') return ''
   if (r.constraints?.processing_boundary === 'ppd:inHomeOnly') return ' · only if processed in your home'
   if (r.constraints?.processing_boundary === 'ppd:onDeviceOnly') return ' · only if it stays on the device'

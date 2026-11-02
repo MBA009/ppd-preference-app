@@ -3,9 +3,9 @@ import type { Device, DeviceSummary, Flow } from '../api'
 import { DocIcon, ShieldCheck } from './icons'
 import { Cell, Expander, Group, SectionHeader, Tile, VerdictChips, VerdictMark } from './ui'
 import { VERDICT_ORDER, countVerdicts, needsAttention } from '../lib/verdicts'
-import { vendorOf } from '../lib/device'
+import { declaredNothing, vendorOf } from '../lib/device'
 
-const NOUN: Record<string, string> = { thermostat: 'the thermostat', lock: 'the lock', tv: 'the TV', camera: 'the camera', bulb: 'the bulb' }
+const NOUN: Record<string, string> = { thermostat: 'the thermostat', lock: 'the lock', tv: 'the TV', camera: 'the camera', bulb: 'the bulb', plug: 'the plug' }
 export const nounOf = (d: DeviceSummary) => NOUN[d.icon] ?? 'the device'
 
 export const flowPath = (deviceId: string, flowId: string) => `/device/${encodeURIComponent(deviceId)}/flow/${encodeURIComponent(flowId)}`
@@ -14,8 +14,23 @@ export const flowPath = (deviceId: string, flowId: string) => `/device/${encodeU
 export function ProvenanceCard({ device, ruleCount, sub, stacked }: {
   device: Device; ruleCount: number; sub?: string; stacked?: boolean
 }) {
+  if (declaredNothing(device)) {
+    return (
+      <Group>
+        <Cell className="t" chevron={false}>
+          <Tile tone="grey"><DocIcon /></Tile>
+          <div className="cb">
+            <span className="ttl">No declaration from the device</span>
+            <span className="sub">
+              {sub ? `${sub}. ` : ''}{device.short_name} hasn’t said what it does with your data, so there is nothing to compare with your rules. That’s allowed in PPD: it still gets your rules, and they apply to everything it does.
+            </span>
+          </div>
+        </Cell>
+      </Group>
+    )
+  }
   const counts = countVerdicts(device)
-  const checked = `${device.flows.length} flows checked against your ${ruleCount} ${ruleCount === 1 ? 'rule' : 'rules'}`
+  const checked =`${device.flows.length} flows checked against your ${ruleCount} ${ruleCount === 1 ? 'rule' : 'rules'}`
   const declared = device.source === 'declared'
   const example = declared && device.kind === 'research'
   return (

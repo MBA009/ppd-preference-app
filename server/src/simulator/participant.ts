@@ -12,7 +12,8 @@ import type { PolicyRule } from '../../../shared/types'
 export interface ParticipantIdentity {
   deviceId: string
   registration: Record<string, string>
-  declaration: { device_id: string; declaration_id: string; taxonomy: { release: string }; statements: object[] }
+  /** Absent for a device that speaks PPD but never describes itself (declaring is optional, protocol-04). */
+  declaration?: { device_id: string; declaration_id: string; taxonomy: { release: string }; statements: object[] }
 }
 
 export interface ParticipantTls { ca?: Buffer; cert?: Buffer; key?: Buffer; servername?: string }
@@ -93,12 +94,16 @@ export class Participant {
         this.event('joining', 'Registered')
         // Describing itself is optional (protocol-04); acknowledging the household policy is not. A rejected
         // declaration is the vendor's error: carry on and still fetch and acknowledge the policy.
-        try {
-          await this.request('POST', base + 'device/declaration', this.identity.declaration)
-          this.event('joining', `Declared ${this.identity.declaration.statements.length} data flows`)
-        } catch (e) {
-          if (!(e instanceof RequestError) || (e.status !== 400 && e.status !== 422)) throw e
-          this.event('joining', 'Declaration rejected by the gateway; continuing without it', e.message)
+        if (!this.identity.declaration) {
+          this.event('joining', 'Sent no declaration (optional in PPD)')
+        } else {
+          try {
+            await this.request('POST', base + 'device/declaration', this.identity.declaration)
+            this.event('joining', `Declared ${this.identity.declaration.statements.length} data flows`)
+          } catch (e) {
+            if (!(e instanceof RequestError) || (e.status !== 400 && e.status !== 422)) throw e
+            this.event('joining', 'Declaration rejected by the gateway; continuing without it', e.message)
+          }
         }
         while (this.running) {
           const policy = (await this.request('GET', base + 'policy/effective/' + encodeURIComponent(this.identity.deviceId))) as { policy_id: string; policy_hash: string; renewal_interval?: number; rules?: PolicyRule[] }

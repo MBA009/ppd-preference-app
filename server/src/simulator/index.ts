@@ -11,7 +11,8 @@ import { Participant, type ParticipantIdentity, type ParticipantTls, type Runtim
 
 /**
  * The demo device simulator. Each simulated device comes from a research fixture and either joins through
- * PPD (a Participant talking to the gateway like a real device) or only appears on the home network.
+ * PPD (a Participant talking to the gateway like a real device) or only appears on the home network. A PPD device
+ * without a fixture is named by its registry entry and joins without a declaration (declaring is optional).
  * Network presence is a line in the DHCP lease file the gateway reads, so the gateway sees simulated devices
  * exactly as it would see real ones on its router. Nothing here writes into the household directly: the app
  * learns about simulated devices from the gateway.
@@ -53,8 +54,9 @@ export class Simulator {
     private readonly tlsServerName: string,
   ) {
     for (const entry of registry) {
-      if (entry.kind !== 'simulated' || !entry.simulator || !entry.fixture || !fixtures.devices.has(entry.fixture)) continue
-      const model = MODELS[entry.fixture] ?? null
+      if (entry.kind !== 'simulated' || !entry.simulator) continue
+      if (entry.fixture ? !fixtures.devices.has(entry.fixture) : entry.simulator.mode !== 'ppd' || !entry.name) continue
+      const model = (entry.fixture && MODELS[entry.fixture]) || null
       this.slots.set(entry.device_id, { entry: entry as SimSlot['entry'], wanted: 'off', participant: null, model, state: { ...model?.initial }, behavior: 'follows', events: [], lastPeriodic: 0, conflicting: new Set() })
     }
   }
@@ -219,7 +221,8 @@ export class Simulator {
    * a device without PPD sends everything.
    */
   private fire(slot: SimSlot, label: string, statementIds: string[]): void {
-    const fixture = this.fixtures.devices.get(slot.entry.fixture!)!
+    const fixture = slot.entry.fixture && this.fixtures.devices.get(slot.entry.fixture)
+    if (!fixture) return
     const ppd = slot.entry.simulator.mode === 'ppd'
     const rules = slot.participant?.policy?.rules ?? []
     const flows: SimEvent['flows'] = []
@@ -276,11 +279,24 @@ export class Simulator {
     return slot.participant
   }
 
+  /** The research fixture, or null for a device that has none (it joins without a declaration). */
+  private fixtureOf(slot: SimSlot) {
+    return (slot.entry.fixture && this.fixtures.devices.get(slot.entry.fixture)) || null
+  }
+
+  /** Name and icon from the research fixture, else from the registry entry. */
+  private meta(slot: SimSlot): Pick<SimDevice, 'name' | 'short_name' | 'icon'> {
+    const fixture = this.fixtureOf(slot)
+    const name = slot.entry.name ?? fixture?.name ?? slot.entry.device_id
+    return { name, short_name: slot.entry.short_name ?? fixture?.short_name ?? name, icon: slot.entry.icon ?? fixture?.icon ?? 'bulb' }
+  }
+
   /** Registration and declaration from the research fixture: one statement per source-linked flow, core terms only. */
   private identity(slot: SimSlot): ParticipantIdentity {
-    const fixture = this.fixtures.devices.get(slot.entry.fixture!)!
+    const fixture = this.fixtureOf(slot)
+    const { name } = this.meta(slot)
     const sim = slot.entry.simulator
-    const statements = fixture.flows
+    const statements = (fixture?.flows ?? [])
       .filter((f) => f.evidence === 'source_linked')
       .map((f) => {
         const statement: Record<string, unknown> = { statement_id: f.id.slice(f.id.indexOf('.') + 1) }
@@ -292,14 +308,16 @@ export class Simulator {
       deviceId: slot.entry.device_id,
       registration: {
         device_id: slot.entry.device_id,
-        manufacturer: fixture.name.split(' ')[0],
-        model: fixture.name,
+        manufacturer: slot.entry.match_manufacturer ?? name.split(' ')[0],
+        model: name,
         firmware_version: 'simulated-1',
         mac_address: sim.mac,
         ip_address: sim.ip,
         hostname: sim.hostname,
       },
-      declaration: { device_id: slot.entry.device_id, declaration_id: `${fixture.declaration_id_example}-declaration`, taxonomy: { release: TAXONOMY_RELEASE }, statements },
+      declaration: fixture
+        ? { device_id: slot.entry.device_id, declaration_id: `${fixture.declaration_id_example}-declaration`, taxonomy: { release: TAXONOMY_RELEASE }, statements }
+        : undefined,
     }
   }
 
@@ -321,7 +339,6 @@ export class Simulator {
   }
 
   private view(slot: SimSlot): SimDevice {
-    const fixture = this.fixtures.devices.get(slot.entry.fixture!)!
     const sim = slot.entry.simulator
     const p = slot.participant
     const state: SimDevice['state'] =
@@ -330,9 +347,7 @@ export class Simulator {
         : slot.wanted === 'off' ? 'off' : p?.active ? (p.state === 'paused' ? 'joining' : p.state) : 'paused'
     return {
       id: slot.entry.device_id,
-      name: fixture.name,
-      short_name: fixture.short_name,
-      icon: fixture.icon,
+      ...this.meta(slot),
       mode: sim.mode,
       wanted: slot.wanted,
       state,
