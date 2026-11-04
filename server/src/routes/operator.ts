@@ -97,9 +97,17 @@ export function operatorRoutes(app: FastifyInstance, ctx: AppContext): void {
 
   app.get('/api/household/published', async (): Promise<Policy | null> => ctx.gateway.defaultPolicy().catch(unavailable))
 
-  app.get('/api/household/preview', async () => {
+  /**
+   * What sending now would change. The whole household policy is up to 6,272 policy rules, so by default only the
+   * rules the app shows are listed (those a declared flow matches, or a household condition limits) with counts for
+   * the rest; ?all=1 lists every rule.
+   */
+  app.get<{ Querystring: { all?: string } }>('/api/household/preview', async (req) => {
     const [household, devices, published] = await Promise.all([ctx.household(), ctx.liveDevices().catch(unavailable), ctx.gateway.defaultPolicy().catch(unavailable)])
-    return { ...compileHouseholdPolicy(household, devices, published).preview, sync: ctx.publisher.state }
+    const preview = compileHouseholdPolicy(household, devices, published).preview
+    const counts = { rule_count: preview.rules.length, changes: preview.rules.filter((r) => r.change !== 'unchanged').length + preview.removed.length }
+    if (req.query.all === '1') return { ...preview, ...counts, sync: ctx.publisher.state }
+    return { ...preview, ...counts, rules: preview.rules.filter((r) => r.flows.length || r.limited), removed: [], sync: ctx.publisher.state }
   })
 
   /** Sends now. The app does not need this (app-api sends on its own, see autopublish.ts); kept for operators and tests. */

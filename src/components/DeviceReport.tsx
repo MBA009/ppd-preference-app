@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Device, DeviceSummary, Flow } from '../api'
-import { DocIcon, ShieldCheck } from './icons'
+import { DocIcon, NoDeclarationIcon, ShieldCheck } from './icons'
 import { Cell, Expander, Group, SectionHeader, Tile, VerdictChips, VerdictMark } from './ui'
 import { VERDICT_ORDER, countVerdicts, needsAttention } from '../lib/verdicts'
 import { declaredNothing, vendorOf } from '../lib/device'
@@ -11,35 +11,28 @@ export const nounOf = (d: DeviceSummary) => NOUN[d.icon] ?? 'the device'
 export const flowPath = (deviceId: string, flowId: string) => `/device/${encodeURIComponent(deviceId)}/flow/${encodeURIComponent(flowId)}`
 
 /** "Declared by the device" (or "Not declared by LG") plus the verdict chips. Used by 1b, 1c, 2a and 3c. */
-export function ProvenanceCard({ device, ruleCount, sub, stacked }: {
-  device: Device; ruleCount: number; sub?: string; stacked?: boolean
+export function ProvenanceCard({ device, sub, stacked }: {
+  device: Device; sub?: string; stacked?: boolean
 }) {
   const counts = countVerdicts(device)
+  // Registered, no declaration: no per-flow verdicts, and a line saying why. Nothing is borrowed from our library.
   if (declaredNothing(device)) {
-    const kind = `${device.category_label.toLowerCase()}s`
     return (
       <Group>
-        <Cell className="t" chevron={false}>
-          <Tile tone="grey"><DocIcon /></Tile>
+        <Cell className="t" chevron={false} style={{ alignItems: 'flex-start' }}>
+          <Tile tone="grey" style={{ marginTop: 12 }}><NoDeclarationIcon /></Tile>
           <div className="cb">
-            <span className="ttl">No declaration from the device</span>
+            <span className="ttl">Registered, no declaration</span>
             <span className="sub">
-              {sub ? `${sub}. ` : ''}{device.short_name} hasn’t said what it does with your data. That’s allowed in PPD: it still gets your rules.{' '}
-              {device.expected_from
-                ? `These ${device.flows.length} flows are what ${kind} like the ${device.expected_from.short_name} do, from our research. Your rules are checked against them, and the device gets rules for them.`
-                : 'There is nothing to compare with your rules, and they apply to everything it does.'}
+              {sub ? `${sub}. ` : ''}{device.short_name} fetched your household policy but hasn’t said what it does with your data. That’s allowed in PPD. With nothing to compare, there are no per-flow verdicts: it’s assumed to follow it, and we can’t check that it does.
             </span>
           </div>
         </Cell>
-        {device.expected_from && (
-          <Cell chevron={false} style={{ padding: '10px 16px' }}>
-            <VerdictChips counts={counts} order={VERDICT_ORDER} />
-          </Cell>
-        )}
       </Group>
     )
   }
-  const checked =`${device.flows.length} flows checked against your ${ruleCount} ${ruleCount === 1 ? 'rule' : 'rules'}`
+  // Not "your 42 rules": how many rules the household has says nothing about this device.
+  const checked = `${device.flows.length} ${device.flows.length === 1 ? 'flow' : 'flows'} checked against your household policy`
   const declared = device.source === 'declared'
   const example = declared && device.kind === 'research'
   return (
@@ -86,7 +79,8 @@ export function AttentionList({ device, limit = 5, heading = 'Conflicts with you
 }) {
   const [open, setOpen] = useState(false)
   const attention = device.flows.filter(needsAttention)
-  const others = device.flows.filter((f) => !needsAttention(f))
+  const decisions = device.flows.filter((f) => f.evaluation.verdict === 'decision_required')
+  const others = device.flows.filter((f) => !needsAttention(f) && f.evaluation.verdict !== 'decision_required')
   const shown = open ? attention : attention.slice(0, limit)
   const overflow = attention.length - Math.min(attention.length, limit)
   const allMatch = others.every((f) => f.evaluation.verdict === 'compatible')
@@ -98,6 +92,13 @@ export function AttentionList({ device, limit = 5, heading = 'Conflicts with you
 
   return (
     <>
+      {decisions.length > 0 && (
+        <>
+          <SectionHeader>Needs your decision · {decisions.length}</SectionHeader>
+          <Group>{decisions.map((f) => <FlowRow key={f.id} device={device} flow={f} />)}</Group>
+          <div className="sf">None of your rules settles these, so your devices get no rule for them. Open one to answer with a new rule.</div>
+        </>
+      )}
       {attention.length > 0 ? (
         <SectionHeader>{heading} · {attention.length}</SectionHeader>
       ) : (

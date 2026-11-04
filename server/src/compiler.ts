@@ -1,22 +1,25 @@
 import { createHash } from 'node:crypto'
 import { conditionConstraints, conditionOf, ruleCovers } from '../../shared/scope'
-import { FIELDS, TAXONOMY_RELEASE, checkDataflow, type Constraints, type Field } from '../../shared/taxonomy'
-import type { CompiledRule, Device, Household, Policy, PolicyRule, PublishPreview, Rule } from '../../shared/types'
+import { CORE_TERMS, FIELDS, TAXONOMY_RELEASE, checkDataflow, type Constraints, type Field } from '../../shared/taxonomy'
+import type { CompiledRule, Device, Household, Policy, PolicyRule, PublishPreview, Rule, Taxonomy } from '../../shared/types'
 import { tupleKey } from './live'
 
 /**
- * Compiles the household's authoring rules into one PPD household policy (draft-dsmullen-ppd-protocol-04
- * section 7.11) for the devices the gateway knows.
+ * Compiles the household policy into the policy rules every device receives (draft-dsmullen-ppd-protocol-04
+ * sections 7.10-7.11). One policy for the whole home, the same for every device, as the CableLabs gateway serves it.
  *
- * - Every rule is atomic: the five core fields of one dataflow some device declared, and allow or deny.
- *   Devices match rules on exact core terms, so a rule per declared dataflow is what they can act on.
- * - For each declared flow the household's choice is the strictest enabled rule that covers it (Never, then
- *   Allowed only if, then Allowed); otherwise "allow" when the flow stays in the home and "deny" when it
- *   leaves it, the same default the app's verdicts use. The household is never asked about single flows.
- * - Flows that share one dataflow get one rule; any "never" makes it deny.
- * - Constraints come from the declaration; an "allowed only if" rule adds its condition (protocol-04
- *   section 7.12). Only qualifiers valid for the action are emitted (processing_boundary only on use and
- *   inference).
+ * - Every policy rule is atomic: one core term for each of the five fields, and allow or deny.
+ * - The policy covers every core dataflow the household policy has an answer for (up to 6,272 in
+ *   ppd-core-2026-05), not only what devices declared. A device that declares nothing still gets rules for
+ *   whatever it does, and finds them by its own dataflows.
+ * - The household's answer for a dataflow is the strictest enabled rule that covers it (Never, then Allowed only
+ *   if, then Allowed). A dataflow no rule covers gets no policy rule: there is no default outside the household's
+ *   rules (the draft defines none).
+ * - Declarations do not shape the policy. They only say which policy rules match which device flows, for the app's
+ *   display. One exception: a household rule scoped to a qualifier the device declares (such as "kept forever")
+ *   can only match a declared flow, so it is applied to that flow's dataflow when it is stricter.
+ * - Constraints come only from a household condition ("Allowed only if", protocol-04 section 7.12). Only
+ *   qualifiers valid for the action are emitted (processing_boundary only on use and inference).
  */
 
 type Choice = { effect: 'allow' | 'deny'; reason: string; constraints?: Constraints }
@@ -24,17 +27,15 @@ type Choice = { effect: 'allow' | 'deny'; reason: string; constraints?: Constrai
 /** Deny, then allow under a condition, then allow. */
 const strictness = (c: Choice) => (c.effect === 'deny' ? 2 : c.constraints ? 1 : 0)
 
-function ruleChoice(flow: Device['flows'][number], rules: Rule[]): Choice {
-  const hits = rules.filter((r) => ruleCovers(r, flow.taxonomy))
+function ruleChoice(t: Taxonomy, rules: Rule[]): Choice | null {
+  const hits = rules.filter((r) => ruleCovers(r, t))
   const no = hits.find((r) => r.effect === 'dont_allow')
   if (no) return { effect: 'deny', reason: `Your rule “${no.title}”` }
   const limited = hits.find((r) => conditionOf(r))
   if (limited) return { effect: 'allow', reason: `Your rule “${limited.title}”`, constraints: conditionConstraints(conditionOf(limited)!) }
   const yes = hits.find((r) => r.effect === 'allow')
   if (yes) return { effect: 'allow', reason: `Your rule “${yes.title}”` }
-  return flow.taxonomy.handling_context === 'ppd:householdContext'
-    ? { effect: 'allow', reason: 'It stays in your home' }
-    : { effect: 'deny', reason: 'None of your rules allows this' }
+  return null
 }
 
 /** Keeps only qualifiers the taxonomy defines for this action. */
@@ -50,24 +51,36 @@ function validConstraints(action: string, c: Constraints | undefined): Constrain
 const sameConstraints = (a: Constraints | undefined, b: Constraints | undefined) => JSON.stringify(a ?? {}) === JSON.stringify(b ?? {})
 const ruleId = (key: string) => 'r-' + createHash('sha256').update(key).digest('hex').slice(0, 10)
 
+/** Every core dataflow: each combination of the five fields' core terms. */
+export const CORE_DATAFLOWS: Record<Field, string>[] = FIELDS.reduce<Record<Field, string>[]>(
+  (acc, f) => acc.flatMap((partial) => Object.keys(CORE_TERMS[f]).map((term) => ({ ...partial, [f]: term }))),
+  [{} as Record<Field, string>],
+)
+
 export function compileHouseholdPolicy(household: Household, devices: Device[], published: Policy | null): { preview: PublishPreview; policy: Omit<Policy, 'policy_id'> } {
-  const groups = new Map<string, { fields: Record<Field, string>; choices: Choice[]; flows: CompiledRule['flows']; declared: Constraints[] }>()
+  const groups = new Map<string, { fields: Record<Field, string>; choices: Choice[]; flows: CompiledRule['flows'] }>()
   const warnings: string[] = []
 
+  // The household policy itself: its answer for every core dataflow.
+  for (const fields of CORE_DATAFLOWS) {
+    const choice = ruleChoice({ ...fields, constraints: {} }, household.rules)
+    if (choice) groups.set(tupleKey(fields), { fields, choices: [choice], flows: [] })
+  }
+
+  // Declared flows: which policy rule each one matches, for the app's display.
   for (const device of devices) {
     for (const flow of device.flows) {
       const problems = checkDataflow(flow.id, flow.taxonomy)
       if (problems.length) {
-        warnings.push(`${device.short_name}: “${flow.title}” is left out because ${problems[0].message}.`)
+        warnings.push(`${device.short_name}: “${flow.title}” matches no policy rule because ${problems[0].message}.`)
         continue
       }
-      const choice = ruleChoice(flow, household.rules)
-      const fields = Object.fromEntries(FIELDS.map((f) => [f, flow.taxonomy[f]])) as Record<Field, string>
-      const key = tupleKey(fields)
-      const g = groups.get(key) ?? { fields, choices: [], flows: [], declared: [] }
-      g.choices.push(choice)
+      const key = tupleKey(flow.taxonomy)
+      const choice = ruleChoice(flow.taxonomy, household.rules)
+      const g = groups.get(key) ?? (choice ? { fields: Object.fromEntries(FIELDS.map((f) => [f, flow.taxonomy[f]])) as Record<Field, string>, choices: [], flows: [] } : undefined)
+      if (!g) continue
+      if (choice) g.choices.push(choice)
       g.flows.push({ device_id: device.id, flow_id: flow.id, title: flow.title })
-      g.declared.push(flow.taxonomy.constraints)
       groups.set(key, g)
     }
   }
@@ -76,17 +89,15 @@ export function compileHouseholdPolicy(household: Household, devices: Device[], 
   const rules: CompiledRule[] = []
   for (const [key, g] of groups) {
     const strictest = g.choices.reduce((a, b) => (strictness(b) > strictness(a) ? b : a))
-    const declared = g.declared.every((c) => sameConstraints(c, g.declared[0])) ? g.declared[0] : undefined
-    const constraints = validConstraints(g.fields.action, strictest.effect === 'allow' && strictest.constraints ? { ...declared, ...strictest.constraints } : declared)
+    const constraints = validConstraints(g.fields.action, strictest.effect === 'allow' ? strictest.constraints : undefined)
     const rule: PolicyRule = { rule_id: ruleId(key), ...g.fields, effect: strictest.effect, ...(constraints ? { constraints } : {}) }
     const old = before.get(key)
     const change = !old ? 'added' : old.effect !== rule.effect || !sameConstraints(old.constraints, rule.constraints) ? 'changed' : 'unchanged'
-    rules.push({ ...rule, reason: strictest.reason, flows: g.flows, change, limited: strictest.effect === 'allow' && !!strictest.constraints })
+    rules.push({ ...rule, reason: strictest.reason, flows: g.flows, change, limited: !!constraints })
   }
   rules.sort((a, b) => a.rule_id.localeCompare(b.rule_id))
 
   const removed = [...before.entries()].filter(([key]) => !groups.has(key)).map(([, r]) => r)
-  if (!devices.length) warnings.push('No device is connected to the gateway, so the policy would have no rules.')
 
   const policy: Omit<Policy, 'policy_id'> = {
     taxonomy: { release: TAXONOMY_RELEASE },

@@ -11,6 +11,7 @@ import type { Constraints, Field } from './taxonomy'
 export type Verdict =
   | 'compatible' //                 shown as "Matches your rules"
   | 'conditionally_satisfiable' //  "With limits"
+  | 'decision_required' //          "Needs your decision": none of the household's rules covers the flow
   | 'unsatisfiable' //              "Conflicts with your rules"
   | 'indeterminate' //              not readable: no source for the flow, or a term the comparison cannot resolve (never asked about)
 
@@ -211,11 +212,6 @@ export interface DeviceSummary {
 
 export interface Device extends DeviceSummary {
   flows: Flow[]
-  /**
-   * Set when the device declared nothing: its flows are what a researched device in the same category does
-   * (from our library), so the household policy covers them. Not something the device said.
-   */
-  expected_from?: { id: string; short_name: string }
   /** Present for devices known to the PPD gateway (real hardware or simulated participants). */
   live?: LiveState
 }
@@ -286,7 +282,8 @@ export interface LiveState {
   publication: 'current' | 'waiting' | 'not_published'
   identity: { auth_method: string; label: string; tone: Tone; certificate_bound: boolean }
   network: { observed: boolean; label: string; mac_address: string | null; ip_address: string | null; hostname: string | null }
-  runtime: { conflict_active: boolean; behavior_mode: string | null; conflicting_purposes: string[] }
+  /** The device's own runtime-status report: a CableLabs gateway demo extension, not part of PPD. Self-reported. */
+  runtime: { conflict_active: boolean; behavior_mode: string | null; conflicting_purposes: string[]; reported_at: string | null }
   badges: { label: string; tone: Tone }[]
 }
 
@@ -386,20 +383,21 @@ export interface SimConsole {
 /** One atomic rule the compiler wants to publish, and why. */
 export interface CompiledRule extends PolicyRule {
   reason: string
-  /** Which device flows produced it. */
+  /** Which declared device flows it matches (for display; the policy itself does not depend on them). */
   flows: { device_id: string; flow_id: string; title: string }[]
   change: 'added' | 'changed' | 'unchanged'
-  /**
-   * True when a household rule's condition ("allow only if …") set the constraints. Constraints the device declared
-   * itself are copied into the rule too, but those are not a household limit.
-   */
+  /** True when a household rule's condition ("allow only if …") set the constraints: the only source of constraints. */
   limited: boolean
 }
 
 export interface PublishPreview {
   base_policy_id: string | null
+  /** By default only the rules the app shows (a declared flow matches them, or a household condition limits them). */
   rules: CompiledRule[]
   removed: PolicyRule[]
+  /** How many policy rules the whole household policy has, and how many differ from what the gateway serves. */
+  rule_count?: number
+  changes?: number
   /** Automatic sending: changes listed above go out within seconds. */
   sync?: SyncState
   warnings: string[]

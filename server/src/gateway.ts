@@ -61,6 +61,7 @@ export interface GatewayDevice {
   policy_hash?: string
   conflict_active?: boolean
   behavior_mode?: string
+  last_runtime_reported_at?: string
   conflicting_purposes?: string[]
   auth_method?: string
   cert_fingerprint?: string

@@ -41,6 +41,9 @@ const CONDITION: Record<string, string> = { 'ppd:ephemeral': 'only if not kept',
 
 const FIELDS = ['data_type', 'purpose', 'action', 'source', 'handling_context'] as const
 
+
+/** The console's follows/ignores as the runtime report's behavior_mode, in the ESP32 bulb's values. */
+const BEHAVIOR_MODE: Record<SimConsole['behavior'], string> = { follows: 'adaptive', ignores: 'fixed-permissive' }
 export class Simulator {
   private readonly slots = new Map<string, SimSlot>()
   private timer: NodeJS.Timeout | null = null
@@ -174,13 +177,18 @@ export class Simulator {
     const slot = this.anySlot(id)
     if (slot.entry.simulator.mode !== 'ppd') throw Object.assign(new Error(`${id} does not support PPD, so it has no rules to follow.`), { statusCode: 400 })
     slot.behavior = mode
+    // Like the ESP32 bulb, report a change of behavior mode at once, not only at the next renewal.
     if (mode === 'follows') this.clearConflict(slot)
+    else if (slot.participant?.state === 'associated') void slot.participant.reportRuntime(this.runtime(slot))
     return this.console(id)
   }
 
-  /** What the device is doing now, as its runtime report says it (the CableLabs gateway's demo extension, not PPD). */
+  /**
+   * What the device is doing now, as its runtime report says it (the CableLabs gateway's demo extension, not PPD).
+   * behavior_mode uses the ESP32 bulb's values: "adaptive" follows the policy, "fixed-permissive" ignores it.
+   */
   private runtime(slot: SimSlot): RuntimeReport {
-    return { conflict_active: slot.conflicting.size > 0, behavior_mode: slot.behavior, conflicting_purposes: [...slot.conflicting] }
+    return { conflict_active: slot.conflicting.size > 0, behavior_mode: BEHAVIOR_MODE[slot.behavior], conflicting_purposes: [...slot.conflicting] }
   }
 
   /**
@@ -248,7 +256,7 @@ export class Simulator {
     if (against.length) {
       const before = slot.conflicting.size
       for (const p of against) slot.conflicting.add(p)
-      if (slot.conflicting.size !== before) void slot.participant?.reportRuntime({ conflict_active: true, behavior_mode: 'ignores', conflicting_purposes: [...slot.conflicting] })
+      if (slot.conflicting.size !== before) void slot.participant?.reportRuntime({ conflict_active: true, behavior_mode: BEHAVIOR_MODE.ignores, conflicting_purposes: [...slot.conflicting] })
     }
   }
 

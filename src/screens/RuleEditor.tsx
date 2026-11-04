@@ -18,7 +18,7 @@ export default function RuleEditor() {
     return (
       <div className="screen">
         <AppBar title="Rule" back="/rules" />
-        <div className="empty">That rule is gone. <Link to="/rules" className="link">Back to your rules</Link></div>
+        <div className="empty">That rule is gone. <Link to="/rules" className="link">Back to your household policy</Link></div>
       </div>
     )
   }

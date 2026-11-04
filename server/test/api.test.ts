@@ -86,7 +86,8 @@ describe('household (fixtures)', () => {
 
   test('saving a rule changes the verdicts computed for a device', async () => {
     const upload = (await json<Device>('GET', '/api/devices/reolink-e1-zoom')).flows.find((f) => f.title === 'Cloud video upload')!
-    // No rule allows it and it leaves the home: denied by default, citing no rule.
+    // No rule covers it: it needs a decision, citing no rule (there is no default).
+    assert.equal(upload.evaluation.verdict, 'decision_required')
     assert.equal(upload.evaluation.rule_id, null)
     await json<Household>('PUT', '/api/household/rules/r-allow', rule('r-allow', 'allow', { data_type: ['ppd:contentData'] }))
     assert.equal((await json<Device>('GET', '/api/devices/reolink-e1-zoom')).flows.find((f) => f.title === 'Cloud video upload')!.evaluation.verdict, 'compatible')
@@ -220,17 +221,21 @@ describe('gateway devices', () => {
     assert.ok(!s.checks.some((c) => c.id === 'dhcp-lease-source'))
   })
 
-  test('preview compiles one atomic rule per declared dataflow; what no rule allows is denied', async () => {
-    const preview = await json<PublishPreview>('GET', '/api/household/preview')
+  test('preview compiles one atomic rule per core dataflow the household policy answers, whatever devices declare', async () => {
+    const preview = await json<PublishPreview>('GET', '/api/household/preview?all=1')
     assert.equal(preview.devices, 1)
-    // Power and brightness share one dataflow; the in-home rule is allowed by default.
-    const home = preview.rules.find((r) => r.data_type === 'ppd:deviceAndNetworkData')!
-    assert.equal(home.effect, 'allow')
-    assert.equal(home.flows.length, 2)
-    // Nothing allows the two cloud dataflows, and they leave the home: denied, never asked about.
-    const cloud = preview.rules.filter((r) => r.handling_context === 'ppd:vendorContext')
-    assert.equal(cloud.length, 2)
-    assert.ok(cloud.every((r) => r.effect === 'deny'))
+    // No household rules yet and no default: none of the bulb's dataflows gets a rule.
+    assert.equal(preview.rules.length, 0)
+    const bulb = await json<Device>('GET', '/api/devices/superduperlight-bulb-esp32')
+    assert.ok(bulb.flows.every((f) => f.evaluation.verdict === 'decision_required'))
+    await json<Household>('PUT', '/api/household/rules/home-ok', rule('home-ok', 'allow', { handling_context: ['ppd:householdContext'] }))
+    // Every core dataflow that stays in the home now has a rule (7 x 8 x 4 x 7 data types, purposes, actions, sources),
+    // not only the bulb's. Power and brightness share one of them; the cloud dataflows still get none.
+    const after = await json<PublishPreview>('GET', '/api/household/preview?all=1')
+    assert.equal(after.rules.length, 7 * 8 * 4 * 7)
+    assert.ok(after.rules.every((r) => r.effect === 'allow' && r.handling_context === 'ppd:householdContext'))
+    assert.deepEqual(after.rules.filter((r) => r.flows.length).map((r) => [r.data_type, r.effect, r.flows.length]), [['ppd:deviceAndNetworkData', 'allow', 2]])
+    await json<Household>('DELETE', '/api/household/rules/home-ok')
     // No preset yet: the household has not been through onboarding, so nothing is sent.
     await json('POST', '/api/household/publish', {}, 409)
   })
@@ -241,13 +246,15 @@ describe('gateway devices', () => {
     await json<Household>('PUT', '/api/household/rules/no-analytics', rule('no-analytics', 'dont_allow', { purpose: ['ppd:analyticsAndImprovement'] }))
     const result = await json<{ policy_id: string; rules: number }>('POST', '/api/household/publish', {})
     assert.match(result.policy_id, /^household-\d{8}-\d{6}Z$/)
-    assert.equal(result.rules, 3)
+    // A preset answers every core dataflow, so the whole household policy is sent: 6,272 atomic rules.
+    assert.equal(result.rules, 6272)
     const sent = gateway.puts.at(-1)!
     assert.deepEqual(sent.taxonomy, { release: 'ppd-core-2026-05' })
     assert.ok(sent.rules.every((r) => r.effect === 'allow' || r.effect === 'deny'))
-    const analytics = sent.rules.find((r) => r.purpose === 'ppd:analyticsAndImprovement')!
+    const analytics = sent.rules.find((r) => r.data_type === 'ppd:sensorData' && r.purpose === 'ppd:analyticsAndImprovement' && r.action === 'ppd:transfer' && r.source === 'ppd:participantObserved' && r.handling_context === 'ppd:vendorContext')!
     assert.equal(analytics.effect, 'deny')
-    assert.deepEqual(analytics.constraints, { retention: 'ppd:indefinite' })
+    // Constraints come only from a household condition, never from what a device declared.
+    assert.equal(analytics.constraints, undefined)
     const overview = await json<{ household_policy: { published_by_app: boolean } }>('GET', '/api/overview')
     assert.equal(overview.household_policy.published_by_app, true)
     // The device has not picked up the new instance yet.
@@ -257,17 +264,18 @@ describe('gateway devices', () => {
   test('an "allowed only if" rule is sent as constraints; a processing boundary covers only use and inference', async () => {
     await json<Household>('PUT', '/api/household/rules/not-kept', rule('not-kept', 'allow', { data_type: ['ppd:sensorData'], purpose: ['ppd:coreFunctionality'] }, 'retention=ppd:ephemeral'))
     await json<Household>('PUT', '/api/household/rules/in-home', rule('in-home', 'allow', { purpose: ['ppd:analyticsAndImprovement'] }, 'processing_boundary=ppd:inHomeOnly'))
-    const preview = await json<PublishPreview>('GET', '/api/household/preview')
+    const preview = await json<PublishPreview>('GET', '/api/household/preview?all=1')
     const monitoring = preview.rules.find((x) => x.purpose === 'ppd:coreFunctionality' && x.data_type === 'ppd:sensorData')!
     assert.equal(monitoring.effect, 'allow')
-    // The rule's condition replaces the retention the device declared.
-    assert.deepEqual(monitoring.constraints, { retention: 'ppd:ephemeral' })
+    // The rule's condition is the only constraint.
+    assert.ok(preview.rules.filter((x) => x.purpose === 'ppd:coreFunctionality' && x.data_type === 'ppd:sensorData').every((x) => JSON.stringify(x.constraints) === JSON.stringify({ retention: 'ppd:ephemeral' })))
     assert.equal(monitoring.limited, true)
-    // Analytics is a transfer: the in-home rule does not cover it, so the default (deny) applies.
-    const analytics = preview.rules.find((x) => x.purpose === 'ppd:analyticsAndImprovement')!
-    assert.equal(analytics.effect, 'deny')
-    assert.equal(analytics.limited, false)
+    // The in-home rule covers analytics use and inference, never a transfer: with no default, transfers get no rule.
+    const analytics = preview.rules.filter((x) => x.purpose === 'ppd:analyticsAndImprovement')
+    assert.ok(analytics.length > 0)
+    assert.ok(analytics.every((x) => (x.action === 'ppd:use' || x.action === 'ppd:inference') && x.constraints?.processing_boundary === 'ppd:inHomeOnly'))
     const d = await json<Device>('GET', '/api/devices/superduperlight-bulb-esp32')
+    assert.equal(d.flows.find((f) => f.id.endsWith('temperature-analytics-cloud'))!.evaluation.verdict, 'decision_required')
     const flow = d.flows.find((f) => f.id.endsWith('temperature-remote-monitoring-cloud'))!
     assert.equal(flow.evaluation.verdict, 'conditionally_satisfiable')
     assert.equal(flow.evaluation.rule_id, 'not-kept')
@@ -279,34 +287,36 @@ describe('gateway devices', () => {
     assert.equal(gateway.puts.length, 0)
     await json<Household>('PUT', '/api/household/onboarding', { answers: ANSWERS })
     assert.equal(gateway.puts.length, 1)
-    assert.equal(gateway.puts[0].rules.length, 3) // the test bulb's three distinct dataflows
-    // A rule that changes nothing the bulb does sends nothing.
+    assert.equal(gateway.puts[0].rules.length, 6272) // the whole household policy, not only the bulb's dataflows
+    // A rule that changes nothing in the household policy sends nothing.
     await json<Household>('PUT', '/api/household/rules/r-y', rule('r-y', 'dont_allow', { purpose: ['ppd:advertisingAndMarketing'] }))
     assert.equal(gateway.puts.length, 1)
     // A rule that does change it is sent at once.
     await json<Household>('PUT', '/api/household/rules/r-z', rule('r-z', 'dont_allow', { purpose: ['ppd:coreFunctionality'], handling_context: ['ppd:vendorContext'] }))
     assert.equal(gateway.puts.length, 2)
-    const preview = await json<PublishPreview>('GET', '/api/household/preview')
+    const preview = await json<PublishPreview>('GET', '/api/household/preview?all=1')
     assert.equal(preview.sync?.last_error, null)
     assert.equal(preview.sync?.last_sent?.policy_id, gateway.puts[1].policy_id)
   })
 
-  test('a device that joins is covered without anyone sending', async () => {
+  test('a device that joins is already covered: the household policy does not change, so nothing is sent', async () => {
     const timed = buildApp({ ...config, autoPublishIntervalMs: 50 }, await loadFixtures(config.fixturesDir), new HouseholdStore(':memory:'))
     await timed.ready()
     try {
       await timed.inject({ method: 'PUT', url: '/api/household/onboarding', payload: { answers: ANSWERS }, headers: { 'x-ppd-client': 'web' } })
-      assert.equal(gateway.puts.at(-1)!.rules.length, 3)
+      assert.equal(gateway.puts.at(-1)!.rules.length, 6272)
+      const sends = gateway.puts.length
       const base = bulb()
       gateway.devices = [base, bulb({
         device_id: 'lamp-2',
         declaration_statements: [...base.declaration_statements!, { statement_id: 'usage-ads', data_type: 'ppd:usageData', purpose: 'ppd:advertisingAndMarketing', action: 'ppd:transfer', source: 'ppd:participantGenerated', handling_context: 'ppd:thirdPartyContext' }],
       })]
-      const until = Date.now() + 5000
-      while (gateway.puts.at(-1)!.rules.length === 3 && Date.now() < until) await new Promise((r) => setTimeout(r, 100))
+      // Give the publisher time to notice the new device: it has nothing new to send.
+      await new Promise((r) => setTimeout(r, 500))
+      assert.equal(gateway.puts.length, sends)
       const sent = gateway.puts.at(-1)!
-      assert.equal(sent.rules.length, 4)
-      assert.equal(sent.rules.find((r) => r.purpose === 'ppd:advertisingAndMarketing')?.effect, 'deny')
+      const ads = sent.rules.find((r) => r.data_type === 'ppd:usageData' && r.purpose === 'ppd:advertisingAndMarketing' && r.action === 'ppd:transfer' && r.source === 'ppd:participantGenerated' && r.handling_context === 'ppd:thirdPartyContext')
+      assert.equal(ads?.effect, 'deny')
     } finally {
       await timed.close()
     }

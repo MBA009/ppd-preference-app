@@ -3,7 +3,7 @@ import { Link, Navigate, useParams } from 'react-router-dom'
 import { ActionBar, AppBar, Cell, ErrorBox, Footnote, Group, Loading, SectionHeader, Tile } from '../components/ui'
 import { FlowRow, ProvenanceCard, nounOf } from '../components/DeviceReport'
 import { Icon } from '../components/icons'
-import { useDevice, useHousehold, useRules } from '../state/data'
+import { useDevice, useHousehold } from '../state/data'
 import { needsAttention } from '../lib/verdicts'
 import { declaredNothing, timeAgo } from '../lib/device'
 
@@ -12,7 +12,6 @@ export default function NewDevice() {
   const { id } = useParams()
   const { household, markJoinedSeen } = useHousehold()
   const dev = useDevice(id)
-  const rules = useRules(true)
   const entry = household?.devices.find((h) => h.device_id === id)
 
   useEffect(() => {
@@ -26,8 +25,8 @@ export default function NewDevice() {
 
   const conflicts = d.flows.filter(needsAttention)
   const rest = conflicts.slice(3)
-  const others = d.flows.length - conflicts.length
-  const ruleCount = rules.length
+  const decisions = d.flows.filter((f) => f.evaluation.verdict === 'decision_required')
+  const others = d.flows.length - conflicts.length - decisions.length
   const silent = declaredNothing(d)
 
   return (
@@ -43,9 +42,9 @@ export default function NewDevice() {
         </Cell>
       </Group>
       <div className="gap" />
-      <ProvenanceCard device={d} ruleCount={ruleCount} sub={`${d.category_label} · Gets your rules`} stacked />
+      <ProvenanceCard device={d} sub={`${d.category_label} · Gets your rules`} stacked />
       <div className="sf">
-        <b>Nothing was changed on {nounOf(d)}.</b> {!silent ? 'These verdicts compare what it says it does with your rules. ' : d.expected_from ? `These verdicts compare what ${d.category_label.toLowerCase()}s like it do, from our research, with your rules. ` : ''}The app can’t switch anything on or off in the device, or check that it follows your rules.
+        <b>Nothing was changed on {nounOf(d)}.</b> {!silent ? 'These verdicts compare what it says it does with your household policy. ' : ''}The app can’t switch anything on or off in the device, or check that it follows your rules.
       </div>
 
       {conflicts.length > 0 && (
@@ -60,6 +59,13 @@ export default function NewDevice() {
             )}
           </Group>
           <Footnote>Your rules say no to these, and the device is told so. There is nothing you need to decide. To allow one, change your rules.</Footnote>
+        </>
+      )}
+      {decisions.length > 0 && (
+        <>
+          <SectionHeader>Needs your decision · {decisions.length}</SectionHeader>
+          <Group>{decisions.map((f) => <FlowRow key={f.id} device={d} flow={f} />)}</Group>
+          <Footnote>None of your rules settles these, so the device gets no rule for them. Open one to answer with a new rule.</Footnote>
         </>
       )}
       {others > 0 && (

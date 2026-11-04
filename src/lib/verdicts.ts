@@ -2,23 +2,24 @@ import type { Verdict } from '../api'
 
 export interface VerdictMeta {
   /** CSS colour class (.ok .lim .bad .unk). */
-  cls: 'ok' | 'lim' | 'bad' | 'unk'
+  cls: 'ok' | 'lim' | 'dec' | 'bad' | 'unk'
   /** The full label, as in the verdict reference board. */
   label: string
   /** Tile colour used on the flow detail banner. */
-  tile: 'green' | 'blue' | 'grey' | 'red'
+  tile: 'green' | 'blue' | 'orange' | 'grey' | 'red'
   chip: (n: number) => string
 }
 
 export const VERDICTS: Record<Verdict, VerdictMeta> = {
   unsatisfiable: { cls: 'bad', label: 'Conflicts with your rules', tile: 'red', chip: (n) => `${n} ${n === 1 ? 'conflict' : 'conflicts'}` },
+  decision_required: { cls: 'dec', label: 'Needs your decision', tile: 'orange', chip: (n) => `${n} ${n === 1 ? 'needs' : 'need'} a decision` },
   indeterminate: { cls: 'unk', label: 'Not described in terms we can read', tile: 'grey', chip: (n) => `${n} not readable` },
   conditionally_satisfiable: { cls: 'lim', label: 'With limits', tile: 'blue', chip: (n) => `${n} with limits` },
   compatible: { cls: 'ok', label: 'Matches your rules', tile: 'green', chip: (n) => `${n} ${n === 1 ? 'matches' : 'match'}` },
 }
 
 /** Chip order everywhere: worst first. */
-export const VERDICT_ORDER: Verdict[] = ['unsatisfiable', 'indeterminate', 'conditionally_satisfiable', 'compatible']
+export const VERDICT_ORDER: Verdict[] = ['unsatisfiable', 'decision_required', 'indeterminate', 'conditionally_satisfiable', 'compatible']
 
 export { countVerdicts, needsAttention } from '../../shared/engine'
 

@@ -1,1 +1,1 @@
-export { leavesHome, matchesScope, ruleCovers, rulesOverlap, strictness } from '../../shared/scope'
+export { matchesScope, ruleCovers, rulesOverlap, strictness } from '../../shared/scope'

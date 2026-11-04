@@ -25,8 +25,8 @@ export default function Onboarding({ mode = 'first' }: { mode?: Mode }) {
   const library = useLibrary()
   const { household } = useHousehold()
   const error = tree.error ?? presets.error
-  if (error) return <><AppBar title="Household rules" /><ErrorBox error={error} /></>
-  if (!tree.data || !presets.data || !household || (!library.data && !library.error)) return <><AppBar title="Household rules" /><Loading /></>
+  if (error) return <><AppBar title="Household policy" /><ErrorBox error={error} /></>
+  if (!tree.data || !presets.data || !household || (!library.data && !library.error)) return <><AppBar title="Household policy" /><Loading /></>
   // Example wording follows the device classes the household owns (the library knows each device's category).
   const owned = household.devices
     .map((d) => library.data?.find((x) => x.id === d.device_id)?.category)
@@ -80,7 +80,7 @@ function Walk({ tree, presets, mode, owned }: { tree: Tree; presets: HouseholdPr
     const { text, example } = questionText(q, owned)
     return (
       <div className="screen">
-        <AppBar title={stage === 1 ? 'Household rules' : 'The details'} subtitle={`Question ${n} of up to ${total}`} back={back} />
+        <AppBar title={stage === 1 ? 'Household policy' : 'The details'} subtitle={`Question ${n} of up to ${total}`} back={back} />
         <div className="progress" role="progressbar" aria-valuemin={1} aria-valuemax={total} aria-valuenow={n}><i style={{ width: `${(n / total) * 100}%` }} /></div>
         <div className="q">
           <h2>{text}</h2>
@@ -144,7 +144,7 @@ function Walk({ tree, presets, mode, owned }: { tree: Tree; presets: HouseholdPr
 
   // Done: the household's rules, from the preset with the answers written in.
   const preset = presets.find((p) => p.id === leaf.preset)
-  if (!preset) return <><AppBar title="Your rules" back={back} /><ErrorBox error={new Error(`The questions led to a preset this app does not have (${leaf.preset}).`)} /></>
+  if (!preset) return <><AppBar title="Your household policy" back={back} /><ErrorBox error={new Error(`The questions led to a preset this app does not have (${leaf.preset}).`)} /></>
   const rules = rulesFromAnswers(preset, situationAnswers(tree, answers), tree.questions)
   const fromAnswers = rules.filter((r) => r.origin.kind === 'answer').length
   const replacing = mode !== 'first' && !!household?.rules.length
@@ -155,12 +155,12 @@ function Walk({ tree, presets, mode, owned }: { tree: Tree; presets: HouseholdPr
   }
   return (
     <div className="screen">
-      <AppBar title="Your rules" back={back} />
+      <AppBar title="Your household policy" back={back} />
       <Group>
         <Cell className="t" chevron={false} style={{ alignItems: 'flex-start' }}>
           <Tile tone="green" style={{ marginTop: 10 }}><ShieldCheck /></Tile>
           <div className="cb" style={{ paddingRight: 16 }}>
-            <span className="ttl" style={{ fontWeight: 500 }}>Your household rules are ready</span>
+            <span className="ttl" style={{ fontWeight: 500 }}>Your household policy is ready</span>
             <span className="sub">
               {plural(rules.length, 'rule')} from your answers, {fromAnswers ? `${fromAnswers} of them for situations you told us about directly` : 'matching households that answered like you'}.
               Every device in your home receives them, and you can change any rule afterwards.
@@ -188,7 +188,7 @@ function Start({ tree, mode, onStart }: { tree: Tree; mode: Mode; onStart: () =>
   }[mode]
   return (
     <div className="screen">
-      <AppBar title="Household rules" back={mode === 'first' ? undefined : '/rules'} />
+      <AppBar title="Household policy" back={mode === 'first' ? undefined : '/rules'} />
       <Group>
         <Cell className="t" chevron={false} style={{ alignItems: 'flex-start' }}>
           <Tile tone="blue" style={{ marginTop: 10 }}><ShieldCheck /></Tile>

@@ -43,9 +43,6 @@ export function conditionConstraints(c: RuleCondition): Constraints {
   return { [key]: value }
 }
 
-/** A flow "leaves the home" when a company (the maker, its services, or someone else) handles it. */
-export const leavesHome = (flow: Flow) => flow.taxonomy.handling_context !== 'ppd:householdContext'
-
 /** Never, then allowed only if, then allowed: the order in which disagreeing rules win. */
 export const strictness = (r: Rule) => (r.effect === 'dont_allow' ? 2 : conditionOf(r) ? 1 : 0)
 

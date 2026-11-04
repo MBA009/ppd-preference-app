@@ -23,7 +23,8 @@ export async function publishHousehold(ctx: AppContext, by: string): Promise<Pub
   await ctx.gateway.putDefaultPolicy(wire)
   // Read back what the repository stored rather than assuming the write meant what we sent.
   const stored = await ctx.gateway.defaultPolicy()
-  const same = stored?.policy_id === wire.policy_id && stored.rules.length === wire.rules.length && wire.rules.every((r) => stored.rules.some((s) => tupleKey(s) === tupleKey(r) && s.effect === r.effect))
+  const storedEffects = new Map((stored?.rules ?? []).map((s) => [tupleKey(s), s.effect]))
+  const same = stored?.policy_id === wire.policy_id && stored.rules.length === wire.rules.length && wire.rules.every((r) => storedEffects.get(tupleKey(r)) === r.effect)
   if (!same) throw new Error('The gateway stored a different policy than the one sent.')
   ctx.store.recordPublication(wire, ctx.store.revision(), by)
   ctx.live.invalidate()

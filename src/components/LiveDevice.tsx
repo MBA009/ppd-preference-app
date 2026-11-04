@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { api, type CommandAction, type Device, type LiveState, type Tone } from '../api'
+import { api, type CommandAction, type Device, type LiveState } from '../api'
 import { useCommands, useHousehold, useTelemetry } from '../state/data'
-import { timeAgo } from '../lib/device'
+import { DEVICE_STATE, deviceState, timeAgo, type DeviceStateKey } from '../lib/device'
 import { termLabel } from '../../shared/taxonomy'
-import { Cell, Footnote, Group, SectionHeader, Segmented, Tile } from './ui'
-import { ShieldCheck } from './icons'
+import { Cell, Footnote, Group, SectionHeader, Segmented, StateChip, Tile } from './ui'
+import { ChipGlyph } from './icons'
+import { FlowRow } from './DeviceReport'
 
 /**
  * The gateway's view of a participating device, as the CableLabs dashboard shows it: association,
@@ -12,7 +13,6 @@ import { ShieldCheck } from './icons'
  * Telemetry and guided-demo controls are not PPD; they appear only on the Demo devices page.
  */
 
-const TILE: Record<Tone, 'green' | 'orange' | 'red' | 'grey'> = { good: 'green', warn: 'orange', bad: 'red', neutral: 'grey' }
 const shortId = (id: string) => (id.length > 26 ? id.slice(0, 12) + '…' + id.slice(-10) : id)
 const when = (iso: string | null) => (iso ? timeAgo(iso) : 'Not yet')
 
@@ -20,24 +20,37 @@ function Kv({ k, v, mono }: { k: string; v: string; mono?: boolean }) {
   return <div className="cell kv"><span className="ttl">{k}</span><span className={'v' + (mono ? ' mono' : '')} title={v}>{v}</span></div>
 }
 
-/** Association status: the first thing an operator looks at. */
-export function AssociationCard({ live }: { live: LiveState }) {
+const clock = (iso: string) => new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+
+/** What the state adds, per the design board's "What the app shows" column. */
+function stateDetail(key: DeviceStateKey, live: LiveState): string | null {
   const a = live.association
+  switch (key) {
+    case 'confirmed':
+    case 'no_declaration':
+      return a.fresh_until ? `Its confirmation runs out at ${clock(a.fresh_until)} unless it renews.` : null
+    case 'waiting':
+      return a.fresh_until ? `Your verdicts already use the new rules. The device has until ${clock(a.fresh_until)} to fetch them.` : 'Your verdicts already use the new rules.'
+    case 'stale':
+      return a.renewed_at ? `Last confirmed ${timeAgo(a.renewed_at)}.` : null
+    case 'reassociate':
+      return a.attention
+    default:
+      return null
+  }
+}
+
+/** The device's state: the first thing to look at. The draft's association states, in household words. */
+export function AssociationCard({ device, live }: { device: Device; live: LiveState }) {
+  const key = deviceState(device)
+  const detail = stateDetail(key, live)
   return (
     <Group>
-      <Cell className="t" chevron={false} style={{ alignItems: 'flex-start' }}>
-        <Tile tone={TILE[a.tone]} style={{ marginTop: 10 }}><ShieldCheck /></Tile>
-        <div className="cb" style={{ paddingRight: 16 }}>
-          <span className="ttl" style={{ fontWeight: 500 }}>{a.label}</span>
-          <span className="sub">{a.attention ?? a.explanation ?? ''}</span>
-          {a.next_step && <span className="sub" style={{ fontSize: 13 }}>Next: {a.next_step}</span>}
-        </div>
+      <Cell className="t" chevron={false} style={{ alignItems: 'flex-start', flexDirection: 'column', gap: 6, padding: '12px 16px' }}>
+        <StateChip device={device} />
+        <span className="sub">{DEVICE_STATE[key].meaning}</span>
+        {detail && <span className="sub" style={{ fontSize: 13 }}>{detail}</span>}
       </Cell>
-      {live.badges.length > 0 && (
-        <div className="cell" style={{ padding: '6px 16px 10px', flexWrap: 'wrap', gap: 6 }}>
-          {live.badges.map((b) => <span key={b.label} className={`tag tone-${b.tone}`}>{b.label}</span>)}
-        </div>
-      )}
     </Group>
   )
 }
@@ -70,7 +83,7 @@ export function LifecycleSteps({ live }: { live: LiveState }) {
 const PUBLICATION: Record<LiveState['publication'], string> = {
   current: 'Has your latest rules',
   waiting: 'Waiting for the device to pick up your latest rules',
-  not_published: 'No household rules are being served yet',
+  not_published: 'No household policy is being served yet',
 }
 
 /** Which policy instance the gateway delivered, and the device's receipt for it. */
@@ -84,7 +97,7 @@ export function PolicyReceipt({ live }: { live: LiveState }) {
         <Kv k="Status" v={PUBLICATION[live.publication]} />
         {p ? (
           <>
-            <Kv k="Household rules" v={p.base_policy_id} mono />
+            <Kv k="Household policy" v={p.base_policy_id} mono />
             {p.applied_policy_id && <Kv k="Device exception" v={p.applied_policy_id} mono />}
             <Kv k="Policy instance" v={shortId(p.policy_id)} mono />
             <Kv k="Delivered" v={when(p.retrieved_at)} />
@@ -108,23 +121,59 @@ export function IdentityAndNetwork({ live }: { live: LiveState }) {
         <Kv k="Firmware" v={live.registration.firmware_version || 'Not stated'} />
         <Kv k="Identity" v={live.identity.label} />
         <Kv k="Declaration" v={live.declaration_id ?? 'None'} mono />
-        <Kv k="Seen on the home network" v={n.observed ? n.label : 'Not available in the cloud deployment'} />
+        <Kv k="Seen on the home network" v={n.observed ? ['Yes', n.ip_address].filter(Boolean).join(' · ') : 'Not available in the cloud deployment'} />
         {n.hostname && <Kv k="Reported hostname" v={n.hostname} mono />}
       </Group>
     </>
   )
 }
 
-/** What the device reports it does at run time, kept apart from the receipt. */
+/** behavior_mode values from the ESP32 bulb (and our simulator). */
+const IGNORES = new Set(['fixed-permissive', 'fixed_permissive'])
+const purposeList = (r: LiveState['runtime']) => r.conflicting_purposes.map((p) => termLabel('purpose', p)).join(', ')
+
+/**
+ * A loud warning near the top of the device page when the device's runtime-status report (a CableLabs gateway
+ * demo extension, not PPD) says it ignores the household policy or sent data the policy denies. Lists the
+ * device's flows with that purpose that the policy says no to.
+ */
+export function RuntimeWarning({ device, live }: { device: Device; live: LiveState }) {
+  const r = live.runtime
+  const ignores = !!r.behavior_mode && IGNORES.has(r.behavior_mode)
+  if (!r.conflict_active && !ignores) return null
+  const denied = device.flows.filter((f) => f.evaluation.verdict === 'unsatisfiable' && r.conflicting_purposes.includes(f.taxonomy.purpose))
+  return (
+    <>
+      <Group style={{ boxShadow: 'inset 0 0 0 1.5px var(--bad)' }}>
+        <Cell className="t" chevron={false} style={{ alignItems: 'flex-start' }}>
+          <Tile tone="red" style={{ marginTop: 10 }}><ChipGlyph verdict="unsatisfiable" size={17} /></Tile>
+          <div className="cb" style={{ paddingRight: 16 }}>
+            <span className="ttl" style={{ fontWeight: 600, color: 'var(--bad)' }}>{r.conflict_active ? 'Sent data your household policy denies' : 'Ignores your household policy'}</span>
+            <span className="sub">
+              {r.conflict_active
+                ? `The device reports it sent data for ${purposeList(r).toLowerCase() || 'a purpose'} anyway.`
+                : 'The device reports it will send data even where your household policy says no.'}
+            </span>
+          </div>
+        </Cell>
+        {denied.map((f) => <FlowRow key={f.id} device={device} flow={f} />)}
+      </Group>
+      <div className="gap" />
+    </>
+  )
+}
+
+/** The device's runtime-status report (POST device/runtime-status), named as in the CableLabs status interface. */
 export function ReportedBehavior({ live }: { live: LiveState }) {
   const r = live.runtime
   if (!r.behavior_mode && !r.conflict_active) return null
   return (
     <>
-      <SectionHeader>What it reports doing</SectionHeader>
+      <SectionHeader>Runtime status</SectionHeader>
       <Group>
-        <Kv k="Behavior" v={r.behavior_mode === 'fixed-permissive' || r.behavior_mode === 'fixed_permissive' ? 'Ignores your rules (demo)' : 'Follows your rules'} />
-        <Kv k="Conflict" v={r.conflict_active ? `Sends ${r.conflicting_purposes.map((p) => termLabel('purpose', p).toLowerCase()).join(', ')} data your rules deny` : 'None reported'} />
+        <Kv k="Behavior" v={!r.behavior_mode ? 'Not reported' : IGNORES.has(r.behavior_mode) ? 'Ignores rules' : r.behavior_mode === 'adaptive' ? 'Follows rules' : r.behavior_mode} />
+        <Kv k="Conflict" v={r.conflict_active ? purposeList(r) || 'Yes' : 'None'} />
+        {r.reported_at && <Kv k="Last report" v={timeAgo(r.reported_at)} />}
       </Group>
     </>
   )

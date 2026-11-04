@@ -1,15 +1,17 @@
-import { useEffect } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import type { Device, Flow } from '../api'
-import { AppBar, Cell, ErrorBox, Footnote, Group, Loading, Tile } from '../components/ui'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import type { Device, Flow, Rule } from '../api'
+import { ActionBar, AppBar, Cell, ErrorBox, Footnote, Group, Loading, Tile } from '../components/ui'
+import { ruleTitle } from '../../shared/ruleTitle'
 import { ChipGlyph } from '../components/icons'
 import { useDevice, useHousehold } from '../state/data'
 import { VERDICTS } from '../lib/verdicts'
 import { nounOf } from '../components/DeviceReport'
 
 /**
- * What one flow does and how it compares with the household's rules. Read-only: the household is never asked
- * to decide a single flow (its preset and rules do). Control is shown as one line and never changes a verdict.
+ * What one flow does and how it compares with the household's rules. Control is shown as one line and never
+ * changes a verdict. A flow none of the household's rules covers ("Needs your decision") can be answered here;
+ * the answer is saved as a new rule for exactly this kind of data flow.
  */
 export default function FlowDetail() {
   const { id, flowId } = useParams()
@@ -70,13 +72,45 @@ function Detail({ device, flow }: { device: Device; flow: Flow }) {
       {verdict === 'conditionally_satisfiable' && flow.evaluation.rule_id && (
         <Footnote>Devices that get your rules receive this condition with the rule. We can’t check that they follow it.</Footnote>
       )}
+      {verdict === 'decision_required' && <Decide device={device} flow={flow} />}
       {verdict === 'indeterminate' && (
-        <Footnote>This flow isn’t described in terms we can read, so we assume nothing about it and there is nothing for you to do. Your household rules still apply to the device.</Footnote>
+        <Footnote>This flow isn’t described in terms we can read, so we assume nothing about it and there is nothing for you to do. Your household policy still applies to the device.</Footnote>
       )}
       {flow.evaluation.rule_id && (
         <Footnote>This comes from one of your household rules. <Link to={`/rules/${encodeURIComponent(flow.evaluation.rule_id)}`} className="link">View the rule</Link></Footnote>
       )}
       <div className="spacer" />
     </div>
+  )
+}
+
+/** Answers a flow no rule covers with a new rule scoped to its exact five terms. */
+function Decide({ device, flow }: { device: Device; flow: Flow }) {
+  const nav = useNavigate()
+  const { upsertRule, toast } = useHousehold()
+  const [busy, setBusy] = useState(false)
+  const t = flow.taxonomy
+  const answer = async (effect: Rule['effect']) => {
+    setBusy(true)
+    const draft: Rule = {
+      id: `custom.${Date.now().toString(36)}`, title: '', effect, condition: null, enabled: true, origin: { kind: 'custom' },
+      scope: { data_type: [t.data_type], purpose: [t.purpose], action: [t.action], source: [t.source], handling_context: [t.handling_context] },
+    }
+    try {
+      await upsertRule({ ...draft, title: ruleTitle(draft) })
+      toast(effect === 'allow' ? 'Allowed. Saved as a new rule.' : 'Saved as a new rule: never.')
+      nav(`/device/${encodeURIComponent(device.id)}`, { replace: true })
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <>
+      <Footnote>None of your rules settles this, so your devices get no rule for it and decide it themselves. Your answer is saved as a new rule for this kind of data flow, on every device.</Footnote>
+      <ActionBar>
+        <button className="btn2" disabled={busy} onClick={() => answer('dont_allow')}>Never</button>
+        <button className="btn" disabled={busy} onClick={() => answer('allow')}>Allow</button>
+      </ActionBar>
+    </>
   )
 }

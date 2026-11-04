@@ -1,8 +1,8 @@
-import { AppBar, Cell, DeviceTile, Footnote, Group, SectionHeader, Tile, VerdictChip, VerdictChips, Loading, ErrorBox } from '../components/ui'
-import { DashedCircle, Icon, SmallCheck } from '../components/icons'
+import { AppBar, Cell, DeviceTile, Footnote, Group, SectionHeader, StateChip, Tile, VerdictChip, VerdictChips, Loading, ErrorBox } from '../components/ui'
+import { Icon } from '../components/icons'
 import { useDevices, useHousehold, useOverview, useUnmanaged } from '../state/data'
 import { countVerdicts, plural } from '../lib/verdicts'
-import { declaredNothing, hasRules, isConnected, stateLabel, timeAgo } from '../lib/device'
+import { declaredNothing, hasRules, isConnected, timeAgo } from '../lib/device'
 import type { Device, Overview, UnmanagedDevice } from '../api'
 
 type Notice = { key: string; tone: 'red' | 'orange' | 'blue'; icon: 'status' | 'plus' | 'publish'; title: string; sub: string; to?: string }
@@ -64,7 +64,7 @@ export default function Home() {
     reconnect.length > 0 && {
       key: 'reconnect', tone: reconnect.some(reported) ? 'red' : 'orange', icon: 'status', to: to(reconnect),
       title: `${names(reconnect)} ${reconnect.length === 1 ? 'needs' : 'need'} to reconnect`,
-      sub: `${reconnect.length === 1 ? 'It' : 'They'} can’t get your rules until ${reconnect.length === 1 ? 'it joins' : 'they join'} again.${earlier(reconnect)}`,
+      sub: `${reconnect.length === 1 ? 'It' : 'They'} can’t get your household policy until ${reconnect.length === 1 ? 'it joins' : 'they join'} again.${earlier(reconnect)}`,
     },
     !!joined && {
       key: 'joined', tone: 'blue', icon: 'plus', to: `/device/${encodeURIComponent(joined.id)}/joined`,
@@ -126,7 +126,7 @@ export default function Home() {
           ) : (
             <Group><div className="empty" style={{ padding: 20 }}>Your home gateway hasn’t seen any device that doesn’t support PPD.</div></Group>
           )}
-          <Footnote>These devices are on your home network but don’t support PPD, so your rules can’t reach them.</Footnote>
+          <Footnote>These devices are on your home network but don’t support PPD, so your household policy can’t reach them.</Footnote>
         </>
       )}
 
@@ -144,11 +144,11 @@ export default function Home() {
           <Tile tone="blue"><Icon name="search" size={18} /></Tile>
           <div className="cb">
             <span className="ttl" style={{ color: '#0066CC' }}>Check a device before you buy it</span>
-            <span className="sub">See how what it says it does fits your rules. Scan its privacy code, or look it up in our research library.</span>
+            <span className="sub">See how what it says it does fits your household policy. Scan its privacy code, or look it up in our research library.</span>
           </div>
         </Cell>
       </Group>
-      <Footnote>This checks what the device declares, not what it will actually do. You don’t need to add devices you own: devices that support PPD join and get your rules by themselves when they connect to your network.</Footnote>
+      <Footnote>This checks what the device declares, not what it will actually do. You don’t need to add devices you own: devices that support PPD join and get your household policy by themselves when they connect to your network.</Footnote>
       <div className="spacer" />
     </div>
   )
@@ -161,18 +161,18 @@ function DeviceRow({ device: d }: { device: Device }) {
     <Cell className="d" to={`/device/${d.id}`}>
       <DeviceTile device={d} />
       <div className="cb">
-        <span className="ttl">{d.short_name}{d.kind === 'simulated' && <span className="tag" style={{ marginLeft: 8 }}>Simulated</span>}</span>
+        <span className="ttl">{d.short_name}{d.kind === 'simulated' && <span className="tag sm">Simulated</span>}</span>
         <span className="st">
-          {hasRules(d) ? <SmallCheck /> : <DashedCircle />}
-          <span>{d.live && !hasRules(d) ? d.live.association.label : stateLabel(d)}</span>
+          <StateChip device={d} />
         </span>
         <span className="ln">
-          {declaredNothing(d) && <span className="sub" style={{ fontSize: 13 }}>{d.expected_from ? 'No declaration · expected:' : 'No declaration'}</span>}
-          {(!declaredNothing(d) || d.expected_from) && (attention ? (
-            <VerdictChips counts={counts} order={['unsatisfiable']} />
+          {declaredNothing(d) ? (
+            <span className="sub" style={{ fontSize: 13 }}>No per-flow verdicts: it declared nothing</span>
+          ) : attention || counts.decision_required ? (
+            <VerdictChips counts={counts} order={['unsatisfiable', 'decision_required']} />
           ) : (
             <VerdictChip verdict="compatible" n={(counts.compatible ?? 0) + (counts.conditionally_satisfiable ?? 0)} />
-          ))}
+          )}
         </span>
       </div>
     </Cell>
@@ -185,7 +185,7 @@ function UnmanagedRow({ device: u }: { device: UnmanagedDevice }) {
     <>
       <Tile tone="grey" size="device"><Icon name="status" size={20} /></Tile>
       <div className="cb">
-        <span className="ttl">{u.hostname ?? 'Unnamed device'}{u.simulated && <span className="tag" style={{ marginLeft: 8 }}>Simulated</span>}</span>
+        <span className="ttl">{u.hostname ?? 'Unnamed device'}{u.simulated && <span className="tag sm">Simulated</span>}</span>
         <span className="sub">{[u.ip_address, guess || null].filter(Boolean).join(' · ')}</span>
         <span className="sub" style={{ fontSize: 13 }}>{u.research_match ? `Looks like ${u.research_match.short_name} · see what it does` : 'Doesn’t support PPD · doesn’t get your rules'}</span>
       </div>

@@ -4,7 +4,7 @@ import { api, type Device, type SimConsole, type SimOutcome } from '../api'
 import { AppBar, Cell, DeviceTile, ErrorBox, Expander, Footnote, Group, Loading, SectionHeader, Segmented } from '../components/ui'
 import { DemoControls, TelemetryCard } from '../components/LiveDevice'
 import { useDevice, useHousehold, useMe, useSimConsole, useSimDevices } from '../state/data'
-import { timeAgo } from '../lib/device'
+import { timeAgo, DEVICE_STATE, deviceState } from '../lib/device'
 
 /**
  * One device's demo console (/demo-devices/:id): the device's own side, not PPD. It shows what using the device
@@ -195,7 +195,7 @@ function RealConsole({ id, operator }: { id: string; operator: boolean }) {
       <Group>
         <Cell className="d" to={`/device/${encodeURIComponent(d.id)}`}>
           <DeviceTile device={d} />
-          <div className="cb"><span className="ttl">{d.name}</span><span className="sub">{d.live?.association.label ?? 'Not connected'}</span></div>
+          <div className="cb"><span className="ttl">{d.name}</span><span className="sub">{d.live ? DEVICE_STATE[deviceState(d)].label : 'Not connected'}</span></div>
         </Cell>
       </Group>
       <TelemetryCard device={d} />

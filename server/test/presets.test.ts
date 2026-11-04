@@ -74,7 +74,7 @@ test('exactly one rule of each preset covers each flow of the fixture devices', 
     for (const f of flows) {
       const e = evaluateFlow(f, preset.rules)
       if (e.verdict === 'indeterminate') continue
-      assert.notEqual(e.reason, 'None of your rules allows this, so your devices are told no.', `${preset.id} covers ${f.id}`)
+      assert.notEqual(e.verdict, 'decision_required', `${preset.id} covers ${f.id}`)
     }
   }
 })
@@ -139,23 +139,24 @@ const sensorUse = { data_type: 'ppd:sensorData', purpose: 'ppd:coreFunctionality
 const asFlow = (taxonomy: object) => ({ id: 'f', evidence: 'source_linked', taxonomy }) as unknown as Flow
 const r = (id: string, effect: Rule['effect'], condition: Rule['condition'] = null): Rule => ({ id, title: id, effect, condition, scope: { data_type: ['ppd:sensorData'] }, enabled: true, origin: { kind: 'custom' } })
 
-test('verdicts: never beats "allowed only if", which beats allowed; nothing allowing a flow that leaves home denies it', () => {
+test('verdicts: never beats "allowed only if", which beats allowed; a flow no rule covers needs a decision, wherever it goes', () => {
   assert.equal(evaluateFlow(asFlow(sensorUse), [r('a', 'allow'), r('n', 'dont_allow')]).verdict, 'unsatisfiable')
   const limited = evaluateFlow(asFlow(sensorUse), [r('a', 'allow'), r('l', 'allow', 'processing_boundary=ppd:inHomeOnly')])
   assert.equal(limited.verdict, 'conditionally_satisfiable')
   assert.equal(limited.rule_id, 'l')
   assert.equal(evaluateFlow(asFlow(sensorUse), [r('a', 'allow')]).verdict, 'compatible')
-  assert.equal(evaluateFlow(asFlow(sensorUse), []).verdict, 'unsatisfiable')
-  assert.equal(evaluateFlow(asFlow({ ...sensorUse, handling_context: 'ppd:householdContext' }), []).verdict, 'compatible')
+  // No default outside the household's rules: staying home or leaving it, an uncovered flow is undecided.
+  assert.equal(evaluateFlow(asFlow(sensorUse), []).verdict, 'decision_required')
+  assert.equal(evaluateFlow(asFlow({ ...sensorUse, handling_context: 'ppd:householdContext' }), []).verdict, 'decision_required')
   // A limit the device declares is not "With limits": that verdict always names a household rule.
   const onDevice = { ...sensorUse, handling_context: 'ppd:householdContext', constraints: { processing_boundary: 'ppd:onDeviceOnly' } }
   const own = evaluateFlow(asFlow(onDevice), [])
-  assert.equal(own.verdict, 'compatible')
+  assert.equal(own.verdict, 'decision_required')
   assert.match(own.reason, /The device says it stays on the device\./)
   assert.equal(evaluateFlow(asFlow(onDevice), [r('a', 'allow')]).verdict, 'compatible')
-  assert.equal(evaluateFlow(asFlow({ ...sensorUse, constraints: { retention: 'ppd:ephemeral' } }), []).verdict, 'unsatisfiable')
+  assert.equal(evaluateFlow(asFlow({ ...sensorUse, constraints: { retention: 'ppd:ephemeral' } }), []).verdict, 'decision_required')
   // A processing boundary means nothing for a transfer, so that rule does not cover it.
-  assert.equal(evaluateFlow(asFlow({ ...sensorUse, action: 'ppd:transfer' }), [r('l', 'allow', 'processing_boundary=ppd:inHomeOnly')]).verdict, 'unsatisfiable')
+  assert.equal(evaluateFlow(asFlow({ ...sensorUse, action: 'ppd:transfer' }), [r('l', 'allow', 'processing_boundary=ppd:inHomeOnly')]).verdict, 'decision_required')
 })
 
 test('a rule is always named from what it does: the presets\' own names, and nothing anyone types', () => {

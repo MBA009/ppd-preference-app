@@ -123,12 +123,10 @@ describe('simulator', () => {
     const d = await json<Device>('GET', '/api/devices/plugwell-p1-01')
     assert.equal(d.name, 'Plugwell Smart Plug P1')
     assert.equal(d.declaration, null)
-    // Nothing declared: its flows are what a researched smart plug does, so the household policy covers them.
-    assert.equal(d.expected_from?.id, 'tp-link-kasa-kp125m')
-    assert.ok(d.flows.length > 10)
-    assert.ok(d.flows.every((f) => f.id.startsWith('plugwell-p1-01.') && f.evidence === 'source_linked'))
-    const preview = await json<{ rules: { flows: { device_id: string }[] }[] }>('GET', '/api/household/preview')
-    assert.ok(preview.rules.some((r) => r.flows.some((f) => f.device_id === 'plugwell-p1-01')))
+    // Nothing declared and nothing assumed: no flows from our library, so no per-flow verdicts.
+    assert.deepEqual(d.flows, [])
+    const preview = await json<{ rules: { flows: { device_id: string }[] }[] }>('GET', '/api/household/preview?all=1')
+    assert.ok(!preview.rules.some((r) => r.flows.some((f) => f.device_id === 'plugwell-p1-01')))
     await json<SimDevice>('POST', '/api/simulator/devices/plugwell-p1-01/disconnect')
   })
 

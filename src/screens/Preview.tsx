@@ -1,7 +1,7 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ActionBar, AppBar, DeviceTile, ErrorBox, Group, Loading, Cell } from '../components/ui'
 import { AttentionList, ProvenanceCard } from '../components/DeviceReport'
-import { useDevice, useHousehold, useRules } from '../state/data'
+import { useDevice, useHousehold } from '../state/data'
 import { subtitle } from '../lib/device'
 
 /** Screens 1b (declared device) and 1c (researched device): what a device says, before it joins the home. */
@@ -10,7 +10,6 @@ export default function Preview() {
   const nav = useNavigate()
   const { household, saveForLater, toast } = useHousehold()
   const dev = useDevice(id)
-  const rules = useRules(true)
 
   if (dev.error) return <><AppBar title="Check a device" back="/scan" /><ErrorBox error={dev.error} /></>
   const d = dev.data
@@ -18,7 +17,6 @@ export default function Preview() {
 
   const inHome = household.devices.some((h) => h.device_id === d.id)
   const saved = household.saved.includes(d.id)
-  const ruleCount = rules.length
 
   return (
     <div className="screen">
@@ -33,8 +31,8 @@ export default function Preview() {
         </Cell>
       </Group>
       <div className="gap" />
-      <ProvenanceCard device={d} ruleCount={ruleCount} />
-      {d.source === 'declared' && <div className="sf" style={{ fontStyle: 'italic' }}>We can’t check that the device will follow your rules.</div>}
+      <ProvenanceCard device={d} />
+      {d.source === 'declared' && <div className="sf" style={{ fontStyle: 'italic' }}>We can’t check that the device will follow your household policy.</div>}
       <AttentionList device={d} />
       <div className="spacer" />
       <ActionBar>

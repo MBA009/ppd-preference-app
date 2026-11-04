@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { api, type SimDevice } from '../api'
 import { AppBar, Cell, DeviceTile, ErrorBox, Footnote, Group, Loading, SectionHeader } from '../components/ui'
 import { useDevices, useHousehold, useMe, useSimDevices } from '../state/data'
-import { timeAgo } from '../lib/device'
+import { timeAgo, DEVICE_STATE, deviceState } from '../lib/device'
 
 /**
  * The presenter's control page: the demo simulator (app-api with SIMULATOR=1), whose devices join the home
@@ -87,7 +87,7 @@ export default function DemoDevices() {
           {real.map((d) => (
             <Cell key={d.id} className="d" to={`/demo-devices/${encodeURIComponent(d.id)}`}>
               <DeviceTile device={d} />
-              <div className="cb"><span className="ttl">{d.short_name}</span><span className="sub">Real hardware · {d.live?.association.label ?? 'connected'} · uploads and demo controls</span></div>
+              <div className="cb"><span className="ttl">{d.short_name}</span><span className="sub">Real hardware · {d.live ? DEVICE_STATE[deviceState(d)].label : 'connected'} · uploads and demo controls</span></div>
             </Cell>
           ))}
         </Group>

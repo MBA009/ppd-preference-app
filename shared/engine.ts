@@ -1,5 +1,5 @@
 import type { Device, Flow, Rule, Verdict } from './types'
-import { conditionOf, leavesHome, ruleCovers } from './scope'
+import { conditionOf, ruleCovers } from './scope'
 import { checkDataflow, constraintKeys } from './taxonomy'
 
 /**
@@ -13,10 +13,13 @@ import { checkDataflow, constraintKeys } from './taxonomy'
  *   3. A matching rule allows it only under a condition
  *      (not kept, in the home, on the device)             -> conditionally_satisfiable ("With limits")
  *   4. A matching rule allows it                          -> compatible ("Matches")
- *   5. Nothing matches: stays at home -> compatible, leaves the home -> unsatisfiable (devices are told no)
+ *   5. No rule matches                                    -> decision_required ("Needs your decision")
+ * There is no default outside the household's rules: a preset covers every core flow, so step 5 only happens
+ * after the household deletes or turns off a rule. Its devices then get no rule for the flow (the draft defines
+ * no default effect), and the household can answer with a new rule (Nov 2 guidance: a deleted rule means no
+ * preference yet, not an error).
  * "With limits" always names the household rule that sets the condition. A limit the device declares about itself
  * (on-device only, in-home only, not kept) is not a verdict: it is only said in the reason.
- * The household is never asked about a single flow: its preset and rules decide (CableLabs guidance).
  * Among rules with the same effect the first one in the policy is cited.
  */
 
@@ -54,12 +57,10 @@ export function evaluateFlow(flow: Flow, rules: Rule[]): Flow['evaluation'] {
   }
   const yes = hits.find((r) => r.effect === 'allow')
   if (yes) return { verdict: 'compatible', rule_id: yes.id, reason: `Your rule “${yes.title}” allows this.${declared(keys)}` }
-  return leavesHome(flow)
-    ? { verdict: 'unsatisfiable', rule_id: null, reason: 'None of your rules allows this, so your devices are told no.' }
-    : { verdict: 'compatible', rule_id: null, reason: `None of your rules covers this, and it stays in your home.${declared(keys)}` }
+  return { verdict: 'decision_required', rule_id: null, reason: `None of your rules settles this, so your devices get no rule for it.${declared(keys)}` }
 }
 
-const SEVERITY: Record<Verdict, number> = { unsatisfiable: 0, indeterminate: 1, conditionally_satisfiable: 2, compatible: 3 }
+const SEVERITY: Record<Verdict, number> = { unsatisfiable: 0, decision_required: 1, indeterminate: 2, conditionally_satisfiable: 3, compatible: 4 }
 
 /** Evaluates every flow and lists the worst first (the order within a verdict stays as in the declaration). */
 export function evaluateDevice(device: Device, rules: Rule[]): Device {

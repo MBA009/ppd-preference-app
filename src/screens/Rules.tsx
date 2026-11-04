@@ -1,14 +1,14 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import type { Rule } from '../api'
-import { ActionBar, AppBar, Cell, Footnote, Group, Loading, SectionHeader, Segmented, Tile } from '../components/ui'
+import { ActionBar, AppBar, Cell, Footnote, Group, Loading, SectionHeader, Tile } from '../components/ui'
 import { ChevronDown, ChipGlyph, Icon, ShieldCheck } from '../components/icons'
 import { useDevices, useHousehold, useRules } from '../state/data'
 import { ruleCovers, rulesOverlap, strictness } from '../policy/scope'
 import { CONDITION_TEXT, KIND, kindOf, type RuleKind } from '../policy/choices'
 import { plural } from '../lib/verdicts'
 import Onboarding from './Onboarding'
-import { PublishCard, PublishedRules } from '../components/Publish'
+import { PublishCard } from '../components/Publish'
 
 /**
  * The household policy page. On first launch it asks the questions; afterwards it lists the household's rules (from
@@ -16,7 +16,7 @@ import { PublishCard, PublishedRules } from '../components/Publish'
  */
 export default function Rules() {
   const { household } = useHousehold()
-  if (!household) return <><AppBar title="Household rules" /><Loading /></>
+  if (!household) return <><AppBar title="Household policy" /><Loading /></>
   if (!household.preset_id) return <Onboarding />
   return <Policy />
 }
@@ -28,18 +28,11 @@ const GROUPS: { kind: RuleKind; blurb: string; tone: 'red' | 'blue' | 'green'; i
 ]
 const GROUP_TITLE: Record<RuleKind, string> = { never: 'Never', limited: 'Allowed with a condition', allow: 'Allowed' }
 
-const FREQ = [
-  { value: 'daily', label: 'Daily' },
-  { value: 'monthly', label: 'Monthly' },
-  { value: 'yearly', label: 'Yearly' },
-  { value: 'never', label: 'Never' },
-] as const
-
 function Policy() {
   const nav = useNavigate()
   const [params] = useSearchParams()
   const isNew = params.get('new') === '1'
-  const { household, saveProfile, resetDemo, toast } = useHousehold()
+  const { household, resetDemo, toast } = useHousehold()
   const [confirmReset, setConfirmReset] = useState(false)
   const [open, setOpen] = useState<Partial<Record<RuleKind, boolean>>>({})
   const rules = useRules()
@@ -67,9 +60,8 @@ function Policy() {
     return out
   }, [rules, devices])
 
-  if (!household) return <><AppBar title="Household rules" /><Loading /></>
+  if (!household) return <><AppBar title="Household policy" /><Loading /></>
 
-  const profile = household.profile ?? { summary_frequency: 'monthly' as const, warn_on_conflict: true }
   const fromAnswers = rules.filter((r) => r.origin.kind === 'answer').length
   const added = rules.filter((r) => r.origin.kind === 'custom').length
 
@@ -80,7 +72,6 @@ function Policy() {
     nav('/rules', { replace: true })
   }
 
-  const setProfile = (patch: Partial<typeof profile>) => void saveProfile({ ...profile, ...patch })
 
   // The group already says Never / Allowed, so a title's own "Never:" or "Allow only if …:" is left out.
   const shortTitle = (r: Rule) => r.title.replace(/^(Never|Allow(?: only if [^:]*)?):\s*/, '')
@@ -120,7 +111,7 @@ function Policy() {
 
   return (
     <div className="screen">
-      <AppBar title="Household rules" right={<Link className="ntr" aria-label="Add a rule" to="/rules/new"><Icon name="plus" /></Link>} />
+      <AppBar title="Household policy" right={<Link className="ntr" aria-label="Add a rule" to="/rules/new"><Icon name="plus" /></Link>} />
 
       {isNew && (
         <Group style={{ marginBottom: 12 }}>
@@ -207,25 +198,6 @@ function Policy() {
         </Cell>
       </Group>
 
-      {!isNew && <PublishedRules />}
-
-      <SectionHeader>Keeping you posted</SectionHeader>
-      <Group>
-        <div className="cell rowq">
-          <div><span className="ttl" style={{ fontWeight: 500 }}>A summary of what your devices do with your data</span></div>
-          <Segmented full label="Summary frequency" value={profile.summary_frequency} options={[...FREQ]} onChange={(v) => setProfile({ summary_frequency: v })} />
-        </div>
-        <Cell className="t" chevron={false}>
-          <div className="cb"><span className="ttl">Warn me when a device conflicts with my rules</span></div>
-          <span className="tr" style={{ display: 'flex' }}>
-            <button className="tr" role="switch" aria-checked={profile.warn_on_conflict} aria-label="Warn me when a device conflicts with my rules" style={{ minHeight: 44 }} onClick={() => setProfile({ warn_on_conflict: !profile.warn_on_conflict })}>
-              <span className={'sw' + (profile.warn_on_conflict ? ' on' : '')} />
-            </button>
-          </span>
-        </Cell>
-      </Group>
-      <Footnote>Saved with your policy. The app does not send summaries or warnings yet.</Footnote>
-
       <SectionHeader>Your answers</SectionHeader>
       <Group>
         <Cell className="t" to="/rules/refine">
@@ -235,7 +207,7 @@ function Policy() {
           <div className="cb"><span className="ttl">Answer the questions again</span><span className="sub">Starts over: your rules are rebuilt from your new answers{added ? `, replacing the ${plural(added, 'rule')} you added and your changes` : ', replacing your changes'}.</span></div>
         </Cell>
         <Cell className="t" to="/rules/json">
-          <div className="cb"><span className="ttl">See the rules as JSON</span><span className="sub">Your household rules, and the PPD policy your devices receive</span></div>
+          <div className="cb"><span className="ttl">See the rules as JSON</span><span className="sub">The rules in your household policy, and the PPD policy your devices receive</span></div>
         </Cell>
         <Cell className="t" to="/rules/sources">
           <div className="cb"><span className="ttl">How the questions were made</span><span className="sub">Synthetic households from published studies</span></div>

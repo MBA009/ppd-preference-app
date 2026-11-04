@@ -40,7 +40,7 @@ export default function SystemStatus() {
             <div className="cell kv"><span className="ttl">Receipts renew every</span><span className="v">{o.gateway.freshness_interval ?? 'Unknown'}</span></div>
             <div className="cell kv"><span className="ttl">Devices with their own exception</span><span className="v">{o.counts.overrides}</span></div>
             <div className="cell kv"><span className="ttl">Seen on the home network</span><span className="v">{o.counts.network_observed}</span></div>
-            <div className="cell kv"><span className="ttl">Household rules served</span><span className="v mono">{o.household_policy.policy_id ?? 'None'}</span></div>
+            <div className="cell kv"><span className="ttl">Household policy served</span><span className="v mono">{o.household_policy.policy_id ?? 'None'}</span></div>
             <div className="cell kv"><span className="ttl">Sent from this app</span><span className="v">{o.household_policy.policy_id ? (o.household_policy.published_by_app ? 'Yes' : 'No (a preset or another tool)') : '—'}</span></div>
           </Group>
         </>

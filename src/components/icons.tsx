@@ -78,6 +78,27 @@ export function InfoCircle({ size = 17 }: P) {
     </svg>
   )
 }
+/** "Registered, no declaration": a circle with a bar, as on the device-states board. */
+export function NoDeclarationIcon({ size = 17 }: P) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 14 14" strokeWidth={1.6} aria-hidden="true" {...stroke}>
+      <circle cx="7" cy="7" r="5.5" />
+      <path d="M4.5 7h5" />
+    </svg>
+  )
+}
+/** Glyphs for the six device states, 14-grid outline in the chip's colour. */
+export function StateGlyph({ state, size = 13 }: { state: 'advisory' | 'no_declaration' | 'confirmed' | 'waiting' | 'stale' | 'reassociate'; size?: number }) {
+  const common = { width: size, height: size, viewBox: '0 0 14 14', 'aria-hidden': true, strokeWidth: 1.7, ...stroke } as const
+  switch (state) {
+    case 'advisory': return <svg {...common}><circle cx="7" cy="7" r="5.5" strokeDasharray="2 2" /></svg>
+    case 'no_declaration': return <svg {...common}><circle cx="7" cy="7" r="5.5" /><path d="M4.5 7h5" /></svg>
+    case 'confirmed': return <svg {...common} strokeWidth={2}><path d="M2.5 7.5l3 3 6-7" /></svg>
+    case 'waiting': return <svg {...common}><circle cx="7" cy="7" r="5.5" /><path d="M7 4v3l2 1.5" /></svg>
+    case 'stale': return <svg {...common}><path d="M7 1.8l5.4 9.4H1.6z" /><path d="M7 5.6v2.6" /><circle cx="7" cy="10" r=".6" fill="currentColor" /></svg>
+    case 'reassociate': return <svg {...common}><path d="M11.5 7a4.5 4.5 0 1 1-1.3-3.2" /><path d="M10.6 1.6v2.6H8" /></svg>
+  }
+}
 export function DashedCircle({ size = 14 }: P) {
   return (
     <svg width={size} height={size} viewBox="0 0 14 14" strokeWidth={1.8} stroke="#5F6368" fill="none" strokeLinecap="round" aria-hidden="true">
@@ -99,6 +120,8 @@ export function ChipGlyph({ verdict, size = 12 }: { verdict: Verdict; size?: num
   switch (verdict) {
     case 'unsatisfiable':
       return (<svg {...common} strokeWidth={1.8} {...stroke}><path d="M7 1.8l5.4 9.4H1.6z" /><path d="M7 5.6v2.6" /><circle cx="7" cy="10" r=".6" fill="currentColor" /></svg>)
+    case 'decision_required':
+      return (<svg {...common} strokeWidth={1.8} {...stroke}><circle cx="7" cy="7" r="5.5" /><path d="M7 4v3.3" /><circle cx="7" cy="10" r=".7" fill="currentColor" /></svg>)
     case 'indeterminate':
       return (<svg {...common} strokeWidth={1.8} {...stroke}><circle cx="7" cy="7" r="5.5" /><path d="M5.4 5.6a1.7 1.7 0 1 1 2.5 1.5c-.6.4-.9.8-.9 1.4" /><circle cx="7" cy="10.4" r=".7" fill="currentColor" /></svg>)
     case 'conditionally_satisfiable':
@@ -114,6 +137,8 @@ export function RowGlyph({ verdict }: { verdict: Verdict }) {
   switch (verdict) {
     case 'unsatisfiable':
       return (<svg {...w}><path d="M8 1.9L14.6 13.3H1.4Z" fill="currentColor" stroke="currentColor" strokeWidth={1.8} strokeLinejoin="round" /><path d="M8 6.2v3.3" stroke="#fff" strokeWidth={1.7} strokeLinecap="round" /><circle cx="8" cy="11.5" r=".95" fill="#fff" /></svg>)
+    case 'decision_required':
+      return (<svg {...w}><circle cx="8" cy="8" r="7" fill="currentColor" /><path d="M8 4.2v4.1" stroke="#fff" strokeWidth={1.7} strokeLinecap="round" /><circle cx="8" cy="11.3" r=".95" fill="#fff" /></svg>)
     case 'indeterminate':
       return (<svg {...w}><circle cx="8" cy="8" r="7" fill="currentColor" /><path d="M6.2 6.3a1.9 1.9 0 1 1 2.9 1.6c-.7.45-1.1.9-1.1 1.7" fill="none" stroke="#fff" strokeWidth={1.6} strokeLinecap="round" /><circle cx="8" cy="11.8" r=".95" fill="#fff" /></svg>)
     case 'conditionally_satisfiable':

@@ -292,3 +292,15 @@ button.cell:active, a.cell:active { background: #f1f3f6; }
 .cell.xr { text-align: left; }
 .xr-tag { flex: none; align-self: center; margin: 0 16px 0 8px; padding: 2px 8px; border-radius: 8px; background: #e8f0fe; color: #0066CC; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; line-height: 16px; }
 .json.xr-json { margin: 0 12px 10px; max-height: 50vh; }
+
+/* Six device states (design board): bordered chips. */
+.state { display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 9px 0 7px; border-radius: 7px; border: 1px solid; font-size: 13px; line-height: 16px; font-weight: 500; white-space: nowrap; flex: none; }
+.state.s-advisory { border-style: dashed; border-color: #9aa0a6; color: #3c4043; background: #fff; }
+.state.s-no_declaration { border-color: #3c4043; color: #202124; background: #fff; }
+.state.s-confirmed { border-color: #2a7f86; color: #0f4f55; background: #d9f0f1; }
+.state.s-waiting { border-color: #b45300; color: #8a3f00; background: #fff; }
+.state.s-stale { border-color: #d27a1f; color: #7a3a00; background: #ffe8cc; }
+.state.s-reassociate { border-color: #e08890; color: #b3261e; background: #fde7e9; }
+
+/* A small secondary tag next to a name, e.g. "Simulated": quieter than the name and the state chip. */
+.tag.sm { height: 18px; padding: 0 6px; border-radius: 5px; margin-left: 6px; font-size: 11px; line-height: 14px; font-weight: 500; color: var(--text-2); background: #eef0f3; vertical-align: 2px; }
