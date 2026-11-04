@@ -8,8 +8,7 @@ import { conditionText, declaresCondition } from './conditions'
  * mockClient.ts runs the same code in the browser when the app is offline.
  *
  * Order of decisions for one flow:
- *   1. No source for the flow yet, or a term that is not
- *      a core ppd: term                                   -> indeterminate (shown, never asked about)
+ *   1. A term that is not a core ppd: term                -> indeterminate (shown, never asked about)
  *   2. The rule that decides it (the latest-changed matching rule, Nov 2: the latest rule wins) says
  *        never                                            -> unsatisfiable ("Conflicts")
  *        allow only under a condition (deleted after use,
@@ -20,6 +19,8 @@ import { conditionText, declaresCondition } from './conditions'
  * after the household deletes or turns off a rule. Its devices then get no rule for the flow (the draft defines
  * no default effect), and the household can answer with a new rule (Nov 2 guidance: a deleted rule means no
  * preference yet, not an error).
+ * A researched flow still waiting for its source (evidence needs_source) is compared like any other: our team wrote
+ * its terms, so they are core terms; the report marks it "needs source".
  * "With limits" always names the household rule that sets the condition. A limit the device declares about itself
  * (on-device only, in-home only, deleted after use) is not a verdict: it is only said in the reason.
  */
@@ -33,9 +34,6 @@ const DECLARED_TEXT: Record<string, string> = {
 const declared = (keys: string[]) => keys.filter((k) => DECLARED_TEXT[k]).map((k) => ` ${DECLARED_TEXT[k]}`).join('')
 
 export function evaluateFlow(flow: Flow, rules: Rule[]): Flow['evaluation'] {
-  if (flow.evidence === 'needs_source') {
-    return { verdict: 'indeterminate', rule_id: null, reason: 'We could not find a source for this flow yet, so we cannot compare it with your rules.' }
-  }
   // An unresolvable term is not guessed at (draft-dsmullen-ppd-taxonomy-05 section 11).
   if (checkDataflow(flow.id, flow.taxonomy).length) {
     return { verdict: 'indeterminate', rule_id: null, reason: 'This flow uses terms outside the PPD core taxonomy, so we cannot compare it with your rules.' }
@@ -65,7 +63,7 @@ export function evaluateDevice(device: Device, rules: Rule[]): Device {
 
 /**
  * Flows that need the person's attention: conflicts with the household's rules. The household is never asked
- * to decide a single flow; its preset and rules decide. A flow we can't read (indeterminate) is never one of
+ * to decide a single flow; its preset and rules decide. An indeterminate flow is never one of
  * them either: describing it correctly is the vendor's job, and we assume nothing about it
  * (CableLabs guidance, docs/cablelabs-guidance-vendor-terms-plan.md).
  */

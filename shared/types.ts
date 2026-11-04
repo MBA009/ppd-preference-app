@@ -13,7 +13,7 @@ export type Verdict =
   | 'conditionally_satisfiable' //  "With limits"
   | 'decision_required' //          "Needs your decision": none of the household's rules covers the flow
   | 'unsatisfiable' //              "Conflicts with your rules"
-  | 'indeterminate' //              not readable: no source for the flow, or a term the comparison cannot resolve (never asked about)
+  | 'indeterminate' //              a term outside the PPD core taxonomy: no reliable outcome (never asked about)
 
 /**
  * Where a device stands with the household's rules. For devices known to the gateway these follow the

@@ -84,7 +84,10 @@ function Detail({ device, flow }: { device: Device; flow: Flow }) {
       )}
       {verdict === 'decision_required' && <Decide device={device} flow={flow} />}
       {verdict === 'indeterminate' && (
-        <Footnote>This flow isn’t described in terms we can read, so we assume nothing about it and there is nothing for you to do. Your household policy still applies to the device.</Footnote>
+        <Footnote>Indeterminate: this flow uses terms outside the PPD core taxonomy, so it can’t be compared with your rules. We assume nothing about it and there is nothing for you to do. Your household policy still applies to the device.</Footnote>
+      )}
+      {flow.evidence === 'needs_source' && (
+        <Footnote>We found this flow in our research but haven’t found where the maker says it yet, so treat it as likely rather than confirmed.</Footnote>
       )}
       {flow.evaluation.rule_id && (
         <Footnote>This comes from one of your household rules. <Link to={`/rules/${encodeURIComponent(flow.evaluation.rule_id)}`} className="link">View the rule</Link></Footnote>

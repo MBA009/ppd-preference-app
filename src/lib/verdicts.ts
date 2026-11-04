@@ -13,7 +13,7 @@ export interface VerdictMeta {
 export const VERDICTS: Record<Verdict, VerdictMeta> = {
   unsatisfiable: { cls: 'bad', label: 'Conflicts with your rules', tile: 'red', chip: (n) => `${n} ${n === 1 ? 'conflict' : 'conflicts'}` },
   decision_required: { cls: 'dec', label: 'Needs your decision', tile: 'orange', chip: (n) => `${n} ${n === 1 ? 'needs' : 'need'} a decision` },
-  indeterminate: { cls: 'unk', label: 'Not described in terms we can read', tile: 'grey', chip: (n) => `${n} not readable` },
+  indeterminate: { cls: 'unk', label: 'Indeterminate', tile: 'grey', chip: (n) => `${n} indeterminate` },
   conditionally_satisfiable: { cls: 'lim', label: 'With limits', tile: 'blue', chip: (n) => `${n} with limits` },
   compatible: { cls: 'ok', label: 'Matches your rules', tile: 'green', chip: (n) => `${n} ${n === 1 ? 'matches' : 'match'}` },
 }
