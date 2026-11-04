@@ -1,7 +1,8 @@
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
-import { TAXONOMY_RELEASE, termLabel } from '../../../shared/taxonomy'
-import type { SimConsole, SimDevice, SimEvent, SimOutcome } from '../../../shared/types'
+import { TAXONOMY_RELEASE, termLabel, type Constraints } from '../../../shared/taxonomy'
+import { conditionShort, isCondition, jurisdictionCondition } from '../../../shared/conditions'
+import type { RuleCondition, SimConsole, SimDevice, SimEvent, SimOutcome } from '../../../shared/types'
 import type { SimulatorConfig } from '../config'
 import type { Fixtures } from '../fixtures'
 import type { LiveDirectory, RegistryEntry } from '../live'
@@ -36,8 +37,16 @@ interface SimSlot {
 
 const MAX_EVENTS = 100
 const TICK_MS = 5000
-/** Household limits a rule can carry (protocol-04 section 7.12), as the console says them. */
-const CONDITION: Record<string, string> = { 'ppd:ephemeral': 'only if not kept', 'ppd:inHomeOnly': 'only if processed in the home', 'ppd:onDeviceOnly': 'only if it stays on the device' }
+/** Household limits a rule carries (protocol-04 section 7.12), as the console says them. */
+function limits(c: Constraints | undefined): string | null {
+  const j = c?.jurisdiction
+  const keys = [
+    c?.retention && `retention=${c.retention}`,
+    c?.processing_boundary && `processing_boundary=${c.processing_boundary}`,
+    j && jurisdictionCondition(j.scope, [...(j.countrycode ?? []), ...(j.subdivisioncode ?? [])]),
+  ]
+  return keys.filter((k): k is RuleCondition => !!k && isCondition(k)).map((k) => `only if ${conditionShort(k)}`).join(', ') || null
+}
 
 const FIELDS = ['data_type', 'purpose', 'action', 'source', 'handling_context'] as const
 
@@ -247,7 +256,7 @@ export class Simulator {
       else if (rule?.effect === 'allow') outcome = home ? 'kept_home' : 'sent'
       else if (slot.behavior === 'ignores') { outcome = 'sent_against_rules'; against.push(t.purpose) }
       else outcome = rule ? 'blocked' : 'held_back'
-      const condition = rule?.effect === 'allow' ? [rule.constraints?.retention, rule.constraints?.processing_boundary].map((v) => (v ? CONDITION[v] : undefined)).filter(Boolean).join(', ') || null : null
+      const condition = rule?.effect === 'allow' ? limits(rule.constraints) : null
       flows.push({ title: flow.title, recipient: termLabel('handling_context', t.handling_context), purpose: termLabel('purpose', t.purpose), outcome, condition })
     }
     slot.events = [{ at: new Date().toISOString(), label, flows }, ...slot.events].slice(0, MAX_EVENTS)

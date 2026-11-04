@@ -1,5 +1,5 @@
 import type { Answers, Device, Household, HouseholdPreset, Onboarding, Profile, ResolveResult, Rule } from './types'
-import { followUps, rulesFromAnswers, stageOnePath, walk } from './onboarding'
+import { followUps, rulesFromAnswers, stageOnePath, walk, writeAnswer } from './onboarding'
 import { named } from './ruleTitle'
 
 /**
@@ -40,14 +40,33 @@ export function seedHousehold(fixture: { devices: { device_id: string; added_at:
  * rule is replaced, including the person's own edits and rules (the app warns before a rerun). Only answers the
  * questionnaire would have asked are kept: stage 1's path and the leaf's follow-ups.
  */
-export function finishOnboarding(h: Household, tree: Onboarding, presets: HouseholdPreset[], answers: Answers): Household {
+export function finishOnboarding(h: Household, tree: Onboarding, presets: HouseholdPreset[], answers: Answers, now = new Date()): Household {
   const step = walk(tree, answers)
   if (!('leaf' in step)) throw new Error('The answers do not reach the end of the questions yet.')
   const preset = presets.find((p) => p.id === step.leaf.preset)
   if (!preset) throw new Error(`The questions led to a preset this app does not have (${step.leaf.preset}).`)
   const asked = new Set([...stageOnePath(tree, answers), ...followUps(tree, step.leaf, answers)])
   const kept: Answers = Object.fromEntries(Object.entries(answers).filter(([q]) => asked.has(q)))
-  return { ...h, preset_id: preset.id, answers: kept, rules: rulesFromAnswers(preset, kept, tree.questions) }
+  const answered_at = Object.fromEntries(Object.keys(kept).map((q) => [q, now.toISOString()]))
+  return { ...h, preset_id: preset.id, answers: kept, answered_at, rules: rulesFromAnswers(preset, kept, tree.questions) }
+}
+
+/**
+ * "Help me refine my settings": one answer to a situation, written into the current rules for that situation only
+ * (shared/onboarding.ts writeAnswer). Unlike finishing the questionnaire, nothing else is rebuilt: other answers, rules
+ * the person added and their edits stay. The latest answer to a situation wins.
+ */
+export function answerQuestion(h: Household, tree: Onboarding, question: string, answer: string, now = new Date()): Household {
+  const q = tree.questions[question]
+  if (!q?.situation) throw new Error(`There is no situation question ${question}.`)
+  if (!q.options.some((o) => o.id === answer)) throw new Error(`"${answer}" is not an answer to ${question}.`)
+  if (!h.preset_id) throw new Error('Answer the first questions before refining.')
+  return {
+    ...h,
+    answers: { ...h.answers, [question]: answer },
+    answered_at: { ...h.answered_at, [question]: now.toISOString() },
+    rules: writeAnswer(h.rules, question, answer, tree.questions),
+  }
 }
 
 /**
@@ -56,15 +75,18 @@ export function finishOnboarding(h: Household, tree: Onboarding, presets: Househ
  */
 export function retirePreset(h: Household, presets: HouseholdPreset[]): Household {
   if (!h.preset_id || presets.some((p) => p.id === h.preset_id)) return h
-  return { ...h, preset_id: null, answers: null, rules: [] }
+  return { ...h, preset_id: null, answers: null, answered_at: {}, rules: [] }
 }
 
 export const saveProfile = (h: Household, profile: Profile): Household => ({ ...h, profile })
 
+/**
+ * Adds or changes a rule. Either way it goes to the end of the list: rules are kept oldest change first, and where
+ * rules disagree the latest change wins (shared/scope.ts decidingRule).
+ */
 export function upsertRule(h: Household, input: Rule): Household {
   const rule = named(input)
-  const exists = h.rules.some((r) => r.id === rule.id)
-  return { ...h, rules: exists ? h.rules.map((r) => (r.id === rule.id ? rule : r)) : [...h.rules, rule] }
+  return { ...h, rules: [...h.rules.filter((r) => r.id !== rule.id), rule] }
 }
 
 export const deleteRule = (h: Household, id: string): Household => ({ ...h, rules: h.rules.filter((r) => r.id !== id) })

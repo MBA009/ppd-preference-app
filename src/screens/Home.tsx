@@ -4,6 +4,7 @@ import { useDevices, useHousehold, useOverview, useUnmanaged } from '../state/da
 import { countVerdicts, plural } from '../lib/verdicts'
 import { declaredNothing, hasRules, isConnected, timeAgo } from '../lib/device'
 import type { Device, Overview, UnmanagedDevice } from '../api'
+import { flowPath } from '../components/DeviceReport'
 
 type Notice = { key: string; tone: 'red' | 'orange' | 'blue'; icon: 'status' | 'plus' | 'publish'; title: string; sub: string; to?: string }
 
@@ -41,6 +42,11 @@ export default function Home() {
   const earlier = (list: Device[]) => list.length === 1 && reported(list[0]) ? ' Before that, it reported sending data against your rules.' : ''
   const updating = connected.filter((d) => d.live?.publication === 'waiting' && !lost.has(d.id)).length
   const joined = unseen && connected.find((d) => d.id === unseen.device_id)
+  // Flows no rule decides: only after the household deleted or switched off the rule that did (Nov 2: no preference yet).
+  // One notice per device, straight to the flow (one) or the device's "Needs your decision" list (several).
+  const undecided = connected
+    .map((d) => ({ d, flows: d.flows.filter((f) => f.evaluation.verdict === 'decision_required') }))
+    .filter((x) => x.flows.length)
 
   const names = (list: Device[]) => list.length === 1 ? list[0].short_name : `${list.length} devices`
   const lastSeen = (d: Device) => (d.live?.receipt?.acknowledged_at ? ` since ${timeAgo(d.live.receipt.acknowledged_at)}` : '')
@@ -54,6 +60,12 @@ export default function Home() {
       title: `${names(conflicting)} ${conflicting.length === 1 ? 'is' : 'are'} doing something your rules don’t allow`,
       sub: conflicting.length === 1 ? 'See what it is doing' : conflicting.map((d) => d.short_name).join(', '),
     },
+    ...undecided.map(({ d, flows }): Notice => ({
+      key: `undecided-${d.id}`, tone: 'orange', icon: 'status',
+      to: flows.length === 1 ? flowPath(d.id, flows[0].id) : `/device/${encodeURIComponent(d.id)}`,
+      title: flows.length === 1 ? `${d.short_name}: “${flows[0].title}” has no rule` : `${d.short_name}: ${flows.length} data flows have no rule`,
+      sub: `A rule that covered ${flows.length === 1 ? 'it' : 'them'} was deleted or switched off, so ${d.short_name} gets no rule for ${flows.length === 1 ? 'it' : 'them'}. Tap to decide what should happen.`,
+    })),
     stale.length > 0 && {
       key: 'stale', tone: stale.some(reported) ? 'red' : 'orange', icon: 'status', to: to(stale),
       title: `${names(stale)} stopped checking in`,

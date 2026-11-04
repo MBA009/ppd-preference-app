@@ -6,11 +6,11 @@ device says it does with your data compared with your household rules, and see w
 **First launch sets up the household's rules from at most 15 questions.** After a short introduction, each question is a
 concrete situation with an example from a device the household owns ("A device sends video or audio (for example, your
 camera's video of your living room) to the company that made it, so the device works…": No / Not sure / Yes).
-Stage 1 walks a decision tree to one of four internal **household presets**; stage 2 ("help me refine my settings") asks
-the situations households like this one are split on, up to the cap. Every yes or no is then written into the preset's
+Stage 1 walks a decision tree to one of four internal **household presets**; stage 2 asks the situations households like
+this one are split on, up to the cap. Every yes or no is then written into the preset's
 rules, so the household starts with its own rules (about 43). The person never sees or picks a preset (CableLabs, week 9:
-a list invites self-perception bias); they can change, switch off, delete or add rules, rerun the follow-ups as a privacy
-checkup, or answer everything again, which starts over. The household is never asked about single flows when a device
+a list invites self-perception bias); they can change, switch off, delete or add rules, keep refining
+("Help me refine my settings", below), or answer everything again, which starts over. The household is never asked about single flows when a device
 joins: its rules decide, and devices receive them. The presets, tree and follow-ups come from clustering synthetic
 households built from published IoT privacy studies, following Smullen et al. 2020; see
 [ppd-household-presets](https://github.com/baktistr/ppd-household-presets).
@@ -179,8 +179,8 @@ note from the workbook. A simulated device declares its research fixture's flows
 declared by the device).
 
 **The verdicts are this project's comparison, not the PPD protocol's.** app-api computes them with `shared/engine.ts` from the
-household's current rules (a stricter rule wins: Never, then Allowed only if, then Allowed; no matching rule and the flow
-leaves the home means it is not allowed), and `getDevice` returns each flow's `evaluation` block. The PPD protocol defines
+household's current rules (where rules disagree, the latest change wins: rules are kept oldest change first and saving a
+rule moves it to the end, Nov 2 meeting; no matching rule means "Needs your decision", and devices get no rule for it), and `getDevice` returns each flow's `evaluation` block. The PPD protocol defines
 these outcome names but not this procedure. A processing-boundary condition (in the home, on the device) is defined only for
 use and inference (taxonomy-05 section 6.7.2), so such a rule covers only those actions.
 
@@ -195,6 +195,14 @@ exactly one decides each flow (the same result notebook 07 checks against every 
 preset that has since been rebuilt goes back to the questions. To change them, rerun the notebooks and copy the two files
 again; `server/test/presets.test.ts` checks every path, the cap, and that the rules from any answers still decide every
 one of the 6,272 core dataflows exactly once, with each answered situation set to its answer.
+
+**"Help me refine my settings"** (`src/screens/Refine.tsx`, Nov 2 meeting) has no cap. `refineQueue` orders every
+situation: first those no rule decides any more (the person deleted the rule: no preference yet), then those never
+answered, most unsure first (the leaf's `queue` in `onboarding.json`), then earlier answers, oldest first, as a check-up.
+Each answer is saved at once (`PUT /api/household/answers/:question`) and written into the current rules for that
+situation only (`writeAnswer`): an earlier answer to it is replaced, rules the person added and their edits stay. The
+screen says when there is a good picture (nothing undecided, every situation left under `stop_unsure`) and offers a break
+every 10 answers.
 
 The data is synthetic, built from published studies; the questions and presets are not user-tested.
 

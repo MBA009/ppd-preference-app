@@ -3,10 +3,13 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import type { Rule } from '../api'
 import { ActionBar, AppBar, Cell, Footnote, Group, Loading, SectionHeader, Tile } from '../components/ui'
 import { ChevronDown, ChipGlyph, Icon, ShieldCheck } from '../components/icons'
-import { useDevices, useHousehold, useRules } from '../state/data'
-import { ruleCovers, rulesOverlap, strictness } from '../policy/scope'
-import { CONDITION_TEXT, KIND, kindOf, type RuleKind } from '../policy/choices'
+import { useDevices, useHousehold, useOnboarding, useRules } from '../state/data'
+import { decisionKey, ruleCovers, rulesOverlap, undecidedFlows } from '../policy/scope'
+import { KIND, kindOf, type RuleKind } from '../policy/choices'
+import { conditionText } from '../../shared/conditions'
 import { plural } from '../lib/verdicts'
+import { timeAgo } from '../lib/device'
+import { refineQueue } from '../../shared/onboarding'
 import Onboarding from './Onboarding'
 import { PublishCard } from '../components/Publish'
 
@@ -22,7 +25,7 @@ export default function Rules() {
 }
 
 const GROUPS: { kind: RuleKind; blurb: string; tone: 'red' | 'blue' | 'green'; icon: JSX.Element }[] = [
-  { kind: 'never', tone: 'red', icon: <Icon name="block" size={18} />, blurb: 'A device that does this conflicts with your rules, and is told no. If two rules disagree, the stricter one wins.' },
+  { kind: 'never', tone: 'red', icon: <Icon name="block" size={18} />, blurb: 'A device that does this conflicts with your rules, and is told no. If two rules disagree, your latest change wins.' },
   { kind: 'limited', tone: 'blue', icon: <ChipGlyph verdict="conditionally_satisfiable" size={16} />, blurb: 'A device that does this is told the condition, and matches with limits.' },
   { kind: 'allow', tone: 'green', icon: <Icon name="check" size={18} />, blurb: 'A device that does this matches your rules.' },
 ]
@@ -36,16 +39,18 @@ function Policy() {
   const [confirmReset, setConfirmReset] = useState(false)
   const [open, setOpen] = useState<Partial<Record<RuleKind, boolean>>>({})
   const rules = useRules()
+  const tree = useOnboarding()
   const ids = (household?.devices ?? []).map((d) => d.device_id)
   const { data: devices } = useDevices(ids)
 
   // For each rule: the data flows across the devices in the home it covers, and of those the ones it decides. Where a
-  // stricter rule also covers a flow, the stricter one wins (Never, then Allow only if, then Allow), so this rule is
-  // overridden there. `stricter` says whether a stricter rule overlaps it at all, devices or not.
+  // later rule that says something else also covers a flow, the later one wins (the latest change, Nov 2), so this
+  // rule is overridden there. `later` says whether such a rule overlaps it at all, devices or not. Rules are kept
+  // oldest change first.
   const impact = useMemo(() => {
-    const out: Record<string, { flows: number; devices: number; decided: number; stricter: boolean }> = {}
-    for (const r of rules) {
-      const above = r.enabled ? rules.filter((o) => o.id !== r.id && strictness(o) > strictness(r) && rulesOverlap(r, o)) : []
+    const out: Record<string, { flows: number; devices: number; decided: number; later: boolean }> = {}
+    for (const [i, r] of rules.entries()) {
+      const above = r.enabled ? rules.slice(i + 1).filter((o) => decisionKey(o) !== decisionKey(r) && rulesOverlap(r, o)) : []
       let flows = 0
       let decided = 0
       let ds = 0
@@ -55,15 +60,28 @@ function Policy() {
         decided += covered.filter((f) => !above.some((o) => ruleCovers(o, f.taxonomy))).length
         if (covered.length) ds += 1
       }
-      out[r.id] = { flows, devices: ds, decided, stricter: above.length > 0 }
+      out[r.id] = { flows, devices: ds, decided, later: above.length > 0 }
     }
     return out
   }, [rules, devices])
 
+  // Flows no rule decides: a rule that covered them was deleted or switched off (Nov 2: no preference yet).
+  const gap = useMemo(() => undecidedFlows(rules).length, [rules])
+
   if (!household) return <><AppBar title="Household policy" /><Loading /></>
 
+  const decide = (devices ?? []).reduce((n, d) => n + d.flows.filter((f) => f.evaluation.verdict === 'decision_required').length, 0)
   const fromAnswers = rules.filter((r) => r.origin.kind === 'answer').length
   const added = rules.filter((r) => r.origin.kind === 'custom').length
+  const refine = tree.data ? refineQueue(tree.data, household) : null
+  const lastAnswer = Object.values(household.answered_at ?? {}).sort().pop()
+  const refineText = !refine
+    ? 'Situations households like yours are split on. A good privacy checkup now and then.'
+    : refine.undecided
+      ? `${plural(refine.undecided, 'question covers', 'questions cover')} data flows a removed rule left with no rule${decide ? `, ${decide} of them on your devices` : '. None of them are on your devices'}. Then, situations households like yours are split on.`
+      : refine.goodPicture
+        ? `We have a good picture of what you want. Check your answers now and then${lastAnswer ? ` (last answer ${timeAgo(lastAnswer)})` : ''}.`
+        : `Households like yours are split on ${plural(refine.split, 'more situation')}. Answer as many as you like; your changes stay.`
 
   const reset = async () => {
     if (!confirmReset) { setConfirmReset(true); return }
@@ -76,13 +94,13 @@ function Policy() {
   // The group already says Never / Allowed, so a title's own "Never:" or "Allow only if …:" is left out.
   const shortTitle = (r: Rule) => r.title.replace(/^(Never|Allow(?: only if [^:]*)?):\s*/, '')
   const used = (r: Rule) => impact[r.id]?.decided ?? 0
-  const overridden = (r: Rule) => !!impact[r.id]?.stricter
+  const overridden = (r: Rule) => !!impact[r.id]?.later
   const counts = GROUPS.map((g) => ({ kind: g.kind, n: rules.filter((r) => kindOf(r) === g.kind).length })).filter((c) => c.n)
   const inUseTotal = rules.filter((r) => used(r) > 0).length
 
   // Rules your devices use stand out (the kind's colour down the left, the flows in a tinted badge); the rest are
   // kept quietly for devices that may join.
-  // A rule a stricter rule overrides gets a warning: all of it on the devices (orange, not "in use"), part of it, or only
+  // A rule a later rule overrides gets a warning: all of it on the devices (orange, not "in use"), part of it, or only
   // for flows no device has yet.
   const row = (r: Rule) => {
     const i = impact[r.id]
@@ -95,11 +113,11 @@ function Policy() {
       <Cell key={r.id} to={`/rules/${encodeURIComponent(r.id)}`} className={cls} style={live ? { ['--k' as string]: color } : undefined}>
         <div className="cb">
           <span className="ttl" style={{ fontSize: 15, lineHeight: '20px' }}>{shortTitle(r)}</span>
-          {r.condition && <span className="sub">Only if {CONDITION_TEXT[r.condition]}</span>}
+          {r.condition && <span className="sub">Only if {conditionText(r.condition)}</span>}
           {devices && live && <span className="use"><i />In use · {plural(i.decided, 'data flow')} on {plural(i.devices, 'device')}</span>}
-          {devices && whollyBeaten && <span className="warn">⚠ Overridden · a stricter rule decides its {plural(i.flows, 'data flow')}</span>}
-          {devices && live && beaten > 0 && <span className="warn">⚠ Overridden on {plural(beaten, 'more data flow')} by a stricter rule</span>}
-          {(!devices || !i?.flows) && overridden(r) && <span className="warn">⚠ Partly overridden by a stricter rule</span>}
+          {devices && whollyBeaten && <span className="warn">⚠ Overridden · a later rule decides its {plural(i.flows, 'data flow')}</span>}
+          {devices && live && beaten > 0 && <span className="warn">⚠ Overridden on {plural(beaten, 'more data flow')} by a later rule</span>}
+          {(!devices || !i?.flows) && overridden(r) && <span className="warn">⚠ Partly overridden by a later rule</span>}
           {devices && !i?.flows && !overridden(r) && <span className="sub">Not in use yet</span>}
         </div>
         {!r.enabled && <span className="tr off">Off</span>}
@@ -125,6 +143,27 @@ function Policy() {
         </Group>
       )}
 
+
+      {/* Flows a removed rule left with no rule. What the devices in the home do comes first: that needs deciding now
+          (orange); the rest only matters if a device that does it joins (blue). */}
+      {gap > 0 && (
+        <Group style={{ marginBottom: 12 }}>
+          <Cell className="t" to="/rules/settle" style={{ alignItems: 'flex-start' }}>
+            <Tile tone={decide ? 'orange' : 'blue'} style={{ marginTop: 10 }}><Icon name="status" size={18} /></Tile>
+            <div className="cb" style={{ paddingRight: 16 }}>
+              <span className="ttl" style={{ fontWeight: 500 }}>
+                {decide ? `${plural(decide, 'flow')} on your devices ${decide === 1 ? 'has' : 'have'} no rule` : `${plural(gap, 'possible data flow has', 'possible data flows have')} no rule`}
+              </span>
+              <span className="sub">
+                {decide
+                  ? `A rule was deleted or switched off, so ${plural(gap, 'possible data flow has', 'possible data flows have')} no rule, including ${decide === 1 ? 'one' : decide} your devices do. Your devices get no rule for ${decide === 1 ? 'it' : 'them'} until you decide.`
+                  : `A rule was deleted or switched off. None of your devices does ${gap === 1 ? 'this' : 'these'}, so nothing needs deciding now; a device that joins and does ${gap === 1 ? 'it' : 'them'} would get no rule.`}
+                {' '}Tap to decide what should happen.
+              </span>
+            </div>
+          </Cell>
+        </Group>
+      )}
 
       {!isNew && <PublishCard />}
 
@@ -167,7 +206,7 @@ function Policy() {
                   <span className="ttl" style={{ fontWeight: 500, color: k.color }}>{GROUP_TITLE[g.kind]}</span>
                   <span className="sub">
                     {devices ? (inUse ? `${inUse} in use by your devices` : 'Not in use by your devices yet') : g.blurb}
-                    {beaten > 0 && <span className="warn-t"> · ⚠ {beaten} overridden by stricter rules</span>}
+                    {beaten > 0 && <span className="warn-t"> · ⚠ {beaten} overridden by later rules</span>}
                   </span>
                 </div>
                 <span className="tr"><span className="cnt">{list.length}</span><ChevronDown up={isOpen} /></span>
@@ -201,7 +240,7 @@ function Policy() {
       <SectionHeader>Your answers</SectionHeader>
       <Group>
         <Cell className="t" to="/rules/refine">
-          <div className="cb"><span className="ttl">Help me refine my settings</span><span className="sub">A few situations households like yours are split on. A good privacy checkup now and then.</span></div>
+          <div className="cb"><span className="ttl">Help me refine my settings</span><span className="sub">{refineText}</span></div>
         </Cell>
         <Cell className="t" to="/rules/update">
           <div className="cb"><span className="ttl">Answer the questions again</span><span className="sub">Starts over: your rules are rebuilt from your new answers{added ? `, replacing the ${plural(added, 'rule')} you added and your changes` : ', replacing your changes'}.</span></div>

@@ -78,6 +78,9 @@ export const mockClient: PpdApi = {
   async finishOnboarding({ answers }) {
     return write(hh.finishOnboarding(await current(), await getJson<Onboarding>('onboarding.json'), await presets(), answers))
   },
+  async answerQuestion({ question, answer }) {
+    return write(hh.answerQuestion(await current(), await getJson<Onboarding>('onboarding.json'), question, answer))
+  },
   async saveProfile(profile) {
     return write(hh.saveProfile(await current(), profile))
   },

@@ -62,6 +62,7 @@ export const httpClient: PpdApi = {
   getOnboarding: () => call<Onboarding>('GET', '/onboarding'),
   listHouseholdPresets: () => call<HouseholdPreset[]>('GET', '/household-presets'),
   finishOnboarding: (p) => call<Household>('PUT', '/household/onboarding', p),
+  answerQuestion: ({ question, answer }) => call<Household>('PUT', `/household/answers/${encodeURIComponent(question)}`, { answer }),
   saveProfile: (profile) => call<Household>('PUT', '/household/profile', profile),
   listRules: () => call<Rule[]>('GET', '/household/rules'),
   upsertRule: (rule) => call<Household>('PUT', `/household/rules/${id(rule.id)}`, rule),

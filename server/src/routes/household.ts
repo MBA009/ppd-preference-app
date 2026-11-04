@@ -14,7 +14,14 @@ export const ruleSchema = {
     id: { type: 'string', minLength: 1, maxLength: 200 },
     title: { type: 'string', maxLength: 500 },
     effect: { enum: ['allow', 'dont_allow'] },
-    condition: { anyOf: [{ type: 'null' }, { enum: ['retention=ppd:ephemeral', 'processing_boundary=ppd:inHomeOnly', 'processing_boundary=ppd:onDeviceOnly'] }] },
+    condition: {
+      anyOf: [
+        { type: 'null' },
+        { enum: ['retention=ppd:ephemeral', 'processing_boundary=ppd:inHomeOnly', 'processing_boundary=ppd:onDeviceOnly'] },
+        // A jurisdiction (taxonomy-05 section 6.7.3): a scope and lowercase ISO 3166 codes, as shared/conditions.ts writes it.
+        { type: 'string', maxLength: 200, pattern: '^jurisdiction\\.(collection|use|inference|transfer|storage)=[a-z]{2}(-[a-z0-9]{1,3})?(,[a-z]{2}(-[a-z0-9]{1,3})?)*$' },
+      ],
+    },
     scope: {
       type: 'object',
       additionalProperties: false,
@@ -42,7 +49,7 @@ const profileSchema = {
   properties: { summary_frequency: { enum: ['daily', 'monthly', 'yearly', 'never'] }, warn_on_conflict: { type: 'boolean' } },
 } as const
 
-const answersSchema = { type: 'object', maxProperties: 50, additionalProperties: { type: 'string', maxLength: 200 } } as const
+const answersSchema = { type: 'object', maxProperties: 200, additionalProperties: { type: 'string', maxLength: 200 } } as const
 
 export function householdRoutes(app: FastifyInstance, ctx: AppContext): void {
   const requireDevice = async (id: string) => {
@@ -80,6 +87,23 @@ export function householdRoutes(app: FastifyInstance, ctx: AppContext): void {
         }
       })
       await ctx.publisher.sync(`questionnaire finished (${preset})`)
+      return h
+    },
+  )
+
+  // "Help me refine my settings": one answer at a time, written into the current rules for that situation only.
+  app.put<{ Params: { question: string }; Body: { answer: string } }>(
+    '/api/household/answers/:question',
+    { schema: { params: { type: 'object', properties: { question: { type: 'string', maxLength: 200 } } }, body: { type: 'object', required: ['answer'], properties: { answer: { type: 'string', maxLength: 200 } } } } },
+    async (req) => {
+      const h = ctx.change(req, 'answer_question', (h) => {
+        try {
+          return hh.answerQuestion(h, ctx.fixtures.onboarding, req.params.question, req.body.answer)
+        } catch (e) {
+          throw httpError(400, (e as Error).message)
+        }
+      }, req.params.question)
+      await ctx.publisher.sync('answer saved')
       return h
     },
   )

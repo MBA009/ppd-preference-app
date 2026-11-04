@@ -32,16 +32,18 @@ export type DeclarationState =
 
 export type DeviceIcon = 'thermostat' | 'lock' | 'tv' | 'camera' | 'bulb' | 'plug'
 
-/** What a rule says to do with a flow it matches (a PPD rule effect). Stricter wins: dont_allow beats allow. */
+/** What a rule says to do with a flow it matches (a PPD rule effect). Where rules disagree, the latest change wins. */
 export type RuleEffect = 'allow' | 'dont_allow'
 
 /**
  * A qualifier an allow rule requires (draft-dsmullen-ppd-protocol-04 section 7.12): the flow is allowed only
- * when it is not kept, or is processed in the home or on the device. Sent to devices as the rule's constraints.
- * The processing boundary is defined only for use and inference (taxonomy-05 section 6.7.2), so such a rule
- * covers only those actions.
+ * when it is deleted right after use, is processed in the home or on the device, or stays in the given places
+ * (`jurisdiction.<scope>=<codes>`). Sent to devices as the rule's constraints. How each reads and which actions
+ * it covers: shared/conditions.ts.
  */
-export type RuleCondition = 'retention=ppd:ephemeral' | 'processing_boundary=ppd:inHomeOnly' | 'processing_boundary=ppd:onDeviceOnly'
+export type RuleCondition =
+  | 'retention=ppd:ephemeral' | 'processing_boundary=ppd:inHomeOnly' | 'processing_boundary=ppd:onDeviceOnly'
+  | `jurisdiction.${'collection' | 'use' | 'inference' | 'transfer' | 'storage'}=${string}`
 
 /**
  * Which flows a rule is about. Every field is optional (left out = any) and lists IRIs from the PPD taxonomy,
@@ -112,8 +114,17 @@ export interface OnboardingQuestion {
   data_examples?: Record<string, string>
 }
 
-/** Where stage 1 ends: the preset, and the follow-up questions (stage 2) for households that end here. */
-export interface OnboardingLeaf { preset: string; follow_up_budget: number; follow_ups: string[] }
+/**
+ * One situation in a leaf's refine queue. `unsure`: how split the households that end in this leaf are on it (1 = half
+ * say yes, 0 = they agree); `accept`: the share of them that would allow it.
+ */
+export interface QueueEntry { question: string; unsure: number; accept: number }
+
+/**
+ * Where stage 1 ends: the preset, the follow-up questions (stage 2) for households that end here, and the refine queue:
+ * every situation, most unsure first ("Help me refine my settings", Nov 2 meeting).
+ */
+export interface OnboardingLeaf { preset: string; follow_up_budget: number; follow_ups: string[]; queue?: QueueEntry[] }
 
 /** A question with one branch per group of answers, or a leaf. */
 export type OnboardingNode = { question: string; branches: { answers: string[]; next: OnboardingNode }[] } | OnboardingLeaf
@@ -132,6 +143,10 @@ export interface Onboarding {
   /** How to walk the tree, how answers become rules, and what rerunning does (plain text, for readers of the file). */
   walk: string
   rules: string
+  /** How "Help me refine my settings" works: an open-ended queue, without a cap. */
+  refine?: string
+  /** Once every situation left is less unsure than this, the household's rules are a good picture: stop suggesting more. */
+  stop_unsure?: number
   rerun: string
   root: OnboardingNode
 }
@@ -228,6 +243,8 @@ export interface Household {
   saved: string[]
   /** Answers to the onboarding questions (stage 1 and the follow-ups). null until the household has answered (first launch). */
   answers: Answers | null
+  /** When each answer was given (ISO time): a refine check-up asks the oldest again. */
+  answered_at?: Record<string, string>
   /** The preset the questionnaire assigned (internal). Its rules, with the answers written in, are `rules`. */
   preset_id: string | null
   /** The household policy: the preset's rules with the household's answers written in, then edited by the person. */
@@ -436,6 +453,11 @@ export interface PpdApi {
    * the answers. Starts over: every earlier rule is replaced, including the person's own edits.
    */
   finishOnboarding(p: { answers: Answers }): Promise<Household>
+  /**
+   * "Help me refine my settings": one answer to a situation, written into the household's current rules for that
+   * situation only. An earlier answer to it is replaced; other rules and the person's edits stay.
+   */
+  answerQuestion(p: { question: string; answer: string }): Promise<Household>
   saveProfile(profile: Profile): Promise<Household>
   /** The household's rules. */
   listRules(): Promise<Rule[]>

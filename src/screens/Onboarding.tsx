@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import type { Answers, HouseholdPreset, Onboarding as Tree } from '../api'
+import type { Answers, DeviceSummary, Household, HouseholdPreset, Onboarding as Tree } from '../api'
 import { ActionBar, AppBar, Cell, ErrorBox, Footnote, Group, Loading, Tile } from '../components/ui'
 import { ShieldCheck } from '../components/icons'
 import { useHousehold, useHouseholdPresets, useLibrary, useOnboarding } from '../state/data'
@@ -11,13 +11,13 @@ import { plural } from '../lib/verdicts'
  * The questionnaire, one situation per screen, at most `total_questions_cap` in all:
  *
  * - stage 1 walks a decision tree to one of the household presets (never shown: the household does not pick one);
- * - stage 2 ("help me refine my settings") asks the situations households like this one are split on;
+ * - stage 2 asks the follow-ups: the situations households like this one are split on;
  * - the answers are written into the preset's rules, and those become the household's rules.
  *
- * `first` runs at first launch, `retake` starts over from the first question, `refine` keeps stage 1 and asks the
- * follow-ups again (a privacy checkup). Every run rebuilds the rules (start over), after saying so.
+ * `first` runs at first launch, `retake` starts over from the first question and rebuilds the rules, after saying so.
+ * "Help me refine my settings" is its own screen (Refine.tsx): an open-ended queue that keeps the person's edits.
  */
-type Mode = 'first' | 'retake' | 'refine'
+type Mode = 'first' | 'retake'
 
 export default function Onboarding({ mode = 'first' }: { mode?: Mode }) {
   const tree = useOnboarding()
@@ -27,12 +27,16 @@ export default function Onboarding({ mode = 'first' }: { mode?: Mode }) {
   const error = tree.error ?? presets.error
   if (error) return <><AppBar title="Household policy" /><ErrorBox error={error} /></>
   if (!tree.data || !presets.data || !household || (!library.data && !library.error)) return <><AppBar title="Household policy" /><Loading /></>
-  // Example wording follows the device classes the household owns (the library knows each device's category).
+  return <Walk tree={tree.data} presets={presets.data} mode={mode} owned={ownedClasses(household, library.data ?? [])} />
+}
+
+/** Example wording follows the device classes the household owns (the library knows each device's category). */
+export function ownedClasses(household: Household, library: DeviceSummary[]): string[] {
   const owned = household.devices
-    .map((d) => library.data?.find((x) => x.id === d.device_id)?.category)
+    .map((d) => library.find((x) => x.id === d.device_id)?.category)
     .map((c) => (c ? CATEGORY_CLASS[c] : undefined))
     .filter((c): c is string => !!c)
-  return <Walk tree={tree.data} presets={presets.data} mode={mode} owned={[...new Set(owned)]} />
+  return [...new Set(owned)]
 }
 
 const INTRO = '__intro'   // the stage 2 introduction, in the back stack like a question
@@ -43,16 +47,10 @@ function Walk({ tree, presets, mode, owned }: { tree: Tree; presets: HouseholdPr
   const before = household?.answers ?? {}
   const cap = tree.source.total_questions_cap
 
-  // A checkup keeps stage 1's answers and asks the follow-ups again; other runs start empty. Earlier answers are
-  // offered as the starting choice either way.
-  const initial = useMemo<Answers>(() => {
-    if (mode !== 'refine') return {}
-    const path = stageOnePath(tree, before)
-    return Object.fromEntries(path.filter((q) => q in before).map((q) => [q, before[q]]))
-  }, [mode, tree, before])
+  // Every run starts empty; earlier answers are offered as the starting choice.
   const [started, setStarted] = useState(false)
-  const [answers, setAnswers] = useState<Answers>(initial)
-  const [order, setOrder] = useState<string[]>(mode === 'refine' ? [INTRO] : [])
+  const [answers, setAnswers] = useState<Answers>({})
+  const [order, setOrder] = useState<string[]>([])
   const [pick, setPick] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
@@ -61,7 +59,7 @@ function Walk({ tree, presets, mode, owned }: { tree: Tree; presets: HouseholdPr
   }
   const back = () => {
     const last = order[order.length - 1]
-    if (!last || (mode === 'refine' && order.length === 1)) { setStarted(false); return }
+    if (!last) { setStarted(false); return }
     if (last === INTRO) { go(answers, order.slice(0, -1), null); return }
     const { [last]: previous, ...rest } = answers
     go(rest, order.slice(0, -1), previous)
@@ -140,7 +138,7 @@ function Walk({ tree, presets, mode, owned }: { tree: Tree; presets: HouseholdPr
     )
   }
   const next = pending.find((q) => !(q in answers))
-  if (next) return question(next, 2, mode === 'refine' ? pending.length : stage2Total)
+  if (next) return question(next, 2, stage2Total)
 
   // Done: the household's rules, from the preset with the answers written in.
   const preset = presets.find((p) => p.id === leaf.preset)
@@ -184,7 +182,6 @@ function Start({ tree, mode, onStart }: { tree: Tree; mode: Mode; onStart: () =>
   const text = {
     first: { title: tree.splash.title, body: tree.splash.text, button: 'Start' },
     retake: { title: 'Answer the questions again', body: `${tree.splash.text} Your rules will be rebuilt from your new answers: changes you made and rules you added are replaced.`, button: 'Start again' },
-    refine: { title: 'Help me refine my settings', body: `${tree.follow_up_intro.text} Your answers to the first questions stay; your rules are rebuilt from the new answers, so changes you made are replaced.`, button: 'Start' },
   }[mode]
   return (
     <div className="screen">

@@ -1,5 +1,6 @@
 import type { Rule } from './types'
 import { CORE_TERMS, type Field } from './taxonomy'
+import { conditionShort } from './conditions'
 
 /**
  * Rule names, generated from the rule itself: what happens, then its scope. Nobody types a name, so a name always says
@@ -22,8 +23,6 @@ const PLAIN: Record<string, string> = {
   'ppd:householdContext': 'staying in your home', 'ppd:vendorContext': 'going to the device maker',
   'ppd:thirdPartyContext': 'going to other companies', 'ppd:publicAudience': 'made public',
 }
-const EFFECT_TEXT = { never: 'Never', allow: 'Allow', 'retention=ppd:ephemeral': 'Allow only if not kept',
-  'processing_boundary=ppd:inHomeOnly': 'Allow only if processed in your home', 'processing_boundary=ppd:onDeviceOnly': 'Allow only if processed on the device' } as const
 const ORDER: Field[] = ['data_type', 'handling_context', 'purpose', 'action', 'source']
 const WORDS: Record<Exclude<Field, 'handling_context'>, [string, string]> = {
   data_type: ['', 'any data except '], purpose: ['for ', 'for anything except '], action: ['when ', 'except when '], source: ['that ', 'unless '],
@@ -46,7 +45,7 @@ function termsText(field: Field, terms: string[]): string | null {
 }
 
 export function ruleTitle(rule: Pick<Rule, 'effect' | 'condition' | 'scope'>): string {
-  const lead = rule.effect === 'dont_allow' ? EFFECT_TEXT.never : rule.condition ? EFFECT_TEXT[rule.condition] : EFFECT_TEXT.allow
+  const lead = rule.effect === 'dont_allow' ? 'Never' : rule.condition ? `Allow only if ${conditionShort(rule.condition)}` : 'Allow'
   const parts = ORDER.map((f) => termsText(f, rule.scope[f]?.length ? rule.scope[f]! : Object.keys(CORE_TERMS[f]))).filter(Boolean)
   if (rule.scope.constraints?.includes('retention=ppd:indefinite')) parts.push('if the device keeps it forever')
   return `${lead}: ${parts.length ? parts.join(' · ') : 'everything else'}`

@@ -12,6 +12,8 @@ import DeviceDetail from './screens/DeviceDetail'
 import Rules from './screens/Rules'
 import RuleEditor from './screens/RuleEditor'
 import Onboarding from './screens/Onboarding'
+import Refine from './screens/Refine'
+import Settle from './screens/Settle'
 import Sources from './screens/Sources'
 import RulesJson from './screens/RulesJson'
 import Dev from './screens/Dev'
@@ -79,7 +81,8 @@ export default function App() {
                   <Route path="rules" element={<RulesSplit mode="list" />} />
                 </Route>
                 <Route path="rules/update" element={<Onboarding mode="retake" />} />
-                <Route path="rules/refine" element={<Onboarding mode="refine" />} />
+                <Route path="rules/refine" element={<Refine />} />
+                <Route path="rules/settle" element={<Settle />} />
                 <Route path="rules/sources" element={<Sources />} />
                 <Route path="rules/json" element={<RulesJson />} />
                 <Route path="rules/new" element={<RulesSplit mode="detail" />} />

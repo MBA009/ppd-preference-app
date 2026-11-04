@@ -73,7 +73,8 @@ services:
       PPD_TAXONOMY_PROFILE: core-only
       # Devices renew at 80% of this, so a policy change reaches them within ~25 s (gateway default 15m).
       # PPD has no push: a device only learns of a change when it renews (protocol-04 section 5.2).
-      PPD_ASSOCIATION_FRESHNESS: ${ASSOCIATION_FRESHNESS:-30s}
+      # Set here rather than as a Coolify variable: Coolify keeps the value it saw on the first paste.
+      PPD_ASSOCIATION_FRESHNESS: 30s
       PPD_TLS_CERT_FILE: /run/ppd-tls/gateway-cert.pem
       PPD_TLS_KEY_FILE: /run/ppd-tls/gateway-key.pem
       PPD_TLS_CLIENT_CA_FILE: /run/ppd-tls/gateway-ca.pem

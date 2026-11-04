@@ -1,4 +1,4 @@
-import type { Answers, HouseholdPreset, Onboarding, OnboardingLeaf, OnboardingNode, OnboardingQuestion, Rule, RuleScope } from './types'
+import type { Answers, Household, HouseholdPreset, Onboarding, OnboardingLeaf, OnboardingNode, OnboardingQuestion, QueueEntry, Rule, RuleScope } from './types'
 import { named } from './ruleTitle'
 import { CORE_TERMS, FIELDS, type Field } from './taxonomy'
 
@@ -184,3 +184,94 @@ export function rulesFromAnswers(preset: HouseholdPreset, answers: Answers, ques
 /** Every answer the household gave to a situation question: what rulesFromAnswers writes in. */
 export const situationAnswers = (tree: Onboarding, answers: Answers): Answers =>
   Object.fromEntries(Object.entries(answers).filter(([q, a]) => tree.questions[q]?.situation && a in ANSWER_DECISION))
+
+/* ---------- refining: an open-ended queue (Nov 2 meeting) ---------- */
+
+/**
+ * One answer written into the household's current rules ("Help me refine my settings"). Every rule that decides the
+ * situation otherwise is cut around it, as in rulesFromAnswers, and one rule with the answer decides it. An earlier
+ * answer to the same question is replaced (the latest answer wins); everything else stays: other answers, the person's
+ * own rules and edits. "Not sure" changes nothing.
+ */
+export function writeAnswer(rules: Rule[], qid: string, answer: string, questions: Record<string, OnboardingQuestion>): Rule[] {
+  const situation = questions[qid]?.situation
+  const d = ANSWER_DECISION[answer]
+  if (!situation || d === undefined) return rules
+  const { data_type: t, purpose: p, handling_context: c } = situation
+  const out: Rule[] = []
+  for (const r of rules) {
+    if (r.origin.kind === 'answer' && r.origin.question === qid) continue
+    const s = full(r.scope)
+    if (!(s.data_type.includes(t) && s.purpose.includes(p) && s.handling_context.includes(c)) || decisionOf(r) === d) {
+      out.push(r)
+      continue
+    }
+    const pieces: FullScope[] = [
+      { ...s, data_type: s.data_type.filter((x) => x !== t) },
+      { ...s, data_type: [t], purpose: s.purpose.filter((x) => x !== p) },
+      { ...s, data_type: [t], purpose: [p], handling_context: s.handling_context.filter((x) => x !== c) },
+    ]
+    pieces.forEach((piece, i) => {
+      if (FIELDS.every((f) => piece[f].length)) out.push(named({ ...r, id: `${r.id}.${i}`, scope: compact(piece) }))
+    })
+  }
+  const scope = compact({ ...ALL, data_type: [t], purpose: [p], handling_context: [c] })
+  return [...out, named({ id: `answer.${qid}`, title: '', effect: d === 1 ? 'allow' : 'dont_allow', condition: null, enabled: true, scope, origin: { kind: 'answer', question: qid } })]
+}
+
+/** The situation questions some of whose flows no enabled rule decides: the household deleted the rule that did. */
+export function undecidedSituations(tree: Onboarding, rules: Rule[]): Set<string> {
+  const scopes = rules.filter((r) => r.enabled).map((r) => full(r.scope))
+  const out = new Set<string>()
+  for (const [qid, q] of Object.entries(tree.questions)) {
+    if (!q.situation) continue
+    const { data_type: t, purpose: p, handling_context: c } = q.situation
+    const here = scopes.filter((s) => s.data_type.includes(t) && s.purpose.includes(p) && s.handling_context.includes(c))
+    if (!ALL.action.every((a) => ALL.source.every((src) => here.some((s) => s.action.includes(a) && s.source.includes(src))))) out.add(qid)
+  }
+  return out
+}
+
+/**
+ * Why a situation is next: no rule decides it any more (asked first), households like this one are split on it, they
+ * mostly agree but it was never asked, or it is a check-up of an earlier answer (oldest first).
+ */
+export type RefineReason = 'undecided' | 'split' | 'likely' | 'checkup'
+export interface RefineItem { question: string; reason: RefineReason; entry: QueueEntry | null }
+export interface RefineQueue {
+  items: RefineItem[]
+  /** Situations still to ask that households like this one are split on (at least `stop_unsure`). */
+  split: number
+  undecided: number
+  /** Nothing undecided and nothing split left: the household's rules say what it wants. */
+  goodPicture: boolean
+}
+
+/**
+ * The refine queue, never empty while there are situation questions: the household's leaf ranks every situation by how
+ * unsure households like it are. Situations with no rule come first, then those never answered (most unsure first),
+ * then earlier answers, oldest first, as a check-up.
+ */
+export function refineQueue(tree: Onboarding, h: Pick<Household, 'answers' | 'answered_at' | 'rules'>): RefineQueue {
+  const answers = h.answers ?? {}
+  const step = walk(tree, answers)
+  const none = { items: [], split: 0, undecided: 0, goodPicture: false }
+  if (!('leaf' in step)) return none
+  const queue = step.leaf.queue ?? []
+  const entry = new Map(queue.map((e) => [e.question, e]))
+  const situations = Object.keys(tree.questions).filter((q) => tree.questions[q].situation)
+  const order = [...queue.map((e) => e.question).filter((q) => tree.questions[q]?.situation), ...situations.filter((q) => !entry.has(q))]
+  const gaps = undecidedSituations(tree, h.rules)
+  const stop = tree.stop_unsure ?? 0
+  const isSplit = (q: string) => (entry.get(q)?.unsure ?? 1) >= stop
+  const at = h.answered_at ?? {}
+  const undecided = order.filter((q) => gaps.has(q))
+  const unasked = order.filter((q) => !gaps.has(q) && !(q in answers))
+  const answered = order.filter((q) => !gaps.has(q) && q in answers).sort((a, b) => (at[a] ?? '').localeCompare(at[b] ?? ''))
+  const item = (reason: RefineReason) => (q: string): RefineItem => ({ question: q, reason, entry: entry.get(q) ?? null })
+  const split = unasked.filter(isSplit).length
+  return {
+    items: [...undecided.map(item('undecided')), ...unasked.map((q) => item(isSplit(q) ? 'split' : 'likely')(q)), ...answered.map(item('checkup'))],
+    split, undecided: undecided.length, goodPicture: undecided.length === 0 && split === 0,
+  }
+}

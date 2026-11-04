@@ -1,1 +1,1 @@
-export { matchesScope, ruleCovers, rulesOverlap, strictness } from '../../shared/scope'
+export { decidingRule, decisionKey, gapScopes, matchesScope, ruleCovers, rulesOverlap, undecidedFlows } from '../../shared/scope'

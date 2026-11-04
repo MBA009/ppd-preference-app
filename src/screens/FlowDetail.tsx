@@ -13,6 +13,15 @@ import { nounOf } from '../components/DeviceReport'
  * changes a verdict. A flow none of the household's rules covers ("Needs your decision") can be answered here;
  * the answer is saved as a new rule for exactly this kind of data flow.
  */
+/**
+ * Back to wherever the flow was opened from (the device page, or a notice on My home), or to the device page when the
+ * flow was opened directly. React Router's history index says whether there is an app page to go back to.
+ */
+function useBack(deviceId: string) {
+  const nav = useNavigate()
+  return () => ((window.history.state?.idx ?? 0) > 0 ? nav(-1) : nav(`/device/${encodeURIComponent(deviceId)}`, { replace: true }))
+}
+
 export default function FlowDetail() {
   const { id, flowId } = useParams()
   const dev = useDevice(id)
@@ -26,6 +35,7 @@ export default function FlowDetail() {
 }
 
 function Detail({ device, flow }: { device: Device; flow: Flow }) {
+  const back = useBack(device.id)
   const verdict = flow.evaluation.verdict
   const meta = VERDICTS[verdict]
   useEffect(() => { window.scrollTo(0, 0) }, [flow.id])
@@ -36,7 +46,7 @@ function Detail({ device, flow }: { device: Device; flow: Flow }) {
 
   return (
     <div className="screen">
-      <AppBar title={flow.title} back={`/device/${device.id}`} />
+      <AppBar title={flow.title} back={back} />
 
       <Group>
         <Cell className="t" chevron={false} style={{ alignItems: 'flex-start' }}>
@@ -86,7 +96,7 @@ function Detail({ device, flow }: { device: Device; flow: Flow }) {
 
 /** Answers a flow no rule covers with a new rule scoped to its exact five terms. */
 function Decide({ device, flow }: { device: Device; flow: Flow }) {
-  const nav = useNavigate()
+  const back = useBack(device.id)
   const { upsertRule, toast } = useHousehold()
   const [busy, setBusy] = useState(false)
   const t = flow.taxonomy
@@ -99,7 +109,7 @@ function Decide({ device, flow }: { device: Device; flow: Flow }) {
     try {
       await upsertRule({ ...draft, title: ruleTitle(draft) })
       toast(effect === 'allow' ? 'Allowed. Saved as a new rule.' : 'Saved as a new rule: never.')
-      nav(`/device/${encodeURIComponent(device.id)}`, { replace: true })
+      back()
     } finally {
       setBusy(false)
     }

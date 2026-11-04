@@ -1,6 +1,7 @@
 import type { Device, Flow, Rule, Verdict } from './types'
-import { conditionOf, ruleCovers } from './scope'
+import { conditionOf, decidingRule } from './scope'
 import { checkDataflow, constraintKeys } from './taxonomy'
+import { conditionText, declaresCondition } from './conditions'
 
 /**
  * The comparison of a flow with the household's rules. app-api runs it on every device read;
@@ -9,33 +10,27 @@ import { checkDataflow, constraintKeys } from './taxonomy'
  * Order of decisions for one flow:
  *   1. No source for the flow yet, or a term that is not
  *      a core ppd: term                                   -> indeterminate (shown, never asked about)
- *   2. A matching rule says never                         -> unsatisfiable ("Conflicts")
- *   3. A matching rule allows it only under a condition
- *      (not kept, in the home, on the device)             -> conditionally_satisfiable ("With limits")
- *   4. A matching rule allows it                          -> compatible ("Matches")
- *   5. No rule matches                                    -> decision_required ("Needs your decision")
- * There is no default outside the household's rules: a preset covers every core flow, so step 5 only happens
+ *   2. The rule that decides it (the latest-changed matching rule, Nov 2: the latest rule wins) says
+ *        never                                            -> unsatisfiable ("Conflicts")
+ *        allow only under a condition (deleted after use,
+ *        in the home, on the device, only in some places) -> conditionally_satisfiable ("With limits")
+ *        allow                                            -> compatible ("Matches")
+ *   3. No rule matches                                    -> decision_required ("Needs your decision")
+ * There is no default outside the household's rules: a preset covers every core flow, so step 3 only happens
  * after the household deletes or turns off a rule. Its devices then get no rule for the flow (the draft defines
  * no default effect), and the household can answer with a new rule (Nov 2 guidance: a deleted rule means no
  * preference yet, not an error).
  * "With limits" always names the household rule that sets the condition. A limit the device declares about itself
- * (on-device only, in-home only, not kept) is not a verdict: it is only said in the reason.
- * Among rules with the same effect the first one in the policy is cited.
+ * (on-device only, in-home only, deleted after use) is not a verdict: it is only said in the reason.
  */
 
 /** What the device says about its own limits, as a sentence after the verdict's reason. */
 const DECLARED_TEXT: Record<string, string> = {
   'processing_boundary=ppd:onDeviceOnly': 'The device says it stays on the device.',
   'processing_boundary=ppd:inHomeOnly': 'The device says it stays in your home.',
-  'retention=ppd:ephemeral': 'The device says it is not kept.',
+  'retention=ppd:ephemeral': 'The device says it deletes it right after use.',
 }
 const declared = (keys: string[]) => keys.filter((k) => DECLARED_TEXT[k]).map((k) => ` ${DECLARED_TEXT[k]}`).join('')
-/** How a rule condition reads after "only if". */
-export const CONDITION_TEXT: Record<string, string> = {
-  'processing_boundary=ppd:onDeviceOnly': 'it is processed on the device',
-  'processing_boundary=ppd:inHomeOnly': 'it is processed in your home',
-  'retention=ppd:ephemeral': 'it is not kept',
-}
 
 export function evaluateFlow(flow: Flow, rules: Rule[]): Flow['evaluation'] {
   if (flow.evidence === 'needs_source') {
@@ -45,18 +40,15 @@ export function evaluateFlow(flow: Flow, rules: Rule[]): Flow['evaluation'] {
   if (checkDataflow(flow.id, flow.taxonomy).length) {
     return { verdict: 'indeterminate', rule_id: null, reason: 'This flow uses terms outside the PPD core taxonomy, so we cannot compare it with your rules.' }
   }
-  const hits = rules.filter((r) => ruleCovers(r, flow.taxonomy))
-  const no = hits.find((r) => r.effect === 'dont_allow')
-  if (no) return { verdict: 'unsatisfiable', rule_id: no.id, reason: `Your rule “${no.title}” says no to this.` }
+  const rule = decidingRule(rules, flow.taxonomy)
   const keys = constraintKeys(flow.taxonomy.constraints)
-  const limited = hits.find((r) => conditionOf(r))
-  if (limited) {
-    const c = conditionOf(limited)!
-    const said = keys.includes(c) ? ' The device says it is.' : ' Your devices are told so.'
-    return { verdict: 'conditionally_satisfiable', rule_id: limited.id, reason: `Your rule “${limited.title}” allows this only if ${CONDITION_TEXT[c]}.${said}` }
+  if (rule?.effect === 'dont_allow') return { verdict: 'unsatisfiable', rule_id: rule.id, reason: `Your rule “${rule.title}” says no to this.` }
+  const c = rule && conditionOf(rule)
+  if (rule && c) {
+    const said = declaresCondition(c, flow.taxonomy.constraints) ? ' The device says it is.' : ' Your devices are told so.'
+    return { verdict: 'conditionally_satisfiable', rule_id: rule.id, reason: `Your rule “${rule.title}” allows this only if ${conditionText(c)}.${said}` }
   }
-  const yes = hits.find((r) => r.effect === 'allow')
-  if (yes) return { verdict: 'compatible', rule_id: yes.id, reason: `Your rule “${yes.title}” allows this.${declared(keys)}` }
+  if (rule) return { verdict: 'compatible', rule_id: rule.id, reason: `Your rule “${rule.title}” allows this.${declared(keys)}` }
   return { verdict: 'decision_required', rule_id: null, reason: `None of your rules settles this, so your devices get no rule for it.${declared(keys)}` }
 }
 

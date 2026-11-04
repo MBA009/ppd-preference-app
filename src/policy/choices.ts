@@ -46,13 +46,16 @@ export const KEPT_FOREVER = 'retention=ppd:indefinite'
 
 export const EFFECT_LABEL: Record<RuleEffect, string> = { dont_allow: 'Never', allow: 'Allowed' }
 
-/** The conditions an allow rule can carry, in the words after "Allowed only if". */
-export const CONDITION_TEXT: Record<RuleCondition, string> = {
-  'processing_boundary=ppd:inHomeOnly': 'it is processed in my home',
-  'processing_boundary=ppd:onDeviceOnly': 'it stays on the device',
-  'retention=ppd:ephemeral': 'it is not kept',
-}
-export const CONDITIONS = Object.keys(CONDITION_TEXT) as RuleCondition[]
+/**
+ * The conditions an allow rule can carry, as the editor offers them (wording and wire form: shared/conditions.ts).
+ * "In a jurisdiction" stands for every jurisdiction condition; its scope and places are picked below it.
+ */
+export const CONDITION_CHOICES: { id: 'retention' | 'home' | 'device' | 'place'; label: string; condition: RuleCondition | null }[] = [
+  { id: 'home', label: 'it is processed in my home', condition: 'processing_boundary=ppd:inHomeOnly' },
+  { id: 'device', label: 'it is processed on the device', condition: 'processing_boundary=ppd:onDeviceOnly' },
+  { id: 'retention', label: 'it is deleted right after use', condition: 'retention=ppd:ephemeral' },
+  { id: 'place', label: 'it stays in a jurisdiction', condition: null },
+]
 export const isBoundary = (c: RuleCondition | null | undefined) => !!c?.startsWith('processing_boundary=')
 
 /** How a rule reads on the rules page: never, allowed only if, or allowed. */

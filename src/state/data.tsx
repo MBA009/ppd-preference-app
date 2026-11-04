@@ -86,6 +86,7 @@ interface Ctx {
   /** Loads the household again after a failed first load. */
   reload: () => void
   finishOnboarding: (p: { answers: Answers }) => Promise<void>
+  answerQuestion: (p: { question: string; answer: string }) => Promise<void>
   saveProfile: (p: Profile) => Promise<void>
   upsertRule: (r: Rule) => Promise<void>
   deleteRule: (id: string) => Promise<void>
@@ -128,7 +129,7 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
     household, error, toast, reload,
     addDevice: run(api.addDevice), removeDevice: run(api.removeDevice), saveForLater: run(api.saveForLater),
     markJoinedSeen: run(api.markJoinedSeen), resetDemo: run(api.resetDemo),
-    finishOnboarding: run(api.finishOnboarding), saveProfile: run(api.saveProfile), upsertRule: run(api.upsertRule), deleteRule: run(api.deleteRule),
+    finishOnboarding: run(api.finishOnboarding), answerQuestion: run(api.answerQuestion), saveProfile: run(api.saveProfile), upsertRule: run(api.upsertRule), deleteRule: run(api.deleteRule),
   }), [household, error, toast, reload, run])
 
   return (

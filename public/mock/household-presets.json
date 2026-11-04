@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
   "source": {
-    "generated": "2026-10-29",
+    "generated": "2026-11-04",
     "by": "ppd-household-presets notebooks 01-07",
     "data": "synthetic households (not survey data); see data/DATACARD.md",
     "k": 4,
@@ -16,6 +16,157 @@
       "one_preset": 0.879,
       "after_profiling": 0.891,
       "after_follow_ups": 0.9
+    },
+    "refine_cv": {
+      "stop_unsure": 0.3,
+      "first_n_cv": [
+        {
+          "follow_ups": 0,
+          "asked (avg)": 0.0,
+          "match_all": 0.79,
+          "match_real": 0.892
+        },
+        {
+          "follow_ups": 3,
+          "asked (avg)": 3.0,
+          "match_all": 0.794,
+          "match_real": 0.895
+        },
+        {
+          "follow_ups": 6,
+          "asked (avg)": 6.0,
+          "match_all": 0.798,
+          "match_real": 0.897
+        },
+        {
+          "follow_ups": 9,
+          "asked (avg)": 9.0,
+          "match_all": 0.802,
+          "match_real": 0.9
+        },
+        {
+          "follow_ups": 12,
+          "asked (avg)": 12.0,
+          "match_all": 0.806,
+          "match_real": 0.905
+        },
+        {
+          "follow_ups": 15,
+          "asked (avg)": 15.0,
+          "match_all": 0.81,
+          "match_real": 0.911
+        },
+        {
+          "follow_ups": 20,
+          "asked (avg)": 20.0,
+          "match_all": 0.815,
+          "match_real": 0.917
+        },
+        {
+          "follow_ups": 25,
+          "asked (avg)": 25.0,
+          "match_all": 0.819,
+          "match_real": 0.921
+        },
+        {
+          "follow_ups": 30,
+          "asked (avg)": 30.0,
+          "match_all": 0.822,
+          "match_real": 0.924
+        },
+        {
+          "follow_ups": 40,
+          "asked (avg)": 40.0,
+          "match_all": 0.827,
+          "match_real": 0.93
+        },
+        {
+          "follow_ups": 50,
+          "asked (avg)": 50.0,
+          "match_all": 0.83,
+          "match_real": 0.933
+        },
+        {
+          "follow_ups": 60,
+          "asked (avg)": 60.0,
+          "match_all": 0.832,
+          "match_real": 0.935
+        },
+        {
+          "follow_ups": 80,
+          "asked (avg)": 80.0,
+          "match_all": 0.834,
+          "match_real": 0.938
+        },
+        {
+          "follow_ups": 105,
+          "asked (avg)": 99.143,
+          "match_all": 0.834,
+          "match_real": 0.939
+        }
+      ],
+      "at_least_unsure_cv": [
+        {
+          "min_unsure": 0.9,
+          "asked (avg)": 5.819,
+          "match_all": 0.798,
+          "match_real": 0.897
+        },
+        {
+          "min_unsure": 0.8,
+          "asked (avg)": 11.84,
+          "match_all": 0.806,
+          "match_real": 0.904
+        },
+        {
+          "min_unsure": 0.7,
+          "asked (avg)": 16.872,
+          "match_all": 0.812,
+          "match_real": 0.911
+        },
+        {
+          "min_unsure": 0.6,
+          "asked (avg)": 22.336,
+          "match_all": 0.817,
+          "match_real": 0.916
+        },
+        {
+          "min_unsure": 0.5,
+          "asked (avg)": 27.788,
+          "match_all": 0.822,
+          "match_real": 0.921
+        },
+        {
+          "min_unsure": 0.4,
+          "asked (avg)": 34.179,
+          "match_all": 0.825,
+          "match_real": 0.926
+        },
+        {
+          "min_unsure": 0.3,
+          "asked (avg)": 43.014,
+          "match_all": 0.829,
+          "match_real": 0.931
+        },
+        {
+          "min_unsure": 0.2,
+          "asked (avg)": 52.562,
+          "match_all": 0.831,
+          "match_real": 0.934
+        },
+        {
+          "min_unsure": 0.1,
+          "asked (avg)": 64.481,
+          "match_all": 0.833,
+          "match_real": 0.937
+        },
+        {
+          "min_unsure": 0.0,
+          "asked (avg)": 99.143,
+          "match_all": 0.834,
+          "match_real": 0.939
+        }
+      ]
     }
   },
   "max_rules": 30,

@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { conditionConstraints, conditionOf, ruleCovers } from '../../shared/scope'
+import { conditionConstraints, conditionOf, decidingRule } from '../../shared/scope'
 import { CORE_TERMS, FIELDS, TAXONOMY_RELEASE, checkDataflow, type Constraints, type Field } from '../../shared/taxonomy'
 import type { CompiledRule, Device, Household, Policy, PolicyRule, PublishPreview, Rule, Taxonomy } from '../../shared/types'
 import { tupleKey } from './live'
@@ -12,30 +12,27 @@ import { tupleKey } from './live'
  * - The policy covers every core dataflow the household policy has an answer for (up to 6,272 in
  *   ppd-core-2026-05), not only what devices declared. A device that declares nothing still gets rules for
  *   whatever it does, and finds them by its own dataflows.
- * - The household's answer for a dataflow is the strictest enabled rule that covers it (Never, then Allowed only
- *   if, then Allowed). A dataflow no rule covers gets no policy rule: there is no default outside the household's
- *   rules (the draft defines none).
+ * - The household's answer for a dataflow is the latest-changed enabled rule that covers it (Nov 2 meeting: the
+ *   latest rule wins; shared/scope.ts decidingRule). A dataflow no rule covers gets no policy rule: there is no
+ *   default outside the household's rules (the draft defines none).
  * - Declarations do not shape the policy. They only say which policy rules match which device flows, for the app's
  *   display. One exception: a household rule scoped to a qualifier the device declares (such as "kept forever")
- *   can only match a declared flow, so it is applied to that flow's dataflow when it is stricter.
+ *   can only match a declared flow, so it is applied to that flow's dataflow when it is the later rule.
  * - Constraints come only from a household condition ("Allowed only if", protocol-04 section 7.12). Only
  *   qualifiers valid for the action are emitted (processing_boundary only on use and inference).
  */
 
-type Choice = { effect: 'allow' | 'deny'; reason: string; constraints?: Constraints }
-
-/** Deny, then allow under a condition, then allow. */
-const strictness = (c: Choice) => (c.effect === 'deny' ? 2 : c.constraints ? 1 : 0)
+/** A rule's answer for a dataflow, and the rule's place in the household's list (later = changed more recently). */
+type Choice = { effect: 'allow' | 'deny'; reason: string; constraints?: Constraints; order: number }
 
 function ruleChoice(t: Taxonomy, rules: Rule[]): Choice | null {
-  const hits = rules.filter((r) => ruleCovers(r, t))
-  const no = hits.find((r) => r.effect === 'dont_allow')
-  if (no) return { effect: 'deny', reason: `Your rule “${no.title}”` }
-  const limited = hits.find((r) => conditionOf(r))
-  if (limited) return { effect: 'allow', reason: `Your rule “${limited.title}”`, constraints: conditionConstraints(conditionOf(limited)!) }
-  const yes = hits.find((r) => r.effect === 'allow')
-  if (yes) return { effect: 'allow', reason: `Your rule “${yes.title}”` }
-  return null
+  const rule = decidingRule(rules, t)
+  if (!rule) return null
+  const order = rules.indexOf(rule)
+  const reason = `Your rule “${rule.title}”`
+  if (rule.effect === 'dont_allow') return { effect: 'deny', reason, order }
+  const c = conditionOf(rule)
+  return c ? { effect: 'allow', reason, constraints: conditionConstraints(c), order } : { effect: 'allow', reason, order }
 }
 
 /** Keeps only qualifiers the taxonomy defines for this action. */
@@ -88,12 +85,13 @@ export function compileHouseholdPolicy(household: Household, devices: Device[], 
   const before = new Map((published?.rules ?? []).map((r) => [tupleKey(r), r]))
   const rules: CompiledRule[] = []
   for (const [key, g] of groups) {
-    const strictest = g.choices.reduce((a, b) => (strictness(b) > strictness(a) ? b : a))
-    const constraints = validConstraints(g.fields.action, strictest.effect === 'allow' ? strictest.constraints : undefined)
-    const rule: PolicyRule = { rule_id: ruleId(key), ...g.fields, effect: strictest.effect, ...(constraints ? { constraints } : {}) }
+    // The dataflow's own answer, and a declared flow's (which can also meet a rule scoped to a declared qualifier): the later rule wins.
+    const latest = g.choices.reduce((a, b) => (b.order > a.order ? b : a))
+    const constraints = validConstraints(g.fields.action, latest.effect === 'allow' ? latest.constraints : undefined)
+    const rule: PolicyRule = { rule_id: ruleId(key), ...g.fields, effect: latest.effect, ...(constraints ? { constraints } : {}) }
     const old = before.get(key)
     const change = !old ? 'added' : old.effect !== rule.effect || !sameConstraints(old.constraints, rule.constraints) ? 'changed' : 'unchanged'
-    rules.push({ ...rule, reason: strictest.reason, flows: g.flows, change, limited: !!constraints })
+    rules.push({ ...rule, reason: latest.reason, flows: g.flows, change, limited: !!constraints })
   }
   rules.sort((a, b) => a.rule_id.localeCompare(b.rule_id))
 

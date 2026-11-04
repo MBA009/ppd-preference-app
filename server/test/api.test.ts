@@ -153,6 +153,22 @@ describe('household (fixtures)', () => {
     await json<Household>('PUT', '/api/household/onboarding', { answers: ANSWERS })
   })
 
+  test('refining saves one answer at a time, into its own situation, and keeps the rules the person added', async () => {
+    const tree = await json<Onboarding>('GET', '/api/onboarding')
+    let h = await json<Household>('PUT', '/api/household/onboarding', { answers: ANSWERS })
+    h = await json<Household>('PUT', '/api/household/rules/r-mine', rule('r-mine', 'dont_allow', { purpose: ['ppd:advertisingAndMarketing'] }))
+    const step = walk(tree, h.answers!)
+    assert.ok('leaf' in step)
+    const q = step.leaf.queue!.find((e) => !(e.question in h.answers!))!.question
+    h = await json<Household>('PUT', `/api/household/answers/${q}`, { answer: 'no' })
+    assert.equal(h.answers![q], 'no')
+    assert.ok(h.answered_at![q])
+    assert.ok(h.rules.some((r) => r.id === 'r-mine'), 'refining keeps the rules the person added')
+    assert.ok(h.rules.some((r) => r.id === `answer.${q}` && r.effect === 'dont_allow'))
+    await json('PUT', '/api/household/answers/nope', { answer: 'yes' }, 400)
+    await json('PUT', `/api/household/answers/${q}`, { answer: 'maybe' }, 400)
+  })
+
   test('profile settings are saved on their own', async () => {
     const h = await json<Household>('PUT', '/api/household/profile', { summary_frequency: 'yearly', warn_on_conflict: false })
     assert.deepEqual(h.profile, { summary_frequency: 'yearly', warn_on_conflict: false })
@@ -279,6 +295,32 @@ describe('gateway devices', () => {
     const flow = d.flows.find((f) => f.id.endsWith('temperature-remote-monitoring-cloud'))!
     assert.equal(flow.evaluation.verdict, 'conditionally_satisfiable')
     assert.equal(flow.evaluation.rule_id, 'not-kept')
+  })
+
+  test('where rules disagree, the policy follows the latest change; saving an older rule again makes it the latest', async () => {
+    const ads = (p: PublishPreview) => p.rules.filter((x) => x.data_type === 'ppd:locationData' && x.purpose === 'ppd:advertisingAndMarketing')
+    const never = rule('loc-never', 'dont_allow', { data_type: ['ppd:locationData'] })
+    await json<Household>('PUT', '/api/household/rules/loc-never', never)
+    await json<Household>('PUT', '/api/household/rules/loc-ads', rule('loc-ads', 'allow', { data_type: ['ppd:locationData'], purpose: ['ppd:advertisingAndMarketing'] }))
+    let preview = await json<PublishPreview>('GET', '/api/household/preview?all=1')
+    assert.ok(ads(preview).length === 112 && ads(preview).every((x) => x.effect === 'allow'), 'the later Allow wins where they overlap')
+    assert.ok(preview.rules.filter((x) => x.data_type === 'ppd:locationData' && x.purpose === 'ppd:security').every((x) => x.effect === 'deny'), 'the Never still decides the rest')
+    await json<Household>('PUT', '/api/household/rules/loc-never', never)
+    preview = await json<PublishPreview>('GET', '/api/household/preview?all=1')
+    assert.ok(ads(preview).every((x) => x.effect === 'deny'), 'saving the Never again makes it the latest')
+    await json<Household>('DELETE', '/api/household/rules/loc-never')
+    await json<Household>('DELETE', '/api/household/rules/loc-ads')
+  })
+
+  test('a place condition is sent as a jurisdiction; a transfer-scoped one covers only transfers', async () => {
+    await json<Household>('PUT', '/api/household/rules/us-only', rule('us-only', 'allow', { data_type: ['ppd:contentData'], purpose: ['ppd:security'] }, 'jurisdiction.transfer=us,us-ca'))
+    await json('PUT', '/api/household/rules/bad', rule('bad', 'allow', {}, 'jurisdiction.transfer=USA' as Rule['condition']), 400)
+    const preview = await json<PublishPreview>('GET', '/api/household/preview?all=1')
+    const rules = preview.rules.filter((x) => x.data_type === 'ppd:contentData' && x.purpose === 'ppd:security' && x.constraints?.jurisdiction)
+    assert.ok(rules.length > 0)
+    assert.ok(rules.every((x) => x.action === 'ppd:transfer'))
+    assert.deepEqual(rules[0].constraints, { jurisdiction: { scope: 'transfer', countrycode: ['us'], subdivisioncode: ['us-ca'] } })
+    await json<Household>('DELETE', '/api/household/rules/us-only')
   })
 
   test('the household policy is sent automatically after a preset is chosen, and only when it changes', async () => {

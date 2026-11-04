@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import type { Rule, RuleCondition, RuleScope } from '../api'
+import type { Rule, RuleCondition, RuleScope, Taxonomy } from '../api'
 import { ActionBar, AppBar, Cell, Footnote, Group, Loading, Pill, SectionHeader, Switch } from '../components/ui'
 import { useDevices, useHousehold } from '../state/data'
-import { ruleCovers, rulesOverlap, strictness } from '../policy/scope'
+import { decisionKey, ruleCovers, rulesOverlap, undecidedFlows } from '../policy/scope'
+import { FIELDS } from '../../shared/taxonomy'
 import { ruleTitle } from '../../shared/ruleTitle'
-import { ACTION_CHOICES, CONDITIONS, CONDITION_TEXT, DATA_CHOICES, KEPT_FOREVER, PURPOSE_CHOICES, SOURCE_CHOICES, WHO_CHOICES, isBoundary, isOn, kindOf, toggle, type Choice, type RuleKind } from '../policy/choices'
+import { ACTION_CHOICES, CONDITION_CHOICES, DATA_CHOICES, KEPT_FOREVER, PURPOSE_CHOICES, SOURCE_CHOICES, WHO_CHOICES, isBoundary, isOn, kindOf, toggle, type Choice, type RuleKind } from '../policy/choices'
 import { plural } from '../lib/verdicts'
+import { PLACES, jurisdictionCondition, jurisdictionOf, type JurisdictionScope } from '../../shared/conditions'
 
 /** Add a rule (/rules/new) or change one (/rules/:ruleId). */
 export default function RuleEditor() {
@@ -24,6 +26,15 @@ export default function RuleEditor() {
   }
   return <Editor key={existing?.id ?? 'new'} rule={existing} />
 }
+
+/** Which step a place condition limits (taxonomy-05 section 6.7.3), and what that covers. */
+const PLACE_SCOPES: { scope: JurisdictionScope; label: string; hint: string }[] = [
+  { scope: 'storage', label: 'Stored', hint: 'Where the data may be kept. Covers every kind of handling.' },
+  { scope: 'transfer', label: 'Sent to companies', hint: 'The companies it is sent to must be in these places. Covers only sending it on.' },
+  { scope: 'collection', label: 'Collected', hint: 'Covers only collecting it; other handling needs a rule of its own.' },
+  { scope: 'use', label: 'Used', hint: 'Covers only using it; other handling needs a rule of its own.' },
+  { scope: 'inference', label: 'Analyzed', hint: 'Covers only working things out from it; other handling needs a rule of its own.' },
+]
 
 const KINDS: { kind: RuleKind; label: string; sub: string }[] = [
   { kind: 'never', label: 'Never', sub: 'A device that does this conflicts with your rules, and is told no.' },
@@ -43,6 +54,12 @@ function Editor({ rule }: { rule: Rule | undefined }) {
   const [enabled, setEnabled] = useState(rule?.enabled ?? true)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
+  const place = jurisdictionOf(condition)
+  const togglePlace = (code: string) => {
+    if (!place) return
+    const codes = place.codes.includes(code) ? place.codes.filter((c) => c !== code) : [...place.codes, code]
+    if (codes.length) setCondition(jurisdictionCondition(place.scope, codes))
+  }
   const forever = !!scope.constraints?.includes(KEPT_FOREVER)
   const empty = !scope.data_type?.length && !scope.purpose?.length && !scope.handling_context?.length && !scope.action?.length && !scope.source?.length && !scope.constraints?.length
   const effect = kind === 'never' ? 'dont_allow' : 'allow'
@@ -62,12 +79,29 @@ function Editor({ rule }: { rule: Rule | undefined }) {
     return { flows, devices: ds }
   }, [devices, scope, effect, cond])
 
-  // Where this rule and another disagree, the stricter one wins (Never, then Allow only if, then Allow). Say so before
-  // saving: a stricter rule means part of this one does nothing; a looser one means this one takes over part of it.
-  const others = (household?.rules ?? []).filter((r) => r.id !== rule?.id && !empty && rulesOverlap(draft, r) && strictness(r) !== strictness(draft))
-  const stricter = others.filter((r) => strictness(r) > strictness(draft))
-  const looser = others.filter((r) => strictness(r) < strictness(draft))
+  // Where rules disagree, the latest change wins (Nov 2), and saving makes this rule the latest: say before saving which
+  // rules it will take over from, where they overlap.
+  const overrides = (household?.rules ?? []).filter((r) => r.id !== rule?.id && r.enabled && !empty && decisionKey(r) !== decisionKey(draft) && rulesOverlap(draft, r))
   const sharedFlows = (r: Rule) => (devices ?? []).reduce((n, d) => n + d.flows.filter((f) => ruleCovers({ ...draft, enabled: true }, f.taxonomy) && ruleCovers(r, f.taxonomy)).length, 0)
+
+  // What taking this rule away (deleting it, or switching it off) leaves with no rule at all: the household policy then
+  // sends devices nothing for those flows, and the household has to decide them (Nov 2: no preference yet).
+  const gap = useMemo(() => {
+    if (!rule?.enabled) return null
+    const all = household?.rules ?? []
+    const key = (t: Taxonomy) => FIELDS.map((f) => t[f]).join('|')
+    const before = new Set(undecidedFlows(all).map(key))
+    const left = new Set(undecidedFlows(all.filter((r) => r.id !== rule.id)).map(key).filter((k) => !before.has(k)))
+    const onDevices = (devices ?? []).reduce((n, d) => n + d.flows.filter((f) => left.has(key(f.taxonomy))).length, 0)
+    return { flows: left.size, onDevices }
+  }, [rule, household?.rules, devices])
+  const gapText = (what: string) => gap && (
+    <div className="note" role="status" style={{ margin: '12px 16px 0' }}>
+      <b>{what} leaves {plural(gap.flows, 'data flow')} with no rule{gap.onDevices ? `, ${gap.onDevices} of them on your devices` : ''}.</b>{' '}
+      No other rule covers them, so your devices get no rule for them until you decide{gap.onDevices ? ', and they show as Needs your decision' : ''}.
+      You can decide them afterwards from your household policy page. To change what happens instead of removing it, edit the rule and save.
+    </div>
+  )
 
   const flip = (key: 'data_type' | 'purpose' | 'handling_context' | 'action' | 'source', c: Choice) =>
     setScope((s) => ({ ...s, [key]: toggle(s[key], c) }))
@@ -89,7 +123,7 @@ function Editor({ rule }: { rule: Rule | undefined }) {
       origin: rule?.origin ?? { kind: 'custom' },
     }
     await upsertRule(next)
-    toast(rule ? 'Rule saved.' : 'Rule added.')
+    toast(!rule ? 'Rule added.' : !enabled && gap?.flows ? `Rule switched off. ${plural(gap.flows, 'data flow')} now ${gap.flows === 1 ? 'has' : 'have'} no rule.` : 'Rule saved.')
     nav('/rules', { replace: true })
   }
 
@@ -97,7 +131,7 @@ function Editor({ rule }: { rule: Rule | undefined }) {
     if (!rule) return
     if (!confirmDelete) { setConfirmDelete(true); return }
     await deleteRule(rule.id)
-    toast('Rule deleted.')
+    toast(gap?.flows ? `Rule deleted. ${plural(gap.flows, 'data flow')} now ${gap.flows === 1 ? 'has' : 'have'} no rule.` : 'Rule deleted.')
     nav('/rules', { replace: true })
   }
 
@@ -136,10 +170,29 @@ function Editor({ rule }: { rule: Rule | undefined }) {
         <>
           <SectionHeader>Only if</SectionHeader>
           <div className="pills" role="radiogroup" aria-label="Only if">
-            {CONDITIONS.map((c) => <Pill key={c} on={condition === c} onClick={() => setCondition(c)}>{CONDITION_TEXT[c]}</Pill>)}
+            {CONDITION_CHOICES.map((c) => (
+              <Pill key={c.id} on={c.condition ? condition === c.condition : !!place} onClick={() => setCondition(c.condition ?? (place ? condition : jurisdictionCondition('storage', ['us'])))}>{c.label}</Pill>
+            ))}
           </div>
+          {condition === 'retention=ppd:ephemeral' && (
+            <div className="sf" style={{ paddingTop: 0, marginTop: -6 }}>No retention: the device may use the data, but must not save it. No recordings, history or logs are kept afterwards.</div>
+          )}
           {isBoundary(condition) && (
             <div className="sf" style={{ paddingTop: 0, marginTop: -6 }}>Where data is processed is defined only for using it and working things out from it, so this rule covers only those. Collecting it and sending it out need a rule of their own.</div>
+          )}
+          {place && (
+            <>
+              <SectionHeader>Which step</SectionHeader>
+              <div className="pills" role="radiogroup" aria-label="Which step">
+                {PLACE_SCOPES.map((p) => <Pill key={p.scope} on={place.scope === p.scope} onClick={() => setCondition(jurisdictionCondition(p.scope, place.codes))}>{p.label}</Pill>)}
+              </div>
+              <div className="sf" style={{ paddingTop: 0, marginTop: -6 }}>{PLACE_SCOPES.find((p) => p.scope === place.scope)!.hint} A rule limits one step; for another step, add another rule.</div>
+              <SectionHeader>Only in</SectionHeader>
+              <div className="pills" role="group" aria-label="Only in">
+                {Object.entries(PLACES).map(([code, name]) => <Pill key={code} on={place.codes.includes(code)} onClick={() => togglePlace(code)}>{name.replace(/^the /, '')}</Pill>)}
+              </div>
+              <div className="sf" style={{ paddingTop: 0, marginTop: -6 }}>A jurisdiction is a country or state whose laws apply. The United States includes California. Your devices are told it with the rule.</div>
+            </>
           )}
         </>
       )}
@@ -165,6 +218,7 @@ function Editor({ rule }: { rule: Rule | undefined }) {
         </div>
       </Group>
 
+      {!enabled && !!gap?.flows && !confirmDelete && gapText('Switching it off')}
       <div className={empty ? 'note' : 'info'} role="status" style={empty ? { margin: '12px 16px 0' } : undefined}>
         {empty
           ? 'Nothing is picked, so this rule would cover every data flow. Pick at least one thing above to narrow it.'
@@ -174,22 +228,17 @@ function Editor({ rule }: { rule: Rule | undefined }) {
               ? `This rule covers ${plural(impact.flows, 'data flow')} on ${plural(impact.devices, 'device')} in your home.`
               : 'No device in your home does this right now. The rule will apply when one does.'}
       </div>
-      {enabled && stricter.length > 0 && (
+      {enabled && overrides.length > 0 && (
         <div className="note" role="status" style={{ margin: '12px 16px 0' }}>
-          <b>Part of this rule won’t take effect.</b> It overlaps with {stricter.length === 1 ? 'a stricter rule' : `${stricter.length} stricter rules`}, and where rules disagree the stricter one wins:
+          <b>This rule will win where it overlaps {overrides.length === 1 ? 'a rule that says' : `${overrides.length} rules that say`} otherwise.</b> Where rules disagree, your latest change wins, and saving makes this one the latest:
           <ul className="olap">
-            {stricter.map((r) => {
+            {overrides.map((r) => {
               const n = sharedFlows(r)
               return <li key={r.id}><Link to={`/rules/${encodeURIComponent(r.id)}`}>{r.title}</Link>{devices && <span> · {n ? `${plural(n, 'data flow')} on your devices` : 'none of your devices yet'}</span>}</li>
             })}
           </ul>
-          To change what happens there, edit {stricter.length === 1 ? 'that rule' : 'those rules'}. To use a feature on one device only, turn it on in the device’s own app.
+          {overrides.length === 1 ? 'That rule still decides' : 'Those rules still decide'} everything else {overrides.length === 1 ? 'it covers' : 'they cover'}. Changing {overrides.length === 1 ? 'it' : 'one of them'} later makes {overrides.length === 1 ? 'it' : 'that one'} the latest again.
         </div>
-      )}
-      {enabled && looser.length > 0 && (
-        <Footnote>
-          Where it overlaps with {looser.length === 1 ? <>“{looser[0].title}”</> : `${looser.length} other rules`}, this rule is stricter, so this rule wins.
-        </Footnote>
       )}
       {rule && rule.origin.kind !== 'custom' && (
         <Footnote>
@@ -201,9 +250,13 @@ function Editor({ rule }: { rule: Rule | undefined }) {
       {rule && (
         <>
           <div className="gap" />
+          {confirmDelete && (gap?.flows ? gapText('Deleting this rule') : (
+            <div className="info" role="status" style={{ margin: '0 16px 12px' }}>Other rules still cover everything this rule covers, so nothing is left without a rule.</div>
+          ))}
+          {confirmDelete && <div style={{ height: 12, flex: 'none' }} />}
           <Group>
             <Cell className="t" onClick={remove} chevron={false}>
-              <div className="cb"><span className="ttl" style={{ color: '#B3261E' }}>{confirmDelete ? 'Tap again to delete this rule' : 'Delete rule'}</span></div>
+              <div className="cb"><span className="ttl" style={{ color: '#B3261E' }}>{confirmDelete ? (gap?.flows ? 'Delete anyway' : 'Tap again to delete this rule') : 'Delete rule'}</span></div>
             </Cell>
           </Group>
         </>
