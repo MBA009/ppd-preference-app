@@ -7,8 +7,8 @@
 # Images (GitHub Actions push them to ghcr.io; the server logs in once with a read-only token):
 #   ppd-web, ppd-app-api         MBA009/ppd-preference-app        .github/workflows/images.yml
 #   ppd-gateway, ppd-repository  baktistr/habanero-ppd-gateway    .github/workflows/images.yml
-# The *_TAG variables take a branch tag (feature-gateway-integration, capstone-cloud-demo) or, to pin a
-# deployment, sha-<commit>.
+# The *_TAG variables take a branch tag (main, capstone-cloud-demo) or, to pin a deployment, sha-<commit>.
+# The app images come from main, where the team merges its work.
 #
 # Secrets (Coolify environment variables, never committed):
 #   OPERATOR_TOKEN, REPOSITORY_TOKEN, DEMO_TOKEN   long random strings (openssl rand -hex 32)
@@ -29,14 +29,14 @@
 
 services:
   web:
-    image: ghcr.io/mba009/ppd-web:${APP_TAG:-feature-gateway-integration}
+    image: ghcr.io/mba009/ppd-web:${APP_TAG:-main}
     restart: unless-stopped
     depends_on: [app-api]
     # Coolify routes the domain set on this service (https://ppd.baktisatria.com) to port 80.
     expose: ["80"]
 
   app-api:
-    image: ghcr.io/mba009/ppd-app-api:${APP_TAG:-feature-gateway-integration}
+    image: ghcr.io/mba009/ppd-app-api:${APP_TAG:-main}
     restart: unless-stopped
     environment:
       APP_ENV: production
