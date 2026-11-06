@@ -4,7 +4,7 @@ import type { Household, Onboarding as Tree } from '../api'
 import { ActionBar, AppBar, Cell, ErrorBox, Footnote, Group, Loading, Tile } from '../components/ui'
 import { Icon, ShieldCheck } from '../components/icons'
 import { useHousehold, useLibrary, useOnboarding } from '../state/data'
-import { promptFor, questionText, refineQueue, writeAnswer, type RefineItem } from '../../shared/onboarding'
+import { questionText, refineQueue, writeAnswer, type RefineItem } from '../../shared/onboarding'
 import { plural } from '../lib/verdicts'
 import { timeAgo } from '../lib/device'
 import { ownedClasses } from './Onboarding'
@@ -83,7 +83,6 @@ function Queue({ tree, household, owned }: { tree: Tree; household: Household; o
   const previous = household.answers?.[next.question] ?? null
   const chosen = pick ?? (next.reason === 'checkup' ? previous : null)
   const remaining = queue.undecided + queue.split
-  const prompt = promptFor(q, owned)
   const { text, example } = questionText(q, owned)
 
   const answer = async () => {
@@ -115,7 +114,7 @@ function Queue({ tree, household, owned }: { tree: Tree; household: Household; o
       </div>
       <div style={{ height: 12, flex: 'none' }} />
       <Group>
-        <div role="radiogroup" aria-label={prompt}>
+        <div role="radiogroup" aria-label={text}>
           {q.options.map((o) => (
             <button key={o.id} className="cell" role="radio" aria-checked={chosen === o.id} onClick={() => setPick(o.id)}>
               <span className={'rd' + (chosen === o.id ? ' on' : '')} />

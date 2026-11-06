@@ -195,8 +195,18 @@ button.cell:active, a.cell:active { background: #f1f3f6; }
 .cnt { min-width: 28px; height: 24px; padding: 0 8px; border-radius: 12px; background: #eef0f3; color: #3c4043; font-size: 13px; line-height: 24px; font-weight: 600; text-align: center; }
 .cell.inuse { box-shadow: inset 4px 0 0 var(--k); background: color-mix(in srgb, var(--k) 5%, var(--surface)); }
 .cell.idle .ttl { color: var(--text-2); }
-.use { display: inline-flex; align-self: flex-start; align-items: center; gap: 6px; margin-top: 4px; padding: 2px 10px; border-radius: 10px; background: #dff3e4; color: #1e5f2c; font-size: 13px; line-height: 18px; font-weight: 500; }
-.use i { width: 7px; height: 7px; border-radius: 50%; background: #1e7d34; }
+.use { display: inline-flex; align-self: flex-start; align-items: center; gap: 6px; margin-top: 4px; font-size: 13px; line-height: 18px; font-weight: 500; color: var(--heading); }
+.use i { width: 7px; height: 7px; border-radius: 50%; background: var(--k); }
+.rule-what { font-size: 15px; line-height: 20px; font-weight: 500; }
+.cell.idle .rule-what { font-weight: 400; }
+.rule-rest { font-size: 13px; line-height: 18px; margin-top: 1px; }
+.ov-devices { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--divider); }
+.ppd { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; }
+.ppd.yes { background: #dff3e4; color: #1e5f2c; }
+.ppd.no { background: #ffe8cc; color: #7a3a00; }
+.ppd svg { margin-top: 2px; }
+.ppd b { display: block; font-size: 16px; line-height: 22px; font-weight: 700; }
+.ppd span { display: block; font-size: 14px; line-height: 20px; }
 .cell.sub-h { min-height: 0; padding: 12px 16px 4px; font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .4px; text-transform: uppercase; color: var(--text-2); }
 .json { margin: 0 16px; padding: 14px 16px; border-radius: 16px; background: #1f2329; color: #e6e8eb; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; line-height: 18px; white-space: pre; overflow: auto; max-height: 70vh; }
 .rname { flex: none; display: flex; flex-direction: column; gap: 2px; margin: 0 16px 4px; padding: 12px 16px; border-radius: 16px; background: var(--surface); }

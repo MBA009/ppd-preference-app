@@ -56,16 +56,25 @@ test('a prompt shows the example of a device the household owns', () => {
   assert.equal(promptFor(q, []), q.prompt)
 })
 
-test('a question is shown without its examples, then one example sentence of the data and the purpose', () => {
+test('a question is one sentence, then one example line that fits its situation', () => {
+  const texts = new Set<string>()
   for (const q of Object.values(tree.questions)) {
-    for (const owned of [[], ['camera'], ['tv_media', 'light_plug']]) {
+    for (const owned of [[], ['camera'], ['tv_media', 'lock_entry']]) {
       const { text, example } = questionText(q, owned)
-      assert.ok(!text.includes('for example') && !text.includes('('), text)
-      assert.ok(example && !example.includes(', or ') && / (to|so) /.test(example), `one example with its purpose: ${example}`)
+      assert.ok(/^Consider a device .*\. Would you allow this\?$/.test(text) && !text.includes('for example') && !text.includes('('), text)
+      assert.ok(example && !example.includes('undefined'), `every situation has an example: ${text}`)
+      assert.ok(!/phone/.test(example), `a phone is not a household device (week 10): ${example}`)
     }
+    texts.add(questionText(q, []).text)
   }
-  const q = Object.values(tree.questions).find((x) => x.data_examples?.camera)!
-  assert.ok(questionText(q, ['camera']).example!.includes(/\(for example, (?:when )?([^)]*)\)/.exec(q.data_examples!.camera)![1]))
+  assert.equal(texts.size, Object.keys(tree.questions).length, 'no two situations read the same')
+})
+
+test('an example comes from a device the household owns when there is one', () => {
+  const q = Object.values(tree.questions).find((x) => x.situation?.data_type === 'ppd:usageData' && x.situation.purpose === 'ppd:communicationsAndNotifications' && x.situation.handling_context === 'ppd:vendorContext')!
+  assert.match(questionText(q, []).example!, /smart thermostat.*outside a given range/)
+  assert.match(questionText(q, ['lock_entry']).example!, /smart lock/)
+  assert.match(questionText(q, ['voice_assistant']).example!, /smart thermostat/)
 })
 
 test('exactly one rule of each preset covers each flow of the fixture devices', () => {

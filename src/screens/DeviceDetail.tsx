@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api'
 import { AppBar, Cell, DeviceTile, ErrorBox, Group, Loading, SectionHeader, Expander } from '../components/ui'
-import { AttentionList, ProvenanceCard } from '../components/DeviceReport'
+import { AttentionList, PpdStatus, ProvenanceCard } from '../components/DeviceReport'
 import { AssociationCard, IdentityAndNetwork, LifecycleSteps, PolicyReceipt, ReportedBehavior, RuntimeWarning } from '../components/LiveDevice'
 import { useDevice, useHousehold, useMe } from '../state/data'
 import { STATE_LABEL, forgetBlocker, isConnected, kindLabel, subtitle, timeAgo, declaredNothing } from '../lib/device'
@@ -57,9 +57,10 @@ export default function DeviceDetail() {
           <DeviceTile device={d} size="hero" />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 18, lineHeight: '24px', fontWeight: 500 }}>{d.short_name}</div>
-            <div className="sub">{subtitle(d, live ? kindLabel(d) : d.kind === 'research' ? 'Advisory · not connected' : decl ? 'Gets your rules' : 'Advisory only')}</div>
+            <div className="sub">{subtitle(d, live ? kindLabel(d) : undefined)}</div>
           </div>
         </Cell>
+        <PpdStatus device={d} />
       </Group>
       <div className="gap" />
       {live && (

@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import type { Rule } from '../api'
-import { ActionBar, AppBar, Cell, Footnote, Group, Loading, SectionHeader, Tile } from '../components/ui'
+import { ActionBar, AppBar, Cell, Expander, Footnote, Group, Loading, SectionHeader, Tile, VerdictChips } from '../components/ui'
 import { ChevronDown, ChipGlyph, Icon, ShieldCheck } from '../components/icons'
 import { useDevices, useHousehold, useOnboarding, useRules } from '../state/data'
 import { decisionKey, ruleCovers, rulesOverlap, undecidedFlows } from '../policy/scope'
 import { KIND, kindOf, type RuleKind } from '../policy/choices'
 import { conditionText } from '../../shared/conditions'
-import { plural } from '../lib/verdicts'
+import { VERDICT_ORDER, countVerdicts, plural } from '../lib/verdicts'
 import { timeAgo } from '../lib/device'
 import { refineQueue } from '../../shared/onboarding'
 import Onboarding from './Onboarding'
@@ -38,6 +38,7 @@ function Policy() {
   const { household, resetDemo, toast } = useHousehold()
   const [confirmReset, setConfirmReset] = useState(false)
   const [open, setOpen] = useState<Partial<Record<RuleKind, boolean>>>({})
+  const [showQuiet, setShowQuiet] = useState<Partial<Record<RuleKind, boolean>>>({})
   const rules = useRules()
   const tree = useOnboarding()
   const ids = (household?.devices ?? []).map((d) => d.device_id)
@@ -97,6 +98,11 @@ function Policy() {
   const overridden = (r: Rule) => !!impact[r.id]?.later
   const counts = GROUPS.map((g) => ({ kind: g.kind, n: rules.filter((r) => kindOf(r) === g.kind).length })).filter((c) => c.n)
   const inUseTotal = rules.filter((r) => used(r) > 0).length
+  // What the rules mean for the devices in the home, over every flow they say they have.
+  const verdicts: ReturnType<typeof countVerdicts> = {}
+  for (const d of devices ?? []) {
+    for (const [v, n] of Object.entries(countVerdicts(d)) as [keyof typeof verdicts, number][]) verdicts[v] = (verdicts[v] ?? 0) + n
+  }
 
   // Rules your devices use stand out (the kind's colour down the left, the flows in a tinted badge); the rest are
   // kept quietly for devices that may join.
@@ -109,16 +115,18 @@ function Policy() {
     const whollyBeaten = !!i && i.flows > 0 && !i.decided
     const color = KIND[kindOf(r)].color
     const cls = (r.enabled ? '' : 'dim') + (live ? ' inuse' : whollyBeaten && devices ? ' beaten' : ' idle')
+    // What data first, then where it goes and why, instead of one long line.
+    const [what, ...rest] = shortTitle(r).split(' · ')
     return (
       <Cell key={r.id} to={`/rules/${encodeURIComponent(r.id)}`} className={cls} style={live ? { ['--k' as string]: color } : undefined}>
         <div className="cb">
-          <span className="ttl" style={{ fontSize: 15, lineHeight: '20px' }}>{shortTitle(r)}</span>
+          <span className="ttl rule-what">{what.charAt(0).toUpperCase() + what.slice(1)}</span>
+          {rest.length > 0 && <span className="sub rule-rest">{rest.join(' · ')}</span>}
           {r.condition && <span className="sub">Only if {conditionText(r.condition)}</span>}
           {devices && live && <span className="use"><i />In use · {plural(i.decided, 'data flow')} on {plural(i.devices, 'device')}</span>}
           {devices && whollyBeaten && <span className="warn">⚠ Overridden · a later rule decides its {plural(i.flows, 'data flow')}</span>}
           {devices && live && beaten > 0 && <span className="warn">⚠ Overridden on {plural(beaten, 'more data flow')} by a later rule</span>}
           {(!devices || !i?.flows) && overridden(r) && <span className="warn">⚠ Partly overridden by a later rule</span>}
-          {devices && !i?.flows && !overridden(r) && <span className="sub">Not in use yet</span>}
         </div>
         {!r.enabled && <span className="tr off">Off</span>}
       </Cell>
@@ -165,8 +173,6 @@ function Policy() {
         </Group>
       )}
 
-      {!isNew && <PublishCard />}
-
       {rules.length > 0 && (
         <div className="grp ov">
           <div className="ov-top">
@@ -186,8 +192,16 @@ function Policy() {
               <span key={c.kind}><i style={{ background: KIND[c.kind].color }} />{GROUP_TITLE[c.kind]} <b>{c.n}</b></span>
             ))}
           </div>
+          {devices && devices.length > 0 && (
+            <Link className="ov-devices" to="/">
+              <span className="sub">What your {plural(devices.length, 'device')} say they do, against these rules</span>
+              <VerdictChips counts={verdicts} order={VERDICT_ORDER} />
+            </Link>
+          )}
         </div>
       )}
+
+      {!isNew && <div style={{ marginTop: 8 }}><PublishCard /></div>}
 
       {GROUPS.map((g) => {
         // Rules your devices use first; the rest are kept for devices that may join.
@@ -197,6 +211,11 @@ function Policy() {
         const inUse = list.filter((r) => used(r) > 0).length
         const beaten = list.filter(overridden).length
         const isOpen = !!open[g.kind]
+        // Rules no device uses are kept for devices that may join: folded away while some rules are in use, so the
+        // list opens on what matters. A rule with an override warning always shows.
+        const unused = list.filter((r) => !(used(r) > 0))
+        const quiet = unused.filter((r) => !overridden(r))
+        const fold = inUse > 0 && quiet.length > 0
         return (
           <div key={g.kind}>
             <Group style={{ marginTop: 8 }}>
@@ -213,8 +232,13 @@ function Policy() {
               </button>
               {isOpen && devices && inUse > 0 && subhead('In use by your devices')}
               {isOpen && list.filter((r) => used(r) > 0).map(row)}
-              {isOpen && devices && inUse > 0 && inUse < list.length && subhead('Not in use by your devices')}
-              {isOpen && list.filter((r) => !(used(r) > 0)).sort((a, b) => Number(overridden(b)) - Number(overridden(a))).map(row)}
+              {isOpen && unused.filter(overridden).map(row)}
+              {isOpen && fold && (
+                <Expander open={!!showQuiet[g.kind]} onToggle={() => setShowQuiet((s) => ({ ...s, [g.kind]: !s[g.kind] }))}>
+                  {showQuiet[g.kind] ? 'Hide rules not in use' : `Show ${plural(quiet.length, 'rule')} not in use`}
+                </Expander>
+              )}
+              {isOpen && (!fold || showQuiet[g.kind]) && quiet.map(row)}
             </Group>
             {isOpen && <Footnote>{g.blurb}</Footnote>}
           </div>
@@ -229,34 +253,35 @@ function Policy() {
         </Group>
       )}
 
-      <div className="gap" />
+      <SectionHeader>Change your rules</SectionHeader>
       <Group>
+        <Cell className="t" to="/rules/refine">
+          <Tile tone="blue"><ShieldCheck /></Tile>
+          <div className="cb"><span className="ttl" style={{ color: '#0066CC', fontWeight: 500 }}>Help me refine my settings</span><span className="sub">{refineText}</span></div>
+        </Cell>
         <Cell className="t" to="/rules/new">
           <Tile tone="blue"><Icon name="plus" size={18} /></Tile>
-          <div className="cb"><span className="ttl" style={{ color: '#0066CC' }}>Add a rule</span></div>
+          <div className="cb"><span className="ttl" style={{ color: '#0066CC', fontWeight: 500 }}>Add a rule</span></div>
         </Cell>
       </Group>
 
-      <SectionHeader>Your answers</SectionHeader>
+      <SectionHeader>Learn more</SectionHeader>
       <Group>
-        <Cell className="t" to="/rules/refine">
-          <div className="cb"><span className="ttl">Help me refine my settings</span><span className="sub">{refineText}</span></div>
-        </Cell>
-        <Cell className="t" to="/rules/update">
-          <div className="cb"><span className="ttl">Answer the questions again</span><span className="sub">Starts over: your rules are rebuilt from your new answers{added ? `, replacing the ${plural(added, 'rule')} you added and your changes` : ', replacing your changes'}.</span></div>
+        <Cell className="t" to="/rules/sources">
+          <div className="cb"><span className="ttl">How the questions were made</span><span className="sub">Synthetic households from published studies</span></div>
         </Cell>
         <Cell className="t" to="/rules/json">
           <div className="cb"><span className="ttl">See the rules as JSON</span><span className="sub">The rules in your household policy, and the PPD policy your devices receive</span></div>
         </Cell>
-        <Cell className="t" to="/rules/sources">
-          <div className="cb"><span className="ttl">How the questions were made</span><span className="sub">Synthetic households from published studies</span></div>
-        </Cell>
       </Group>
 
-      <div className="gap" />
+      <SectionHeader>Start over</SectionHeader>
       <Group>
+        <Cell className="t" to="/rules/update">
+          <div className="cb"><span className="ttl">Answer the questions again</span><span className="sub">Your rules are rebuilt from your new answers{added ? `, replacing the ${plural(added, 'rule')} you added and your changes` : ', replacing your changes'}.</span></div>
+        </Cell>
         <Cell className="t" chevron={false} onClick={reset}>
-          <div className="cb">
+          <div className="cb" style={{ paddingRight: 16 }}>
             <span className="ttl" style={{ color: '#B3261E' }}>{confirmReset ? 'Tap again to reset everything' : 'Reset everything'}</span>
             <span className="sub">Clears your answers and rules, including rules you added, and starts again with the questions. Connected devices stay.</span>
           </div>

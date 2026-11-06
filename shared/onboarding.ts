@@ -76,56 +76,136 @@ export function promptFor(q: OnboardingQuestion, ownedClasses: string[]): string
   return cls ? q.prompt.replace(examples.default, examples[cls]) : q.prompt
 }
 
+/** The kind of data, in the words of a question. */
+const DATA_WORDS: Record<string, string> = {
+  'ppd:identifierData': 'your name and contact information',
+  'ppd:profileData': 'a profile of your habits and preferences',
+  'ppd:sensorData': 'sensor readings',
+  'ppd:contentData': 'video or audio',
+  'ppd:locationData': 'your location',
+  'ppd:deviceAndNetworkData': 'information about the device and your network',
+  'ppd:usageData': 'information about how you use your devices',
+}
+
+/** Why, in the words of a question. */
+const PURPOSE_WORDS: Record<string, string> = {
+  'ppd:coreFunctionality': 'so the device works',
+  'ppd:personalization': 'to personalize what it does for you',
+  'ppd:communicationsAndNotifications': 'to send you alerts and messages',
+  'ppd:security': 'to keep your home and the device secure',
+  'ppd:diagnosticsAndMaintenance': 'to fix problems and update the device',
+  'ppd:analyticsAndImprovement': 'to improve products',
+  'ppd:advertisingAndMarketing': 'for advertising and marketing',
+}
+
+/** The sentence, by where the data goes (week 10: "Consider a device that asks you to allow it to…"). */
+const QUESTION: Record<string, (data: string, purpose: string) => string> = {
+  'ppd:vendorContext': (data, purpose) => `Consider a device that asks you to allow it to share ${data} with the manufacturer, ${purpose}. Would you allow this?`,
+  'ppd:thirdPartyContext': (data, purpose) => `Consider a device whose manufacturer asks you to allow it to share ${data} with other companies, ${purpose}. Would you allow this?`,
+  'ppd:householdContext': (data, purpose) => `Consider a device that asks you to allow it to use ${data} ${purpose}, without the data leaving your home. Would you allow this?`,
+}
+
+const DEVICE: Record<string, string> = {
+  thermostat_sensors: 'your smart thermostat', camera: 'your security camera', lock_entry: 'your smart lock', tv_media: 'your smart TV',
+}
+
+/** The example sentence, by where the data goes. */
+const EXAMPLE: Record<string, (device: string, data: string, why: string) => string> = {
+  'ppd:vendorContext': (device, data, why) => `${device} shares ${data} with the manufacturer, ${why}`,
+  'ppd:thirdPartyContext': (device, data, why) => `the manufacturer of ${device} shares ${data} with another company, ${why}`,
+  'ppd:householdContext': (device, data, why) => `${device} uses ${data} ${why}, without it leaving your home`,
+}
+
+type Scenario = [deviceClass: string, data: string, why: string]
+
 /**
- * One example per kind of data, for a household that owns none of the devices a question has an example for. The
- * questions' own defaults list two or three examples in one, which is harder to read.
+ * One believable situation per data type and purpose: an example joined from a separate data example and purpose
+ * example says what no device does (week 10). The first is the default; a later one is shown to a household that owns
+ * that device, because an example the household cannot relate to biases its answer (week 9).
  */
-const ONE_EXAMPLE: Record<string, string> = {
-  'ppd:usageData': 'the times you switch your lights on and off',
-  'ppd:sensorData': 'whether someone is home',
-  'ppd:identifierData': 'your name and email address',
-  'ppd:deviceAndNetworkData': 'your Wi-Fi network',
-  'ppd:locationData': "your phone's location",
-  'ppd:contentData': "a camera's video of your living room",
-  'ppd:profileData': 'the daily routine it has learned',
+const SCENARIOS: Record<string, Record<string, Scenario[]>> = {
+  'ppd:usageData': {
+    'ppd:coreFunctionality': [['thermostat_sensors', 'the temperature you set', 'so it can keep your home at that temperature'], ['lock_entry', 'the times you lock and unlock the door', 'so you can see whether the door is locked']],
+    'ppd:personalization': [['thermostat_sensors', 'the temperatures you choose during the day', 'to learn a heating schedule that suits you'], ['tv_media', 'the shows you watch', 'to recommend shows you might like']],
+    'ppd:communicationsAndNotifications': [['thermostat_sensors', 'the temperature you set', 'to send you alerts if the temperature is outside a given range'], ['lock_entry', 'the times you lock and unlock the door', 'to alert you if the door is left unlocked']],
+    'ppd:security': [['lock_entry', 'the times you lock and unlock the door', 'to flag the lock being used at an unusual time']],
+    'ppd:diagnosticsAndMaintenance': [['thermostat_sensors', 'the settings you change', 'to find the cause of a fault'], ['tv_media', 'the apps you open', 'to find out why an app keeps crashing']],
+    'ppd:analyticsAndImprovement': [['tv_media', 'the features you use', 'to decide which features to improve'], ['thermostat_sensors', 'the features you use', 'to decide which features to improve']],
+    'ppd:advertisingAndMarketing': [['tv_media', 'the shows you watch', 'to show you ads for similar shows']],
+  },
+  'ppd:sensorData': {
+    'ppd:coreFunctionality': [['thermostat_sensors', 'the temperature in your home', 'so it can turn the heating on and off'], ['camera', 'the motion it detects', 'so it knows when to start recording']],
+    'ppd:personalization': [['thermostat_sensors', 'a reading of whether someone is home', 'to lower the heating when nobody is home']],
+    'ppd:communicationsAndNotifications': [['thermostat_sensors', 'the temperature in your home', 'to alert you if your home gets too cold'], ['camera', 'the motion it detects', 'to alert you when someone is at your door']],
+    'ppd:security': [['camera', 'the motion it detects', 'to spot a possible break-in'], ['lock_entry', 'the times the door is opened', 'to spot a possible break-in']],
+    'ppd:diagnosticsAndMaintenance': [['thermostat_sensors', 'its temperature readings', 'to check that its sensor is working']],
+    'ppd:analyticsAndImprovement': [['thermostat_sensors', 'its temperature readings', 'to learn how well the product heats homes']],
+    'ppd:advertisingAndMarketing': [['thermostat_sensors', 'the temperature you keep your home at', 'to show you ads for heating products']],
+  },
+  'ppd:identifierData': {
+    'ppd:coreFunctionality': [['lock_entry', 'your name and email address', 'so you can sign in and manage the lock']],
+    'ppd:personalization': [['tv_media', 'your account name', 'to show your own watchlist']],
+    'ppd:communicationsAndNotifications': [['camera', 'your email address', 'to email you when it detects motion']],
+    'ppd:security': [['lock_entry', 'your account details', 'to check that it is really you unlocking the door']],
+    'ppd:diagnosticsAndMaintenance': [['thermostat_sensors', 'your email address', 'to tell you about a fault and how to fix it']],
+    'ppd:analyticsAndImprovement': [['tv_media', 'your account ID', 'to see how long customers keep using the product']],
+    'ppd:advertisingAndMarketing': [['tv_media', 'your email address', 'to send you offers by email']],
+  },
+  'ppd:profileData': {
+    'ppd:coreFunctionality': [['thermostat_sensors', 'the heating schedule it has learned', 'so it can run your heating on that schedule']],
+    'ppd:personalization': [['thermostat_sensors', 'the heating schedule it has learned', 'to suggest changes that suit your routine'], ['tv_media', 'the kinds of shows you like', 'to recommend shows you might like']],
+    'ppd:communicationsAndNotifications': [['thermostat_sensors', 'the routine it has learned', 'to remind you if the heating is on when you are usually out']],
+    'ppd:security': [['lock_entry', 'the times you usually come and go', 'to flag the door opening at an unusual time']],
+    'ppd:diagnosticsAndMaintenance': [['thermostat_sensors', 'the heating schedule it has learned', 'to work out why the heating is not following it']],
+    'ppd:analyticsAndImprovement': [['tv_media', 'the kinds of shows you like', 'to plan new features']],
+    'ppd:advertisingAndMarketing': [['tv_media', 'the kinds of shows you like', 'to show you ads you are more likely to watch']],
+  },
+  'ppd:contentData': {
+    'ppd:coreFunctionality': [['camera', 'its video of your front door', 'so you can watch it live']],
+    'ppd:personalization': [['camera', 'its video of your front door', 'to recognize people you know']],
+    'ppd:communicationsAndNotifications': [['camera', 'a video clip of your front door', 'to send you an alert showing who is there']],
+    'ppd:security': [['camera', 'its video of your home', 'to spot a possible break-in']],
+    'ppd:diagnosticsAndMaintenance': [['camera', 'a short video clip', 'to work out why its picture is blurry']],
+    'ppd:analyticsAndImprovement': [['camera', 'short video clips', 'to make it better at detecting people']],
+    'ppd:advertisingAndMarketing': [['camera', 'its video of your home', 'to show you ads for products it sees']],
+  },
+  'ppd:locationData': {
+    'ppd:coreFunctionality': [['thermostat_sensors', "your home's location", 'so it can adjust for the local weather']],
+    'ppd:personalization': [['thermostat_sensors', "your home's location", 'to suggest a heating schedule for your climate']],
+    'ppd:communicationsAndNotifications': [['thermostat_sensors', "your home's location", 'to warn you about a coming cold snap']],
+    'ppd:security': [['camera', "your home's location", 'to help emergency services find your home']],
+    'ppd:diagnosticsAndMaintenance': [['tv_media', 'your general location', 'to check for a service outage in your area']],
+    'ppd:analyticsAndImprovement': [['tv_media', 'your general location', 'to see which regions use the product most']],
+    'ppd:advertisingAndMarketing': [['tv_media', 'your general location', 'to show you ads for local shops']],
+  },
+  'ppd:deviceAndNetworkData': {
+    'ppd:coreFunctionality': [['camera', 'the name of your Wi-Fi network', 'so it can stay connected']],
+    'ppd:personalization': [['tv_media', 'its screen and sound settings', 'to adjust shows to your setup']],
+    'ppd:communicationsAndNotifications': [['lock_entry', 'its battery level', 'to alert you when the battery is low']],
+    'ppd:security': [['camera', 'its software version', 'to warn you about a security problem']],
+    'ppd:diagnosticsAndMaintenance': [['thermostat_sensors', 'its error logs and Wi-Fi signal strength', 'to find and fix a fault']],
+    'ppd:analyticsAndImprovement': [['tv_media', 'its model and software version', 'to see which versions are most used']],
+    'ppd:advertisingAndMarketing': [['tv_media', 'its model and the other devices on your network', 'to show you ads for related products']],
+  },
 }
 
-/** The questions' purpose examples, one each, worded to follow the data example in one sentence. */
-const PURPOSE_EXAMPLE: Record<string, string> = {
-  'ppd:communicationsAndNotifications': 'so it can alert you on your phone',
-  'ppd:diagnosticsAndMaintenance': 'to send error reports',
-  'ppd:security': 'to spot a break-in',
-  'ppd:analyticsAndImprovement': 'to study how people use the device',
-  'ppd:personalization': 'to follow your daily routine',
-  'ppd:coreFunctionality': 'so you can control it from your phone',
-  'ppd:advertisingAndMarketing': 'to show you ads',
-}
-
-/** Who does what with the data, by where it goes, to open the example sentence. */
-const EXAMPLE_VERB: Record<string, string> = {
-  'ppd:vendorContext': 'the device sends',
-  'ppd:thirdPartyContext': 'the maker passes on',
-  'ppd:householdContext': 'the device uses',
+/** Where the usual scenario cannot happen with the data staying in the home. */
+const HOME_SCENARIOS: Record<string, Scenario> = {
+  'ppd:identifierData ppd:communicationsAndNotifications': ['lock_entry', 'your name', 'to show on its screen who unlocked the door'],
+  'ppd:locationData ppd:security': ['lock_entry', "your home's location", 'to lock the door automatically at sunset'],
 }
 
 const FOR_EXAMPLE = /\s*\(for example, ([^)]*)\)/g
-const exampleIn = (s: string) => /\(for example, ([^)]*)\)/.exec(s)?.[1]
 
-/**
- * The question as shown: the situation without its examples, then one example sentence joining the data example
- * (worded for a device the household owns when the question has one, as promptFor) and the purpose example.
- */
+/** The question as shown: one sentence from the situation, then one example line, from a device the household owns if there is one. */
 export function questionText(q: OnboardingQuestion, ownedClasses: string[]): { text: string; example: string | null } {
-  const text = q.prompt.replace(FOR_EXAMPLE, '')
-  const examples = q.data_examples ?? {}
-  const cls = ownedClasses.find((c) => c !== 'default' && examples[c])
-  const data = (cls && exampleIn(examples[cls])) || ONE_EXAMPLE[q.situation?.data_type ?? ''] || exampleIn(q.prompt)
-  const purpose = PURPOSE_EXAMPLE[q.situation?.purpose ?? '']
-  const verb = EXAMPLE_VERB[q.situation?.handling_context ?? ''] ?? 'the device shares'
-  // "when you lock your door" reads as a time, not as data sent: "the times you lock your door".
-  const what = data?.replace(/^when /, 'the times ')
-  const example = what ? `${verb} ${what}${purpose ? `, ${purpose}` : ''}` : null
-  return { text, example }
+  const { data_type: t = '', purpose: p = '', handling_context: c = '' } = q.situation ?? {}
+  const text = c in QUESTION && t in DATA_WORDS && p in PURPOSE_WORDS ? QUESTION[c](DATA_WORDS[t], PURPOSE_WORDS[p]) : q.prompt.replace(FOR_EXAMPLE, '')
+  const scenarios = SCENARIOS[t]?.[p] ?? []
+  const scenario = (c === 'ppd:householdContext' && HOME_SCENARIOS[`${t} ${p}`]) || scenarios.find(([cls]) => ownedClasses.includes(cls)) || scenarios[0]
+  if (!scenario || !(c in EXAMPLE)) return { text, example: null }
+  const [cls, data, why] = scenario
+  return { text, example: EXAMPLE[c](DEVICE[cls], data, why) }
 }
 
 /* ---------- answers into rules ---------- */

@@ -23,6 +23,7 @@ const PATHS: Record<string, { w: number; node: ReactNode }> = {
   plug: { w: 2, node: (<><rect x="6" y="4" width="12" height="16" rx="3" /><path d="M10 9v2M14 9v2M10.5 15h3" /></>) },
   status: { w: 2, node: <path d="M3 12h4l3-7 4 14 3-7h4" /> },
   publish: { w: 2, node: (<><path d="M12 15V4M7 9l5-5 5 5" /><path d="M5 15v4a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-4" /></>) },
+  external: { w: 2, node: (<><path d="M14 4h6v6M20 4l-9 9" /><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" /></>) },
 }
 
 export function Icon({ name, size = 24, className }: P & { name: keyof typeof PATHS }) {

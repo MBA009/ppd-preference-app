@@ -1,10 +1,10 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import type { Answers, DeviceSummary, Household, HouseholdPreset, Onboarding as Tree } from '../api'
 import { ActionBar, AppBar, Cell, ErrorBox, Footnote, Group, Loading, Tile } from '../components/ui'
 import { ShieldCheck } from '../components/icons'
 import { useHousehold, useHouseholdPresets, useLibrary, useOnboarding } from '../state/data'
-import { CATEGORY_CLASS, followUps, promptFor, questionText, rulesFromAnswers, situationAnswers, stageOnePath, walk } from '../../shared/onboarding'
+import { CATEGORY_CLASS, followUps, questionText, rulesFromAnswers, situationAnswers, stageOnePath, walk } from '../../shared/onboarding'
 import { plural } from '../lib/verdicts'
 
 /**
@@ -41,6 +41,13 @@ export function ownedClasses(household: Household, library: DeviceSummary[]): st
 
 const INTRO = '__intro'   // the stage 2 introduction, in the back stack like a question
 
+/**
+ * A run in progress lives in the browser history: every step is an entry holding the answers so far, so the phone's
+ * back button steps through the questions, and leaving the screen ("How the questions were made", a reload) loses
+ * nothing. A run from another version of the questions is dropped: its answers may not lead anywhere in this tree.
+ */
+type Run = { version: string; answers: Answers; order: string[]; pick: string | null }
+
 function Walk({ tree, presets, mode, owned }: { tree: Tree; presets: HouseholdPreset[]; mode: Mode; owned: string[] }) {
   const nav = useNavigate()
   const { household, finishOnboarding } = useHousehold()
@@ -48,24 +55,22 @@ function Walk({ tree, presets, mode, owned }: { tree: Tree; presets: HouseholdPr
   const cap = tree.source.total_questions_cap
 
   // Every run starts empty; earlier answers are offered as the starting choice.
-  const [started, setStarted] = useState(false)
-  const [answers, setAnswers] = useState<Answers>({})
-  const [order, setOrder] = useState<string[]>([])
-  const [pick, setPick] = useState<string | null>(null)
+  const { pathname, search, state } = useLocation()
+  const run = (state as Run | null)?.version === tree.version ? (state as Run) : null
+  const started = !!run
+  const answers = run?.answers ?? {}
+  const order = run?.order ?? []
+  const pick = run?.pick ?? null
   const [saving, setSaving] = useState(false)
 
-  const go = (next: Answers, nextOrder: string[], nextPick: string | null) => {
-    setAnswers(next); setOrder(nextOrder); setPick(nextPick); window.scrollTo(0, 0)
-  }
-  const back = () => {
-    const last = order[order.length - 1]
-    if (!last) { setStarted(false); return }
-    if (last === INTRO) { go(answers, order.slice(0, -1), null); return }
-    const { [last]: previous, ...rest } = answers
-    go(rest, order.slice(0, -1), previous)
-  }
+  const here = { pathname, search }
+  const go = (next: Answers, nextOrder: string[]) => nav(here, { state: { version: tree.version, answers: next, order: nextOrder, pick: null } satisfies Run })
+  const setPick = (id: string) => nav(here, { replace: true, state: { version: tree.version, answers, order, pick: id } satisfies Run })
+  const back = () => nav(-1)
 
-  if (!started) return <Start tree={tree} mode={mode} onStart={() => setStarted(true)} />
+  useEffect(() => { window.scrollTo(0, 0) }, [started, order.length])
+
+  if (!started) return <Start tree={tree} mode={mode} onStart={() => go({}, [])} />
 
   const step = walk(tree, answers)
   const asked = order.filter((q) => q !== INTRO).length
@@ -73,8 +78,11 @@ function Walk({ tree, presets, mode, owned }: { tree: Tree; presets: HouseholdPr
     const q = tree.questions[qid]
     const chosen = pick ?? before[qid] ?? null
     const n = asked + 1
-    const answer = () => chosen && go({ ...answers, [qid]: chosen }, [...order, qid], null)
-    const prompt = promptFor(q, owned)
+    const answer = () => {
+      if (!chosen) return
+      setPick(chosen)   // Back to this question offers the answer given
+      go({ ...answers, [qid]: chosen }, [...order, qid])
+    }
     const { text, example } = questionText(q, owned)
     return (
       <div className="screen">
@@ -86,7 +94,7 @@ function Walk({ tree, presets, mode, owned }: { tree: Tree; presets: HouseholdPr
         </div>
         <div style={{ height: 12, flex: 'none' }} />
         <Group>
-          <div role="radiogroup" aria-label={prompt}>
+          <div role="radiogroup" aria-label={text}>
             {q.options.map((o) => (
               <button key={o.id} className="cell" role="radio" aria-checked={chosen === o.id} onClick={() => setPick(o.id)}>
                 <span className={'rd' + (chosen === o.id ? ' on' : '')} />
@@ -132,7 +140,7 @@ function Walk({ tree, presets, mode, owned }: { tree: Tree; presets: HouseholdPr
         <div className="spacer" />
         <ActionBar>
           <button className="btn2" onClick={back}>Back</button>
-          <button className="btn" onClick={() => go(answers, [...order, INTRO], null)}>Continue</button>
+          <button className="btn" onClick={() => go(answers, [...order, INTRO])}>Continue</button>
         </ActionBar>
       </div>
     )
@@ -149,6 +157,10 @@ function Walk({ tree, presets, mode, owned }: { tree: Tree; presets: HouseholdPr
   const finish = async () => {
     setSaving(true)
     await finishOnboarding({ answers })
+    // Off the back stack, so back from the rules does not land on the questions: every step is an entry, plus the start.
+    const left = new Promise((done) => window.addEventListener('popstate', done, { once: true }))
+    nav(-(order.length + 1))
+    await left
     nav('/rules?new=1', { replace: true })
   }
   return (

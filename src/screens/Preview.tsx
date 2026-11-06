@@ -1,6 +1,6 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ActionBar, AppBar, DeviceTile, ErrorBox, Group, Loading, Cell } from '../components/ui'
-import { AttentionList, ProvenanceCard } from '../components/DeviceReport'
+import { AttentionList, PpdStatus, ProvenanceCard } from '../components/DeviceReport'
 import { useDevice, useHousehold } from '../state/data'
 import { subtitle } from '../lib/device'
 
@@ -29,6 +29,7 @@ export default function Preview() {
             <div className="sub">{subtitle(d, inHome ? 'In your home' : 'Not in your home yet')}</div>
           </div>
         </Cell>
+        <PpdStatus device={d} />
       </Group>
       <div className="gap" />
       <ProvenanceCard device={d} />
