@@ -46,7 +46,7 @@ export default function Library() {
                   <span className="ttl">{d.short_name}</span>
                   <span className="ln">
                     <span className="sub">{d.category_label} · {d.flow_count} flows declared</span>
-                    {d.kind === 'simulated' && <span className="tag">Simulated</span>}
+                    {d.kind === 'simulated' && <span className="tag sm">Simulated</span>}
                   </span>
                 </div>
                 {inHome(d) && <span className="tr"><span className="in"><SmallCheck />In your home</span></span>}

@@ -4,11 +4,12 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { after, before, describe, test } from 'node:test'
 import type { FastifyInstance } from 'fastify'
-import type { DeviceSummary, Household, Overview, SimDevice, UnmanagedDevice } from '../../shared/types'
+import type { Device, DeviceSummary, Household, Overview, SimConsole, SimDevice, UnmanagedDevice } from '../../shared/types'
 import { buildApp } from '../src/app'
 import { loadConfig, type Config } from '../src/config'
 import { loadFixtures } from '../src/fixtures'
 import { HouseholdStore } from '../src/store'
+import { MODELS } from '../src/simulator/models'
 import { FakeGateway, bulb } from './fakeGateway'
 
 const gateway = await new FakeGateway().start()
@@ -18,6 +19,7 @@ const config: Config = {
   ...base,
   databasePath: path.join(dir, 'app.db'),
   logLevel: 'silent',
+  autoPublishIntervalMs: 0,
   gateway: { ...base.gateway, url: gateway.url, operatorToken: gateway.token },
   simulator: { enabled: true, gatewayUrl: gateway.url, leasesFile: path.join(dir, 'dhcp.leases'), certDir: '', caFile: '' },
 }
@@ -100,15 +102,32 @@ describe('network view and CableLabs cards', () => {
 })
 
 describe('simulator', () => {
-  test('lists the four demo devices, all off', async () => {
+  test('lists the five demo devices, all off', async () => {
     gateway.devices = []
     const list = await json<SimDevice[]>('GET', '/api/simulator/devices')
     assert.deepEqual(list.map((d) => [d.id, d.mode, d.state]), [
       ['aqara-w200-01', 'ppd', 'off'],
       ['reolink-e1-zoom-01', 'ppd', 'off'],
       ['level-lock-01', 'ppd', 'off'],
+      ['plugwell-p1-01', 'ppd', 'off'],
       ['lg-oled65c6pua-c6-01', 'network', 'off'],
     ])
+  })
+
+  test('a device without a fixture speaks PPD but never declares; it still gets and confirms the rules', async () => {
+    gateway.participantCalls = []
+    await json<SimDevice>('POST', '/api/simulator/devices/plugwell-p1-01/connect')
+    await until(async () => (await json<SimDevice[]>('GET', '/api/simulator/devices')).find((d) => d.id === 'plugwell-p1-01')!.state === 'associated')
+    const calls = gateway.participantCalls.filter((c) => !c.includes('well-known'))
+    assert.deepEqual(calls.slice(0, 3), ['POST /ppd/v1/device/register', 'GET /ppd/v1/policy/effective/plugwell-p1-01', 'POST /ppd/v1/device/ack'])
+    const d = await json<Device>('GET', '/api/devices/plugwell-p1-01')
+    assert.equal(d.name, 'Plugwell Smart Plug P1')
+    assert.equal(d.declaration, null)
+    // Nothing declared and nothing assumed: no flows from our library, so no per-flow verdicts.
+    assert.deepEqual(d.flows, [])
+    const preview = await json<{ rules: { flows: { device_id: string }[] }[] }>('GET', '/api/household/preview?all=1')
+    assert.ok(!preview.rules.some((r) => r.flows.some((f) => f.device_id === 'plugwell-p1-01')))
+    await json<SimDevice>('POST', '/api/simulator/devices/plugwell-p1-01/disconnect')
   })
 
   test('connect joins the network and runs the full PPD lifecycle through the gateway', async () => {
@@ -132,6 +151,17 @@ describe('simulator', () => {
     const lib = await json<DeviceSummary[]>('GET', '/api/library')
     assert.ok(lib.some((d) => d.id === 'level-lock-01' && d.kind === 'simulated'))
     assert.ok(!lib.some((d) => d.id === 'level-lock'))
+  })
+
+  test('a rejected declaration does not stop the device acknowledging the household policy', async () => {
+    gateway.rejectDeclarations = true
+    gateway.participantCalls = []
+    await json<SimDevice>('POST', '/api/simulator/devices/reolink-e1-zoom-01/connect')
+    await until(async () => (await json<SimDevice[]>('GET', '/api/simulator/devices')).find((d) => d.id === 'reolink-e1-zoom-01')!.state === 'associated')
+    assert.ok(gateway.participantCalls.includes('POST /ppd/v1/device/ack'))
+    assert.equal(gateway.devices.find((d) => d.device_id === 'reolink-e1-zoom-01')?.declared, false)
+    gateway.rejectDeclarations = false
+    await json<SimDevice>('POST', '/api/simulator/devices/reolink-e1-zoom-01/disconnect')
   })
 
   test('disconnect stops renewing and leaves the network', async () => {
@@ -159,6 +189,68 @@ describe('simulator', () => {
     const aqara = (await json<SimDevice[]>('GET', '/api/simulator/devices')).find((d) => d.id === 'aqara-w200-01')!
     assert.equal(aqara.wanted, 'connected')
     await until(async () => (await json<SimDevice[]>('GET', '/api/simulator/devices')).find((d) => d.id === 'aqara-w200-01')!.state === 'associated')
+  })
+
+  test('device models only use flows the device declares', () => {
+    for (const [fixture, model] of Object.entries(MODELS)) {
+      const d = JSON.parse(readFileSync(path.join(config.fixturesDir, 'devices', `${fixture}.json`), 'utf8')) as Device
+      const ppd = fixture !== 'lg-oled65c6pua-c6'
+      const ok = new Set(d.flows.filter((f) => !ppd || f.evidence === 'source_linked').map((f) => f.id.slice(f.id.indexOf('.') + 1)))
+      const used = [...model.controls(model.initial), ...model.controls({ ...model.initial, on: true, occupied: true, locked: false })].flatMap((c) => c.flows).concat(model.periodic?.flows ?? [])
+      for (const sid of used) assert.ok(ok.has(sid), `${fixture}: ${sid}`)
+    }
+  })
+
+  test('a device console: controls decide each flow by the policy the device received', async () => {
+    const lock = JSON.parse(readFileSync(path.join(config.fixturesDir, 'devices', 'level-lock.json'), 'utf8')) as Device
+    const fields = (sid: string) => {
+      const t = lock.flows.find((f) => f.id === `level-lock.${sid}`)!.taxonomy
+      return { data_type: t.data_type, purpose: t.purpose, action: t.action, source: t.source, handling_context: t.handling_context }
+    }
+    gateway.policy = {
+      policy_id: 'home-test', scope: 'home', taxonomy: { release: 'ppd-core-2026-05' },
+      rules: [
+        { rule_id: 'a', ...fields('lock-unlock-event-recorded-by-the-lock'), effect: 'allow' },
+        { rule_id: 'b', ...fields('lock-unlock-activity-communicated-to-level-services'), effect: 'deny' },
+      ],
+    }
+    await json('POST', '/api/simulator/devices/level-lock-01/actions', { action: 'door' }, 409) // not connected yet
+    await json<SimDevice>('POST', '/api/simulator/devices/level-lock-01/connect')
+    await until(async () => (await json<SimConsole>('GET', '/api/simulator/devices/level-lock-01/console')).policy !== null)
+
+    let c = await json<SimConsole>('POST', '/api/simulator/devices/level-lock-01/actions', { action: 'door' })
+    assert.deepEqual(c.state[0], ['Door', 'Unlocked'])
+    const outcome = (con: SimConsole, title: string) => con.events[0].flows.find((f) => f.title.startsWith(title))?.outcome
+    assert.equal(outcome(c, 'Lock/unlock event recorded'), 'kept_home')
+    assert.equal(outcome(c, 'Lock/unlock activity communicated'), 'blocked')
+    assert.equal(outcome(c, 'Lock state shared with Matter'), 'held_back') // no rule covers it
+
+    c = await json<SimConsole>('POST', '/api/simulator/devices/level-lock-01/behavior', { mode: 'ignores' })
+    c = await json<SimConsole>('POST', '/api/simulator/devices/level-lock-01/actions', { action: 'door' })
+    assert.equal(outcome(c, 'Lock/unlock activity communicated'), 'sent_against_rules')
+    assert.ok(c.totals.some((t) => t.recipient === 'The maker or its services' && t.blocked === 1 && t.against === 1))
+    // Sending against the rules raises a runtime conflict at the gateway (its demo extension); following again clears it.
+    const lockAt = () => gateway.devices.find((d) => d.device_id === 'level-lock-01')!
+    await until(async () => lockAt().conflict_active === true)
+    assert.deepEqual(lockAt().conflicting_purposes, [lock.flows.find((f) => f.id === 'level-lock.lock-unlock-activity-communicated-to-level-services')!.taxonomy.purpose])
+    await json<SimConsole>('POST', '/api/simulator/devices/level-lock-01/behavior', { mode: 'follows' })
+    await until(async () => lockAt().conflict_active === false)
+    // A conflict the gateway still holds from before (an app-api restart forgets what was reported) is cleared at
+    // the device's next renewal, since every acknowledgement reports what the device is doing now.
+    lockAt().conflict_active = true
+    await until(async () => lockAt().conflict_active === false, 8000)
+
+    // The TV has no PPD: everything goes out, and it has no rules to follow.
+    await json<SimDevice>('POST', '/api/simulator/devices/lg-oled65c6pua-c6-01/network', { present: true })
+    await json<SimConsole>('POST', '/api/simulator/devices/lg-oled65c6pua-c6-01/actions', { action: 'power' })
+    const tv = await json<SimConsole>('POST', '/api/simulator/devices/lg-oled65c6pua-c6-01/actions', { action: 'watch' })
+    assert.equal(tv.ppd, false)
+    assert.ok(tv.events[0].flows.length > 0 && tv.events[0].flows.every((f) => f.outcome === 'sent_no_ppd'))
+    await json('POST', '/api/simulator/devices/lg-oled65c6pua-c6-01/behavior', { mode: 'ignores' }, 400)
+
+    const cleared = await json<SimConsole>('POST', '/api/simulator/devices/level-lock-01/log/clear', {})
+    assert.deepEqual([cleared.events, cleared.totals], [[], []])
+    assert.deepEqual(cleared.state[0], ['Door', 'Locked']) // the device's state stays
   })
 
   test('reset turns everything off and clears the leases', async () => {

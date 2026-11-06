@@ -1,53 +1,53 @@
 import type { Device, Flow, Rule, Verdict } from './types'
-import { leavesHome, matchesScope } from './scope'
+import { conditionOf, decidingRule } from './scope'
 import { checkDataflow, constraintKeys } from './taxonomy'
+import { conditionText, declaresCondition } from './conditions'
 
 /**
  * The comparison of a flow with the household's rules. app-api runs it on every device read;
  * mockClient.ts runs the same code in the browser when the app is offline.
  *
  * Order of decisions for one flow:
- *   1. No source for the flow yet, or a term that is not
- *      a core ppd: term                                   -> indeterminate ("Can't tell")
- *   2. A matching rule says never                         -> unsatisfiable ("Conflicts")
- *   3. A matching rule says ask                           -> decision_required ("Needs your decision")
- *   4. The flow itself declares a limit (on-device only,
- *      in-home only, or not kept)                         -> conditionally_satisfiable ("With limits")
- *   5. A matching rule allows it                          -> compatible ("Matches")
- *   6. Nothing matches: leaves the home -> decision_required, stays at home -> compatible
- * Among rules with the same effect the first one in the policy is cited.
+ *   1. A term that is not a core ppd: term                -> indeterminate (shown, never asked about)
+ *   2. The rule that decides it (the latest-changed matching rule, Nov 2: the latest rule wins) says
+ *        never                                            -> unsatisfiable ("Conflicts")
+ *        allow only under a condition (deleted after use,
+ *        in the home, on the device, only in some places) -> conditionally_satisfiable ("With limits")
+ *        allow                                            -> compatible ("Matches")
+ *   3. No rule matches                                    -> decision_required ("Needs your decision")
+ * There is no default outside the household's rules: a preset covers every core flow, so step 3 only happens
+ * after the household deletes or turns off a rule. Its devices then get no rule for the flow (the draft defines
+ * no default effect), and the household can answer with a new rule (Nov 2 guidance: a deleted rule means no
+ * preference yet, not an error).
+ * A researched flow still waiting for its source (evidence needs_source) is compared like any other: our team wrote
+ * its terms, so they are core terms; the report marks it "needs source".
+ * "With limits" always names the household rule that sets the condition. A limit the device declares about itself
+ * (on-device only, in-home only, deleted after use) is not a verdict: it is only said in the reason.
  */
 
-const LIMITS = ['processing_boundary=ppd:onDeviceOnly', 'processing_boundary=ppd:inHomeOnly', 'retention=ppd:ephemeral']
-const LIMIT_TEXT: Record<string, string> = {
-  'processing_boundary=ppd:onDeviceOnly': 'Fine only because it stays on the device.',
-  'processing_boundary=ppd:inHomeOnly': 'Fine only because it stays in your home.',
-  'retention=ppd:ephemeral': 'Fine only because it is not kept.',
+/** What the device says about its own limits, as a sentence after the verdict's reason. */
+const DECLARED_TEXT: Record<string, string> = {
+  'processing_boundary=ppd:onDeviceOnly': 'The device says it stays on the device.',
+  'processing_boundary=ppd:inHomeOnly': 'The device says it stays in your home.',
+  'retention=ppd:ephemeral': 'The device says it deletes it right after use.',
 }
+const declared = (keys: string[]) => keys.filter((k) => DECLARED_TEXT[k]).map((k) => ` ${DECLARED_TEXT[k]}`).join('')
 
 export function evaluateFlow(flow: Flow, rules: Rule[]): Flow['evaluation'] {
-  if (flow.evidence === 'needs_source') {
-    return { verdict: 'indeterminate', rule_id: null, reason: 'We could not find a source for this flow yet, so we cannot compare it with your rules.' }
-  }
   // An unresolvable term is not guessed at (draft-dsmullen-ppd-taxonomy-05 section 11).
   if (checkDataflow(flow.id, flow.taxonomy).length) {
     return { verdict: 'indeterminate', rule_id: null, reason: 'This flow uses terms outside the PPD core taxonomy, so we cannot compare it with your rules.' }
   }
-  const hits = rules.filter((r) => r.enabled && matchesScope(flow, r.scope))
-  const first = (effect: Rule['effect']) => hits.find((r) => r.effect === effect)
-
-  const no = first('dont_allow')
-  if (no) return { verdict: 'unsatisfiable', rule_id: no.id, reason: `Your rule “${no.title}” says no to this.` }
-  const ask = first('ask')
-  if (ask) return { verdict: 'decision_required', rule_id: ask.id, reason: `Your rule “${ask.title}” says to ask you.` }
+  const rule = decidingRule(rules, flow.taxonomy)
   const keys = constraintKeys(flow.taxonomy.constraints)
-  const limit = LIMITS.find((l) => keys.includes(l))
-  if (limit) return { verdict: 'conditionally_satisfiable', rule_id: null, reason: LIMIT_TEXT[limit] }
-  const yes = first('allow')
-  if (yes) return { verdict: 'compatible', rule_id: yes.id, reason: `Your rule “${yes.title}” allows this.` }
-  return leavesHome(flow)
-    ? { verdict: 'decision_required', rule_id: null, reason: 'None of your rules covers this.' }
-    : { verdict: 'compatible', rule_id: null, reason: 'It stays in your home.' }
+  if (rule?.effect === 'dont_allow') return { verdict: 'unsatisfiable', rule_id: rule.id, reason: `Your rule “${rule.title}” says no to this.` }
+  const c = rule && conditionOf(rule)
+  if (rule && c) {
+    const said = declaresCondition(c, flow.taxonomy.constraints) ? ' The device says it is.' : ' Your devices are told so.'
+    return { verdict: 'conditionally_satisfiable', rule_id: rule.id, reason: `Your rule “${rule.title}” allows this only if ${conditionText(c)}.${said}` }
+  }
+  if (rule) return { verdict: 'compatible', rule_id: rule.id, reason: `Your rule “${rule.title}” allows this.${declared(keys)}` }
+  return { verdict: 'decision_required', rule_id: null, reason: `None of your rules settles this, so your devices get no rule for it.${declared(keys)}` }
 }
 
 const SEVERITY: Record<Verdict, number> = { unsatisfiable: 0, decision_required: 1, indeterminate: 2, conditionally_satisfiable: 3, compatible: 4 }
@@ -59,4 +59,19 @@ export function evaluateDevice(device: Device, rules: Rule[]): Device {
     .sort((a, b) => SEVERITY[a.f.evaluation.verdict] - SEVERITY[b.f.evaluation.verdict] || a.i - b.i)
     .map((x) => x.f)
   return { ...device, flows }
+}
+
+/**
+ * Flows that need the person's attention: conflicts with the household's rules. The household is never asked
+ * to decide a single flow; its preset and rules decide. An indeterminate flow is never one of
+ * them either: describing it correctly is the vendor's job, and we assume nothing about it
+ * (CableLabs guidance, docs/cablelabs-guidance-vendor-terms-plan.md).
+ */
+export const needsAttention = (flow: Flow) => flow.evaluation.verdict === 'unsatisfiable'
+
+/** Verdict counts for the chips. */
+export function countVerdicts(device: Device): Partial<Record<Verdict, number>> {
+  const out: Partial<Record<Verdict, number>> = {}
+  for (const f of device.flows) out[f.evaluation.verdict] = (out[f.evaluation.verdict] ?? 0) + 1
+  return out
 }

@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
-import type { DeviceSummary, Verdict } from '../api'
+import type { Device, DeviceSummary, Verdict } from '../api'
 import { VERDICTS } from '../lib/verdicts'
-import { ChevronDown, ChevronRight, ChipGlyph, DeviceGlyph, Icon, RowGlyph } from './icons'
+import { DEVICE_STATE, deviceState } from '../lib/device'
+import { ChevronDown, ChevronRight, ChipGlyph, DeviceGlyph, Icon, RowGlyph, StateGlyph } from './icons'
 import { useMe } from '../state/data'
 
 /* ---------- app bars ---------- */
@@ -32,7 +33,7 @@ export function BottomNav() {
   const items = [
     { to: '/', icon: 'home', label: 'My home', end: true },
     { to: '/scan', icon: 'scan', label: 'Scan', end: false },
-    { to: '/rules', icon: 'rules', label: 'Rules', end: false },
+    { to: '/rules', icon: 'rules', label: 'Policy', end: false },
   ] as const
   return (
     <nav className="tabs" aria-label="Main">
@@ -52,7 +53,7 @@ export function SideRail() {
   const items = [
     { to: '/', icon: 'home', label: 'My home', end: true },
     { to: '/scan', icon: 'scan', label: 'Scan', end: false },
-    { to: '/rules', icon: 'rules', label: 'Household rules', end: false },
+    { to: '/rules', icon: 'rules', label: 'Household policy', end: false },
     { to: '/library', icon: 'plus', label: 'Device library', end: false },
     { to: '/status', icon: 'status', label: 'System status', end: false },
     ...(me?.simulator ? [{ to: '/demo-devices', icon: 'bulb', label: 'Demo devices', end: false }] : []),
@@ -94,6 +95,13 @@ export function DeviceTile({ device, size = 'device' }: { device: DeviceSummary;
       <DeviceGlyph icon={device.icon} size={size === 'hero' ? 30 : 22} />
     </Tile>
   )
+}
+
+/* ---------- device state ---------- */
+/** One of the six device states, as a bordered chip (design board "Six device states"). */
+export function StateChip({ device }: { device: DeviceSummary | Device }) {
+  const key = deviceState(device)
+  return <span className={`state s-${key}`} title={DEVICE_STATE[key].meaning}><StateGlyph state={key} /><span>{DEVICE_STATE[key].label}</span></span>
 }
 
 /* ---------- verdict marks ---------- */

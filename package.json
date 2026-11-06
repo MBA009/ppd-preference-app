@@ -11,8 +11,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host",
     "typecheck": "tsc --noEmit",
-    "mock": "python3 tools/build_mock.py",
-    "tree": "python3 tools/build_tree_doc.py"
+    "mock": "python3 tools/build_mock.py"
   },
   "dependencies": {
     "jsqr": "^1.4.0",

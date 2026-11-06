@@ -14,11 +14,13 @@ const PATHS: Record<string, { w: number; node: ReactNode }> = {
   scan: { w: 2, node: (<><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" /><path d="M8 12h8" /></>) },
   rules: { w: 2, node: <path d="M5 6h14M5 12h14M5 18h9" /> },
   check: { w: 2.8, node: <path d="M5 12.5l4.5 4.5L19 7" /> },
+  block: { w: 2.4, node: (<><circle cx="12" cy="12" r="8" /><path d="M6.5 17.5l11-11" /></>) },
   thermostat: { w: 2, node: (<><circle cx="12" cy="12" r="8" /><path d="M12 12l3-3" /></>) },
   lock: { w: 2, node: (<><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></>) },
   tv: { w: 2, node: (<><rect x="3" y="5" width="18" height="12" rx="2" /><path d="M9 20h6M12 17v3" /></>) },
   camera: { w: 2, node: (<><rect x="3" y="8" width="18" height="11" rx="2" /><circle cx="12" cy="13.5" r="3" /><path d="M8 8l1.5-2.5h5L16 8" /></>) },
   bulb: { w: 2, node: (<><path d="M9 18h6M10 21h4" /><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z" /></>) },
+  plug: { w: 2, node: (<><rect x="6" y="4" width="12" height="16" rx="3" /><path d="M10 9v2M14 9v2M10.5 15h3" /></>) },
   status: { w: 2, node: <path d="M3 12h4l3-7 4 14 3-7h4" /> },
   publish: { w: 2, node: (<><path d="M12 15V4M7 9l5-5 5 5" /><path d="M5 15v4a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-4" /></>) },
 }
@@ -75,6 +77,27 @@ export function InfoCircle({ size = 17 }: P) {
       <circle cx="7" cy="10" r=".7" fill="currentColor" />
     </svg>
   )
+}
+/** "Registered, no declaration": a circle with a bar, as on the device-states board. */
+export function NoDeclarationIcon({ size = 17 }: P) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 14 14" strokeWidth={1.6} aria-hidden="true" {...stroke}>
+      <circle cx="7" cy="7" r="5.5" />
+      <path d="M4.5 7h5" />
+    </svg>
+  )
+}
+/** Glyphs for the six device states, 14-grid outline in the chip's colour. */
+export function StateGlyph({ state, size = 13 }: { state: 'advisory' | 'no_declaration' | 'confirmed' | 'waiting' | 'stale' | 'reassociate'; size?: number }) {
+  const common = { width: size, height: size, viewBox: '0 0 14 14', 'aria-hidden': true, strokeWidth: 1.7, ...stroke } as const
+  switch (state) {
+    case 'advisory': return <svg {...common}><circle cx="7" cy="7" r="5.5" strokeDasharray="2 2" /></svg>
+    case 'no_declaration': return <svg {...common}><circle cx="7" cy="7" r="5.5" /><path d="M4.5 7h5" /></svg>
+    case 'confirmed': return <svg {...common} strokeWidth={2}><path d="M2.5 7.5l3 3 6-7" /></svg>
+    case 'waiting': return <svg {...common}><circle cx="7" cy="7" r="5.5" /><path d="M7 4v3l2 1.5" /></svg>
+    case 'stale': return <svg {...common}><path d="M7 1.8l5.4 9.4H1.6z" /><path d="M7 5.6v2.6" /><circle cx="7" cy="10" r=".6" fill="currentColor" /></svg>
+    case 'reassociate': return <svg {...common}><path d="M11.5 7a4.5 4.5 0 1 1-1.3-3.2" /><path d="M10.6 1.6v2.6H8" /></svg>
+  }
 }
 export function DashedCircle({ size = 14 }: P) {
   return (

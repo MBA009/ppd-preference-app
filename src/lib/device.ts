@@ -2,7 +2,7 @@ import type { DeclarationState, Device, DeviceSummary } from '../api'
 
 export const STATE_LABEL: Record<DeclarationState, string> = {
   advisory: 'Advisory only · from our library',
-  registered_no_declaration: 'Registered · no declaration yet',
+  registered_no_declaration: 'Registered, no declaration',
   rules_confirmed: 'Gets your rules · Confirmed',
   waiting_for_renewal: 'Gets your rules · Updating',
   stale: 'Gets your rules · Out of date',
@@ -13,6 +13,12 @@ export const STATE_LABEL: Record<DeclarationState, string> = {
 
 /** True for devices that talk to the PPD gateway (real or simulated); research entries never do. */
 export const isConnected = (d: DeviceSummary) => d.kind === 'real' || d.kind === 'simulated'
+
+/**
+ * A connected device that speaks PPD but sent no declaration (optional in PPD). It gets the household's rules like
+ * every device and is assumed to follow them; with nothing it said to compare, it has no per-flow verdicts.
+ */
+export const declaredNothing = (d: DeviceSummary) => isConnected(d) && !d.declaration
 
 /** A connected device that currently holds the household rules: associated, and not reporting behaviour against them. */
 export const hasRules = (d: Device) => d.live?.association.status === 'associated' && !d.live.runtime.conflict_active
@@ -25,10 +31,32 @@ export function forgetBlocker(d: Device): string | null {
   return null
 }
 
-/** A device's rules status. Research entries are never connected, whatever their example declaration says. */
-export function stateLabel(d: DeviceSummary) {
-  if (d.kind === 'research') return d.source === 'declared' ? 'Example declaration · not connected' : 'Advisory · not connected'
-  return STATE_LABEL[d.declaration?.state ?? 'advisory']
+/**
+ * The six device states shown to the household (design board "Six device states"). They put the draft's
+ * association states (draft-dsmullen-ppd-architecture-11 section 2: current, stale, needs reassociation, broken)
+ * into household words, instead of the gateway's own badges.
+ */
+export type DeviceStateKey = 'advisory' | 'no_declaration' | 'confirmed' | 'waiting' | 'stale' | 'reassociate'
+
+export const DEVICE_STATE: Record<DeviceStateKey, { label: string; meaning: string }> = {
+  advisory: { label: 'Advisory only', meaning: 'The device doesn’t register with your home gateway. What you see comes from our library.' },
+  no_declaration: { label: 'Registered, no declaration', meaning: 'The device joined and fetched your household policy, but declared nothing.' },
+  confirmed: { label: 'Rules confirmed', meaning: 'The device confirmed it received your latest rules and renewed in time. Receipt only: we can’t check that it follows them.' },
+  waiting: { label: 'Waiting for renewal', meaning: 'Your rules changed and the device hasn’t fetched them yet.' },
+  stale: { label: 'Stale', meaning: 'The device didn’t renew before its freshness limit, so its last confirmation is out of date.' },
+  reassociate: { label: 'Needs reassociation', meaning: 'The rules or the device’s own state changed enough that it must start over. It isn’t confirmed until it registers again.' },
+}
+
+export function deviceState(d: DeviceSummary | Device): DeviceStateKey {
+  if (!isConnected(d)) return 'advisory'
+  const live = 'live' in d ? d.live : undefined
+  if (!live) return declaredNothing(d) ? 'no_declaration' : d.declaration?.state === 'waiting_for_renewal' ? 'waiting' : 'confirmed'
+  const s = live.association.status
+  if (s === 'stale_association') return 'stale'
+  // The draft has no push: after a rule change the device is out of date until it fetches them (app state).
+  if (live.publication === 'waiting' || s === 'not_associated') return 'waiting'
+  if (s === 'needs_reassociation' || s === 'broken') return 'reassociate'
+  return declaredNothing(d) ? 'no_declaration' : 'confirmed'
 }
 
 /** "Connected device" or "Simulated participant" for devices the PPD gateway knows. */

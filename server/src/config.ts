@@ -8,7 +8,7 @@ export interface Config {
   /** development enables a fixed local identity; anything else requires Cloudflare Access. */
   appEnv: 'development' | 'production'
   databasePath: string
-  /** The research fixtures (public/mock/): questionnaire, device library, declarations, privacy codes. */
+  /** The research fixtures (public/mock/): onboarding tree and presets, device library, declarations, privacy codes. */
   fixturesDir: string
   /** Which gateway devices are real hardware or simulated participants, and how to present them. */
   deviceRegistryPath: string
@@ -19,6 +19,8 @@ export interface Config {
   /** Show the gateway's router-only checks (DHCP, ARP, Wi-Fi) on System status. Off for the cloud gateway. */
   routerChecks: boolean
   simulator: SimulatorConfig
+  /** How often app-api checks whether devices joined or left and the household policy must be sent again. 0 = only after rule changes. */
+  autoPublishIntervalMs: number
   logLevel: string
 }
 
@@ -86,6 +88,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
       certDir: env.SIMULATOR_CERT_DIR ?? '',
       caFile: env.SIMULATOR_CA_FILE ?? env.GATEWAY_CA_FILE ?? '',
     },
+    autoPublishIntervalMs: Number(env.AUTO_PUBLISH_INTERVAL_MS ?? 10_000),
     logLevel: env.LOG_LEVEL ?? 'info',
   }
 }

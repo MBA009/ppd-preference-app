@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { api, type Answers, type Command, type Decision, type Device, type DeviceSummary, type Household, type Me, type Overview, type Policy, type Preset, type Profile, type PublishPreview, type Questionnaire, type Rule, type SimDevice, type SystemStatus, type Telemetry, type UnmanagedDevice } from '../api'
+import { api, type Answers, type Command, type Device, type DeviceSummary, type Household, type HouseholdPreset, type Me, type Onboarding, type Overview, type Policy, type Profile, type PublishPreview, type Rule, type SimConsole, type SimDevice, type SystemStatus, type Telemetry, type UnmanagedDevice } from '../api'
 
 /* ---------- tiny async hook ---------- */
 export interface Async<T> { data: T | undefined; error: Error | undefined; loading: boolean; reload: () => void }
@@ -33,21 +33,22 @@ export function useAsync<T>(fn: () => Promise<T>, deps: unknown[], pollMs?: numb
 /** Live gateway views refresh this often. */
 export const LIVE_POLL_MS = 5000
 
-export const useQuestionnaire = () => useAsync<Questionnaire>(() => api.getQuestionnaire(), [])
+export const useOnboarding = () => useAsync<Onboarding>(() => api.getOnboarding(), [])
+export const useHouseholdPresets = () => useAsync<HouseholdPreset[]>(() => api.listHouseholdPresets(), [])
 export const useLibrary = () => useAsync<DeviceSummary[]>(() => api.listLibrary(), [])
 export const useMe = () => useAsync<Me>(() => api.getMe(), [])
 export const useOverview = () => useAsync<Overview>(() => api.getOverview(), [], LIVE_POLL_MS)
 export const useSystemStatus = () => useAsync<SystemStatus>(() => api.getSystemStatus(), [], LIVE_POLL_MS * 2)
-export const usePresets = () => useAsync<Preset[]>(() => api.listPresets(), [])
 export const useCommands = (id: string | undefined) => useAsync<Command[]>(() => (id ? api.listCommands(id) : Promise.resolve([])), [id], 3000)
 export const useUnmanaged = () => useAsync<UnmanagedDevice[]>(() => api.listUnmanaged(), [], LIVE_POLL_MS)
 export const useSimDevices = () => useAsync<SimDevice[]>(() => api.listSimDevices(), [], 2000)
+export const useSimConsole = (id: string | undefined) => useAsync<SimConsole>(() => api.getSimConsole(id!), [id], 2000)
 export const useTelemetry = (id: string | undefined) => useAsync<Telemetry>(() => (id ? api.getTelemetry(id) : Promise.resolve({ samples: [], by_purpose: [] })), [id], LIVE_POLL_MS)
 
 /** Changes whenever the household's rules change, so device data (whose verdicts depend on the rules) is fetched again. */
 function useRulesKey(): string {
   const { household } = useHousehold()
-  return JSON.stringify((household?.rules ?? []).map((r) => [r.id, r.effect, r.enabled, r.scope]))
+  return JSON.stringify((household?.rules ?? []).map((r) => [r.id, r.effect, r.condition, r.enabled, r.scope]))
 }
 
 export const useDevice = (id: string | undefined, poll = false) => {
@@ -61,11 +62,9 @@ export const useDevices = (ids: string[], poll = false) => {
 
 /** The household policy the gateway serves now, and what publishing the current rules would send. */
 export const usePublished = () => useAsync<Policy | null>(() => api.getPublishedPolicy(), [], LIVE_POLL_MS * 2)
-export const usePreview = () => {
+export const usePreview = (pollMs?: number) => {
   const key = useRulesKey()
-  const { household } = useHousehold()
-  const decisions = JSON.stringify(household?.decisions ?? {}) + JSON.stringify(household?.group_decisions ?? {})
-  return useAsync<PublishPreview>(() => api.previewPublish(), [key, decisions])
+  return useAsync<PublishPreview>(() => api.previewPublish(), [key], pollMs)
 }
 
 /** The household's rules, in policy order. Pass `onlyOn` to leave out rules the person switched off. */
@@ -75,7 +74,7 @@ export function useRules(onlyOn = false): Rule[] {
   return onlyOn ? all.filter((r) => r.enabled) : all
 }
 
-/* ---------- household (devices in the home + saved decisions) ---------- */
+/* ---------- household (devices in the home, preset and rules) ---------- */
 interface Ctx {
   household: Household | null
   error: Error | null
@@ -83,11 +82,12 @@ interface Ctx {
   removeDevice: (id: string) => Promise<void>
   saveForLater: (id: string) => Promise<void>
   markJoinedSeen: (id: string) => Promise<void>
-  saveDecision: (d: Omit<Decision, 'decided_at'>) => Promise<void>
   resetDemo: (mode: 'seed' | 'empty') => Promise<void>
   /** Loads the household again after a failed first load. */
   reload: () => void
-  savePolicy: (p: { answers: Answers; rules: Rule[]; profile: Profile }) => Promise<void>
+  finishOnboarding: (p: { answers: Answers }) => Promise<void>
+  answerQuestion: (p: { question: string; answer: string }) => Promise<void>
+  saveProfile: (p: Profile) => Promise<void>
   upsertRule: (r: Rule) => Promise<void>
   deleteRule: (id: string) => Promise<void>
   toast: (text: string) => void
@@ -128,8 +128,8 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
   const value = useMemo<Ctx>(() => ({
     household, error, toast, reload,
     addDevice: run(api.addDevice), removeDevice: run(api.removeDevice), saveForLater: run(api.saveForLater),
-    markJoinedSeen: run(api.markJoinedSeen), saveDecision: run(api.saveDecision), resetDemo: run(api.resetDemo),
-    savePolicy: run(api.savePolicy), upsertRule: run(api.upsertRule), deleteRule: run(api.deleteRule),
+    markJoinedSeen: run(api.markJoinedSeen), resetDemo: run(api.resetDemo),
+    finishOnboarding: run(api.finishOnboarding), answerQuestion: run(api.answerQuestion), saveProfile: run(api.saveProfile), upsertRule: run(api.upsertRule), deleteRule: run(api.deleteRule),
   }), [household, error, toast, reload, run])
 
   return (

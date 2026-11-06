@@ -1,7 +1,7 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ActionBar, AppBar, DeviceTile, ErrorBox, Group, Loading, Cell } from '../components/ui'
 import { AttentionList, ProvenanceCard } from '../components/DeviceReport'
-import { useDevice, useHousehold, useRules } from '../state/data'
+import { useDevice, useHousehold } from '../state/data'
 import { subtitle } from '../lib/device'
 
 /** Screens 1b (declared device) and 1c (researched device): what a device says, before it joins the home. */
@@ -10,19 +10,17 @@ export default function Preview() {
   const nav = useNavigate()
   const { household, saveForLater, toast } = useHousehold()
   const dev = useDevice(id)
-  const rules = useRules(true)
 
-  if (dev.error) return <><AppBar title="Preview" back="/scan" /><ErrorBox error={dev.error} /></>
+  if (dev.error) return <><AppBar title="Check a device" back="/scan" /><ErrorBox error={dev.error} /></>
   const d = dev.data
-  if (!d || !household) return <><AppBar title="Preview" back="/scan" /><Loading /></>
+  if (!d || !household) return <><AppBar title="Check a device" back="/scan" /><Loading /></>
 
   const inHome = household.devices.some((h) => h.device_id === d.id)
   const saved = household.saved.includes(d.id)
-  const ruleCount = rules.length
 
   return (
     <div className="screen">
-      <AppBar title="Preview" back="/scan" />
+      <AppBar title="Check a device" back="/scan" />
       <Group style={{ marginTop: 4 }}>
         <Cell className="t" chevron={false} style={{ padding: '14px 16px' }}>
           <DeviceTile device={d} size="hero" />
@@ -33,9 +31,9 @@ export default function Preview() {
         </Cell>
       </Group>
       <div className="gap" />
-      <ProvenanceCard device={d} household={household} ruleCount={ruleCount} />
-      {d.source === 'declared' && <div className="sf" style={{ fontStyle: 'italic' }}>We can’t check that the device will follow your rules.</div>}
-      <AttentionList device={d} household={household} />
+      <ProvenanceCard device={d} />
+      {d.source === 'declared' && <div className="sf" style={{ fontStyle: 'italic' }}>We can’t check that the device will follow your household policy.</div>}
+      <AttentionList device={d} />
       <div className="spacer" />
       <ActionBar>
         <Link to="/scan" className="btn2">Scan another box</Link>

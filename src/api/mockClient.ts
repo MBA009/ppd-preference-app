@@ -1,4 +1,4 @@
-import type { Device, DeviceSummary, Household, Overview, PpdApi, Questionnaire } from './types'
+import type { Device, DeviceSummary, Household, HouseholdPreset, Onboarding, Overview, PpdApi } from './types'
 import { evaluateDevice } from '../../shared/engine'
 import * as hh from '../../shared/household'
 
@@ -33,7 +33,7 @@ async function getJson<T>(path: string): Promise<T> {
 const offline = () => Promise.reject(new Error('This needs the PPD gateway, which is not available in offline mode.'))
 const noGateway: Overview = {
   gateway: { reachable: false, security: 'unknown', mutual_tls_required: false, tls_enabled: false, freshness_interval: null, error: 'offline mode' },
-  counts: { known: 0, registered: 0, declared: 0, policy_retrieved: 0, acknowledged: 0, associated: 0, needs_reassociation: 0, stale: 0, broken: 0, policy_conflict: 0, overrides: 0, authenticated: 0, compatibility_mode: 0, network_observed: 0, unmanaged: 0, need_attention: 0 },
+  counts: { known: 0, registered: 0, declared: 0, policy_retrieved: 0, acknowledged: 0, associated: 0, needs_reassociation: 0, stale: 0, broken: 0, policy_conflict: 0, overrides: 0, authenticated: 0, compatibility_mode: 0, network_observed: 0, unmanaged: 0, need_attention: 0, have_rules: 0 },
   household_policy: { policy_id: null, updated_at: null, published_by_app: false },
   updated_at: new Date().toISOString(),
 }
@@ -43,8 +43,8 @@ const seed = async () => hh.seedHousehold(await getJson('household.json'))
 function read(): Household | null {
   try {
     const raw = localStorage.getItem(STORE_KEY)
-    // Older saves lack the policy fields; fill them in so the person lands on the questions.
-    return raw ? { ...hh.blankHousehold(), ...(JSON.parse(raw) as Partial<Household>) } : null
+    // Older saves (before presets) go back to the onboarding questions.
+    return raw ? hh.normalizeHousehold(JSON.parse(raw)) : null
   } catch {
     return null
   }
@@ -60,20 +60,32 @@ function write(h: Household): Household {
   return h
 }
 
+const presets = async () => (await getJson<{ presets: HouseholdPreset[] }>('household-presets.json')).presets
+
 let memory: Household | null = null
 async function current(): Promise<Household> {
-  return memory ?? read() ?? write(await seed())
+  const h = memory ?? read() ?? write(await seed())
+  // A household on a preset that has since been rebuilt goes back to the questions.
+  const next = hh.retirePreset(h, await presets())
+  return next === h ? h : write(next)
 }
 
 export const mockClient: PpdApi = {
-  getQuestionnaire() {
-    return getJson<Questionnaire>('questionnaire.json')
+  getOnboarding() {
+    return getJson<Onboarding>('onboarding.json')
+  },
+  listHouseholdPresets: presets,
+  async finishOnboarding({ answers }) {
+    return write(hh.finishOnboarding(await current(), await getJson<Onboarding>('onboarding.json'), await presets(), answers))
+  },
+  async answerQuestion({ question, answer }) {
+    return write(hh.answerQuestion(await current(), await getJson<Onboarding>('onboarding.json'), question, answer))
+  },
+  async saveProfile(profile) {
+    return write(hh.saveProfile(await current(), profile))
   },
   async listRules() {
     return (await current()).rules
-  },
-  async savePolicy(p) {
-    return write(hh.savePolicy(await current(), p))
   },
   async upsertRule(rule) {
     return write(hh.upsertRule(await current(), rule))
@@ -109,11 +121,8 @@ export const mockClient: PpdApi = {
   async markJoinedSeen(id) {
     return write(hh.markJoinedSeen(await current(), id))
   },
-  async saveDecision(d) {
-    return write(hh.saveDecision(await current(), d))
-  },
   async resetDemo(mode) {
-    // Both modes return to first launch: no answers and no rules yet.
+    // Both modes return to first launch: no preset, answers or rules yet.
     return write(mode === 'seed' ? await seed() : hh.blankHousehold())
   },
 
@@ -136,4 +145,8 @@ export const mockClient: PpdApi = {
   simDisconnect: offline,
   simNetwork: offline,
   simReset: offline,
+  getSimConsole: offline,
+  simAction: offline,
+  simBehavior: offline,
+  simClearLog: offline,
 }

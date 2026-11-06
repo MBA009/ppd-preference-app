@@ -46,6 +46,18 @@ const STATE: Record<string, DeclarationState> = {
   broken: 'broken',
 }
 
+/** Wording for a device that lost its association after reporting a runtime conflict (see liveState). */
+const STALE_ATTENTION: Partial<Record<AssociationStatus, string>> = {
+  stale_association: 'The device did not renew acknowledgement of the current policy before the freshness deadline.',
+  needs_reassociation: 'The device needs to reassociate before it holds the current policy again.',
+  broken: 'The association is broken.',
+}
+const STALE_NEXT: Partial<Record<AssociationStatus, string>> = {
+  stale_association: 'Waiting for renewed receipt acknowledgement',
+  needs_reassociation: 'Needs reassociation',
+  broken: 'Association state needs review',
+}
+
 const ASSOCIATION_LABEL: Record<AssociationStatus, [string, Tone]> = {
   associated: ['Associated', 'good'],
   policy_conflict: ['Associated · runtime conflict', 'warn'],
@@ -173,10 +185,15 @@ export class LiveDirectory {
     }
   }
 
-  /** The full device: flows from the declaration (evaluated against `rules`) and the gateway's live view. */
+  /**
+   * The full device: flows from the declaration (evaluated against `rules`) and the gateway's live view.
+   * A device that declares nothing (optional in PPD) has no flows: it gets the household's rules like every
+   * device, and nothing is assumed about what it does (Nov 2 guidance: no template from our library).
+   */
   device(d: GatewayDevice, rules: Rule[], publishedPolicyId: string | null): Device {
     const entry = this.entryFor(d)
     const fixture = entry?.fixture ? this.fixtures.devices.get(entry.fixture) : undefined
+    const summary = this.summary(d)
     const flows: Flow[] = (d.declaration_statements ?? []).map((s) => {
       const taxonomy = { data_type: s.data_type, purpose: s.purpose, action: s.action, source: s.source, handling_context: s.handling_context, constraints: (s.constraints ?? {}) as Constraints }
       const id = `${d.device_id}.${s.statement_id}`
@@ -185,8 +202,9 @@ export class LiveDirectory {
       if (researched) return { ...researched, id, taxonomy }
       return statementFlow(id, s.statement_id, taxonomy, entry?.statements?.[s.statement_id])
     })
-    return evaluateDevice({ ...this.summary(d), flows, live: liveState(d, entry?.kind ?? 'real', publishedPolicyId) }, rules)
+    return evaluateDevice({ ...summary, flows, live: liveState(d, entry?.kind ?? 'real', publishedPolicyId) }, rules)
   }
+
 }
 
 function statementFlow(id: string, statementId: string, t: Flow['taxonomy'], p: StatementPresentation | undefined): Flow {
@@ -229,6 +247,9 @@ function liveState(d: GatewayDevice, kind: 'real' | 'simulated', publishedPolicy
       ? 'current'
       : 'waiting'
   const at = (v: string | undefined) => v || null
+  // The CableLabs gateway's attention text and next step put a runtime conflict ahead of staleness, and say the
+  // association "is still current" either way. For a device that is no longer associated, say what is true now.
+  const lostWithConflict = !!d.conflict_active && status !== 'associated' && status !== 'policy_conflict'
   return {
     kind,
     association: {
@@ -236,8 +257,10 @@ function liveState(d: GatewayDevice, kind: 'real' | 'simulated', publishedPolicy
       label,
       tone: statusTone,
       explanation: d.association_explanation ?? '',
-      next_step: d.next_step_summary ?? '',
-      attention: d.attention_reason || null,
+      next_step: lostWithConflict ? STALE_NEXT[status] ?? d.next_step_summary ?? '' : d.next_step_summary ?? '',
+      attention: lostWithConflict
+        ? `${STALE_ATTENTION[status] ?? 'The device is no longer associated.'} Before that, it reported runtime behavior that conflicts with the effective policy.`
+        : d.attention_reason || null,
       fresh_until: at(d.association_fresh_until),
       renewed_at: at(d.last_association_renewed_at),
       freshness_interval: at(d.association_freshness_interval),
@@ -258,7 +281,7 @@ function liveState(d: GatewayDevice, kind: 'real' | 'simulated', publishedPolicy
     publication,
     identity: { auth_method: d.auth_method ?? 'unknown', label: d.auth_badge?.label ?? 'Unknown', tone: tone(d.auth_badge?.tone), certificate_bound: d.auth_method === 'mtls' },
     network: { observed: !!d.network_observed, label: d.network_badge?.label ?? 'No network observation', mac_address: d.mac_address || null, ip_address: d.ip_address || null, hostname: d.hostname || null },
-    runtime: { conflict_active: !!d.conflict_active, behavior_mode: d.behavior_mode || null, conflicting_purposes: d.conflicting_purposes ?? [] },
+    runtime: { conflict_active: !!d.conflict_active, behavior_mode: d.behavior_mode || null, conflicting_purposes: d.conflicting_purposes ?? [], reported_at: at(d.last_runtime_reported_at) },
     badges: (d.list_badges ?? []).map((b) => ({ label: b.label, tone: tone(b.tone) })),
   }
 }

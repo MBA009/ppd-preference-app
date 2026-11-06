@@ -36,6 +36,7 @@ DATA_TYPE = {
     "deviceControlCommand": "Commands to your devices",
     "deviceCredentialData": "A password for the device",
     "diagnosticData": "Device logs and status",
+    "energyUsageData": "Power and energy use",
     "environmentData": "Temperature, humidity or light readings",
     "geofenceState": "Whether you are home or away",
     "hdmiDeviceInfo": "Devices connected by HDMI",
@@ -49,6 +50,7 @@ DATA_TYPE = {
     "networkTelemetry": "Wi-Fi connection details",
     "pairingCredentialData": "A pairing code",
     "presenceData": "Whether someone is there",
+    "scheduleData": "Schedules and timers",
     "thermostatControlCommand": "Thermostat commands",
     "visualData": "Video or photos",
     "voiceRecognitionResult": "What the TV heard you say",
@@ -79,6 +81,8 @@ PURPOSE = {
     "displayAdaptation": ("Adjusting the picture", "picture"),
     "ecosystemIntegration": ("Working with your smart-home app", "integration"),
     "emailAlert": ("Email alerts", "email alerts"),
+    "energyMonitoring": ("Tracking energy use", "energy use"),
+    "energyProgram": ("An energy-saving program you link", "energy program"),
     "hvacControl": ("Heating and cooling", "climate"),
     "localConnectivity": ("Connecting to nearby phones", "nearby connection"),
     "locationBasedMarketing": ("Location-based marketing", "marketing"),
@@ -88,6 +92,7 @@ PURPOSE = {
     "remoteControl": ("Controlling the device away from home", "remote control"),
     "remoteViewing": ("Watching remotely", "remote viewing"),
     "researchAndDevelopment": ("Product research", "research"),
+    "scheduling": ("Running schedules and timers", "schedules"),
     "smartDisplayViewing": ("Showing video on a smart display", "smart display"),
     "smartHomeControl": ("Controlling other devices", "control"),
     "twoWayAudio": ("Talking through the camera", "two-way audio"),
@@ -116,6 +121,8 @@ HANDLER = {
     "smartHomeEcosystem": ("Your smart-home app (Alexa, Google…)", "your smart-home app"),
     "voiceRecognitionService": ("A voice-recognition service", "a voice service"),
     "acrService": ("LG's viewing-recognition service", "LG's recognition service"),
+    "tpLinkService": ("TP-Link", "TP-Link"), "tpLinkCloud": ("TP-Link Cloud", "TP-Link Cloud"),
+    "energyProgramPartner": ("An energy-program partner (OhmConnect)", "OhmConnect"),
 }
 CONTROL_TYPE = {
     "user_setting": "Change in settings", "setup_step": "Provided during setup", "user_initiated": "Happens only when you do it",
@@ -167,6 +174,7 @@ DEVICE_META = {
     "level-lock":        {"short": "Level Lock",                "icon": "lock",       "matter": True,  "source": "advisory", "state": "advisory"},
     "lg-oled65c6pua-c6": {"short": "LG OLED65C6PUA C6",         "icon": "tv",         "matter": False, "source": "advisory", "state": "advisory"},
     "reolink-e1-zoom":   {"short": "Reolink E1 Zoom",           "icon": "camera",     "matter": False, "source": "declared", "state": "rules_confirmed"},
+    "tp-link-kasa-kp125m": {"short": "Kasa Smart Plug KP125M",  "icon": "plug",       "matter": True,  "source": "advisory", "state": "advisory"},
 }
 SEED_HOME = ["reolink-e1-zoom", "aqara-w200", "level-lock", "lg-oled65c6pua-c6"]
 

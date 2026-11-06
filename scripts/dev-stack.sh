@@ -41,7 +41,8 @@ GATEWAY_OPERATOR_TOKEN_SETTING=""
 [ "${CLOUD_AUTH:-0}" = "1" ] && GATEWAY_OPERATOR_TOKEN_SETTING="$OPERATOR_TOKEN"
 REPOSITORY_TOKEN="${REPOSITORY_TOKEN:-dev-repository-token}"
 DEMO_TOKEN="${DEMO_TOKEN:-dev-demo-token}"
-FRESHNESS="${PPD_ASSOCIATION_FRESHNESS:-2m}"
+# Devices renew at 80% of this, so a household policy change reaches them within ~25 s (Nov 2: near-instant).
+FRESHNESS="${PPD_ASSOCIATION_FRESHNESS:-30s}"
 # Set GATEWAY_PORT when something else already uses 8080 (VS Code port forwarding often does).
 GATEWAY_PORT="${GATEWAY_PORT:-8080}"
 

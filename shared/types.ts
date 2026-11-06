@@ -11,9 +11,9 @@ import type { Constraints, Field } from './taxonomy'
 export type Verdict =
   | 'compatible' //                 shown as "Matches your rules"
   | 'conditionally_satisfiable' //  "With limits"
-  | 'decision_required' //          "Needs your decision"
+  | 'decision_required' //          "Needs your decision": none of the household's rules covers the flow
   | 'unsatisfiable' //              "Conflicts with your rules"
-  | 'indeterminate' //              "Can't tell": no source for the flow, or a term the comparison cannot resolve
+  | 'indeterminate' //              a term outside the PPD core taxonomy: no reliable outcome (never asked about)
 
 /**
  * Where a device stands with the household's rules. For devices known to the gateway these follow the
@@ -30,10 +30,20 @@ export type DeclarationState =
   | 'needs_reassociation'
   | 'broken'
 
-export type DeviceIcon = 'thermostat' | 'lock' | 'tv' | 'camera' | 'bulb'
+export type DeviceIcon = 'thermostat' | 'lock' | 'tv' | 'camera' | 'bulb' | 'plug'
 
-/** What a rule says to do with a flow it matches. Stricter wins: dont_allow beats ask, ask beats allow. */
-export type RuleEffect = 'allow' | 'ask' | 'dont_allow'
+/** What a rule says to do with a flow it matches (a PPD rule effect). Where rules disagree, the latest change wins. */
+export type RuleEffect = 'allow' | 'dont_allow'
+
+/**
+ * A qualifier an allow rule requires (draft-dsmullen-ppd-protocol-04 section 7.12): the flow is allowed only
+ * when it is deleted right after use, is processed in the home or on the device, or stays in the given places
+ * (`jurisdiction.<scope>=<codes>`). Sent to devices as the rule's constraints. How each reads and which actions
+ * it covers: shared/conditions.ts.
+ */
+export type RuleCondition =
+  | 'retention=ppd:ephemeral' | 'processing_boundary=ppd:inHomeOnly' | 'processing_boundary=ppd:onDeviceOnly'
+  | `jurisdiction.${'collection' | 'use' | 'inference' | 'transfer' | 'storage'}=${string}`
 
 /**
  * Which flows a rule is about. Every field is optional (left out = any) and lists IRIs from the PPD taxonomy,
@@ -52,13 +62,18 @@ export interface RuleScope {
 
 export interface Rule {
   id: string
-  /** The sentence the person sees. */
+  /** The sentence the person sees, generated from the rule (shared/ruleTitle.ts); never typed. */
   title: string
   effect: RuleEffect
+  /** Only on allow rules: allowed only under this qualifier. Absent or null = allowed as is. */
+  condition?: RuleCondition | null
   scope: RuleScope
   enabled: boolean
-  /** Where the rule came from: an answer to a question, or the person adding it. */
-  origin: { kind: 'questionnaire'; question_id: string; row_id?: string; answer: string } | { kind: 'custom' }
+  /**
+   * Where the rule came from: the preset the questionnaire assigned (a starting rule), the household's answer to one
+   * situation question (written into the starting rules), or the person adding it.
+   */
+  origin: { kind: 'preset'; preset_id: string } | { kind: 'answer'; question: string } | { kind: 'custom' }
 }
 
 /** What the person wants to hear about. Saved with the policy; nothing sends these yet. */
@@ -67,41 +82,77 @@ export interface Profile {
   warn_on_conflict: boolean
 }
 
-/* ---------- the questionnaire (decision tree), served as JSON ---------- */
-export interface Source { short: string; citation: string; url: string; pdf?: string }
+/* ---------- household presets and the onboarding tree (public/mock/, from ppd-household-presets) ---------- */
 
-export type Condition =
-  | { all_rows: { question: string; equals: string } }
-  | { answer: { question: string; equals?: string; in?: string[] } }
-  | { not: Condition }
-  | { all: Condition[] }
-  | { any: Condition[] }
-
-export interface TemplateRule { id: string; effect: RuleEffect; scope: RuleScope; title: string }
-export interface Option { id: string; label: string; prefill?: { question: string; row: string; value: string }[]; rules: TemplateRule[] }
-export interface ScaleItem { id: string; label: string; effect: RuleEffect }
-export interface MatrixRow { id: string; label: string; example: string; scope: RuleScope; titles: Record<string, string> }
-export interface ProfileField { id: string; type: 'single' | 'toggle'; label: string; default: string | boolean; options?: { id: string; label: string }[] }
-
-interface QuestionBase { id: string; short: string; prompt: string; help: string; why: string; sources: string[]; show_if?: Condition }
-export type Question =
-  | (QuestionBase & { type: 'single'; default: string | null; options: Option[] })
-  | (QuestionBase & { type: 'matrix'; scale: ScaleItem[]; default: string; rows: MatrixRow[] })
-  | (QuestionBase & { type: 'profile'; fields: ProfileField[] })
-
-export interface Questionnaire {
-  version: string
-  title: string
+/**
+ * A starting policy for a kind of household: rules that never overlap, so exactly one decides any flow.
+ * Internal: the household never sees or chooses a preset (the questionnaire assigns it).
+ */
+export interface HouseholdPreset {
+  id: string
+  /** A working name for the team, never shown to households. */
+  internal_name: string
   description: string
-  disclaimer: string
-  precedence: RuleEffect[]
-  sources: Record<string, Source>
-  questions: Question[]
+  shown_to_households: false
+  /** Share of all possible flows the preset allows. */
+  accepted_share: number
+  /** Share of the synthetic households this preset was built from. */
+  households_share: number
+  reached_by_onboarding: boolean
+  rules: Rule[]
 }
 
-/** single: option id. matrix: row id to scale id. profile: field id to value. */
-export type AnswerValue = string | Record<string, string | boolean>
-export type Answers = Record<string, AnswerValue>
+/** A situation question's data type × purpose × handling context (one block of 28 flows). */
+export interface Situation { data_type: string; purpose: string; handling_context: string }
+
+export interface OnboardingQuestion {
+  prompt: string
+  options: { id: string; label: string }[]
+  /** Set on situation questions: the block of flows a yes or no decides. */
+  situation?: Situation
+  /** The data in the prompt, worded for a device class ('default' is the one in the prompt). */
+  data_examples?: Record<string, string>
+}
+
+/**
+ * One situation in a leaf's refine queue. `unsure`: how split the households that end in this leaf are on it (1 = half
+ * say yes, 0 = they agree); `accept`: the share of them that would allow it.
+ */
+export interface QueueEntry { question: string; unsure: number; accept: number }
+
+/**
+ * Where stage 1 ends: the preset, the follow-up questions (stage 2) for households that end here, and the refine queue:
+ * every situation, most unsure first ("Help me refine my settings", Nov 2 meeting).
+ */
+export interface OnboardingLeaf { preset: string; follow_up_budget: number; follow_ups: string[]; queue?: QueueEntry[] }
+
+/** A question with one branch per group of answers, or a leaf. */
+export type OnboardingNode = { question: string; branches: { answers: string[]; next: OnboardingNode }[] } | OnboardingLeaf
+
+/**
+ * The questionnaire: a decision tree (stage 1) that places a household in a preset, then that leaf's follow-ups
+ * (stage 2). A question can come back lower down the tree; its first answer is reused.
+ */
+export interface Onboarding {
+  version: string
+  kind: string
+  source: { total_questions_cap: number } & Record<string, unknown>
+  splash: { title: string; text: string }
+  follow_up_intro: { title: string; text: string }
+  questions: Record<string, OnboardingQuestion>
+  /** How to walk the tree, how answers become rules, and what rerunning does (plain text, for readers of the file). */
+  walk: string
+  rules: string
+  /** How "Help me refine my settings" works: an open-ended queue, without a cap. */
+  refine?: string
+  /** Once every situation left is less unsure than this, the household's rules are a good picture: stop suggesting more. */
+  stop_unsure?: number
+  rerun: string
+  root: OnboardingNode
+}
+
+/** Question id to option id. */
+export type Answers = Record<string, string>
 
 /** The taxonomy fields of one flow: five core ppd: terms and the Constraints Object (protocol-04 section 7.8). */
 export interface Taxonomy {
@@ -180,21 +231,6 @@ export interface Device extends DeviceSummary {
   live?: LiveState
 }
 
-export type Preference = 'allow' | 'allow_with_limits' | 'dont_allow'
-
-export interface Decision {
-  flow_id: string
-  device_id: string
-  preference: Preference
-  /** Only with 'allow_with_limits'. */
-  keep?: 'briefly' | 'until_deleted'
-  region?: string
-  /** Also applies to other flows in the same core rule group. */
-  remember_similar: boolean
-  core_group_id: string
-  decided_at: string
-}
-
 export interface HomeEntry {
   device_id: string
   added_at: string
@@ -205,12 +241,13 @@ export interface HomeEntry {
 export interface Household {
   devices: HomeEntry[]
   saved: string[]
-  decisions: Record<string, Decision>
-  /** Preferences remembered for every flow in a core rule group. */
-  group_decisions: Record<string, Decision>
-  /** Answers to the questionnaire. null until the person has answered it (first launch). */
+  /** Answers to the onboarding questions (stage 1 and the follow-ups). null until the household has answered (first launch). */
   answers: Answers | null
-  /** The household policy: generated from the answers, then edited by the person. */
+  /** When each answer was given (ISO time): a refine check-up asks the oldest again. */
+  answered_at?: Record<string, string>
+  /** The preset the questionnaire assigned (internal). Its rules, with the answers written in, are `rules`. */
+  preset_id: string | null
+  /** The household policy: the preset's rules with the household's answers written in, then edited by the person. */
   rules: Rule[]
   profile: Profile | null
 }
@@ -262,7 +299,8 @@ export interface LiveState {
   publication: 'current' | 'waiting' | 'not_published'
   identity: { auth_method: string; label: string; tone: Tone; certificate_bound: boolean }
   network: { observed: boolean; label: string; mac_address: string | null; ip_address: string | null; hostname: string | null }
-  runtime: { conflict_active: boolean; behavior_mode: string | null; conflicting_purposes: string[] }
+  /** The device's own runtime-status report: a CableLabs gateway demo extension, not part of PPD. Self-reported. */
+  runtime: { conflict_active: boolean; behavior_mode: string | null; conflicting_purposes: string[]; reported_at: string | null }
   badges: { label: string; tone: Tone }[]
 }
 
@@ -274,6 +312,8 @@ export interface Overview {
     known: number; registered: number; declared: number; policy_retrieved: number; acknowledged: number; associated: number
     needs_reassociation: number; stale: number; broken: number; policy_conflict: number; overrides: number; authenticated: number; compatibility_mode: number
     network_observed: number; unmanaged: number; need_attention: number
+    /** Devices that hold the current rules: associated, with no runtime conflict reported. */
+    have_rules: number
   }
   household_policy: { policy_id: string | null; updated_at: string | null; published_by_app: boolean }
   updated_at: string
@@ -323,22 +363,72 @@ export interface SimDevice {
   last_error: string | null
 }
 
+/**
+ * What a simulated device did with one data flow when it was used (the demo console, not PPD):
+ * sent / kept_home   the household policy it received allows it;
+ * blocked            the policy says no, so the device held it back;
+ * held_back          no rule in its policy covers it (or it has no policy yet), so it held it back;
+ * sent_against_rules the device was set to ignore the rules and sent it anyway;
+ * sent_no_ppd        a device without PPD, which never receives the household's rules.
+ */
+export type SimOutcome = 'sent' | 'kept_home' | 'blocked' | 'held_back' | 'sent_against_rules' | 'sent_no_ppd'
+
+export interface SimEvent {
+  at: string
+  /** The control used, or the periodic report. */
+  label: string
+  flows: { title: string; recipient: string; purpose: string; outcome: SimOutcome; condition: string | null }[]
+}
+
+/** A simulated device's console: its state, the controls the real product offers, and what it sent. */
+export interface SimConsole {
+  device: SimDevice
+  /** False for devices without PPD (the TV): they never receive the household's rules. */
+  ppd: boolean
+  state: [string, string][]
+  controls: { id: string; label: string; hint: string }[]
+  periodic: { label: string; seconds: number } | null
+  behavior: 'follows' | 'ignores'
+  /** The household policy the device last received, if any. */
+  policy: { policy_id: string; rules: number } | null
+  /** Newest first. */
+  events: SimEvent[]
+  /** Flows that leave the home, counted by recipient and purpose. */
+  totals: { recipient: string; purpose: string; sent: number; blocked: number; against: number }[]
+}
+
 /** One atomic rule the compiler wants to publish, and why. */
 export interface CompiledRule extends PolicyRule {
   reason: string
-  /** Which device flows produced it. */
+  /** Which declared device flows it matches (for display; the policy itself does not depend on them). */
   flows: { device_id: string; flow_id: string; title: string }[]
   change: 'added' | 'changed' | 'unchanged'
+  /** True when a household rule's condition ("allow only if …") set the constraints: the only source of constraints. */
+  limited: boolean
 }
 
 export interface PublishPreview {
   base_policy_id: string | null
+  /** By default only the rules the app shows (a declared flow matches them, or a household condition limits them). */
   rules: CompiledRule[]
   removed: PolicyRule[]
-  /** Flows whose household rule says "Ask me first" and that have no decision yet. Publishing waits for them. */
-  blocked: { device_id: string; flow_id: string; title: string; reason: string }[]
+  /** How many policy rules the whole household policy has, and how many differ from what the gateway serves. */
+  rule_count?: number
+  changes?: number
+  /** Automatic sending: changes listed above go out within seconds. */
+  sync?: SyncState
   warnings: string[]
   devices: number
+}
+
+/** app-api sends the household policy on its own (server/src/autopublish.ts); this is how that is going. */
+export interface SyncState {
+  /** When app-api last checked whether the gateway needs new rules. */
+  last_run_at: string | null
+  /** The last policy it sent. */
+  last_sent: { policy_id: string; rules: number; at: string } | null
+  /** Why the last attempt failed; cleared by the next success. */
+  last_error: string | null
 }
 
 export interface PublishResult { policy_id: string; rules: number; published_at: string; preview: PublishPreview }
@@ -356,11 +446,21 @@ export type ResolveResult =
   | { ok: false; reason: 'matter_code' | 'unknown_code' | 'not_a_code' }
 
 export interface PpdApi {
-  getQuestionnaire(): Promise<Questionnaire>
+  getOnboarding(): Promise<Onboarding>
+  listHouseholdPresets(): Promise<HouseholdPreset[]>
+  /**
+   * Finishes the questionnaire: walks the tree with `answers` to a preset and rebuilds the household's rules from it and
+   * the answers. Starts over: every earlier rule is replaced, including the person's own edits.
+   */
+  finishOnboarding(p: { answers: Answers }): Promise<Household>
+  /**
+   * "Help me refine my settings": one answer to a situation, written into the household's current rules for that
+   * situation only. An earlier answer to it is replaced; other rules and the person's edits stay.
+   */
+  answerQuestion(p: { question: string; answer: string }): Promise<Household>
+  saveProfile(profile: Profile): Promise<Household>
   /** The household's rules. */
   listRules(): Promise<Rule[]>
-  /** Stores the answers and the policy generated from them (custom rules the person added are kept by the caller). */
-  savePolicy(p: { answers: Answers; rules: Rule[]; profile: Profile }): Promise<Household>
   upsertRule(rule: Rule): Promise<Household>
   deleteRule(id: string): Promise<Household>
   listLibrary(): Promise<DeviceSummary[]>
@@ -373,7 +473,6 @@ export interface PpdApi {
   removeDevice(id: string): Promise<Household>
   saveForLater(id: string): Promise<Household>
   markJoinedSeen(id: string): Promise<Household>
-  saveDecision(d: Omit<Decision, 'decided_at'>): Promise<Household>
   /** Test helper: 'seed' restores the fixture household, 'empty' removes everything. */
   resetDemo(mode: 'seed' | 'empty'): Promise<Household>
 
@@ -402,4 +501,8 @@ export interface PpdApi {
   simDisconnect(id: string): Promise<SimDevice>
   simNetwork(id: string, present: boolean): Promise<SimDevice>
   simReset(): Promise<SimDevice[]>
+  getSimConsole(id: string): Promise<SimConsole>
+  simAction(id: string, action: string): Promise<SimConsole>
+  simBehavior(id: string, mode: SimConsole['behavior']): Promise<SimConsole>
+  simClearLog(id: string): Promise<SimConsole>
 }

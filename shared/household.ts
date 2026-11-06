@@ -1,11 +1,26 @@
-import type { Answers, Decision, Device, Household, Profile, ResolveResult, Rule } from './types'
+import type { Answers, Device, Household, HouseholdPreset, Onboarding, Profile, ResolveResult, Rule } from './types'
+import { followUps, rulesFromAnswers, stageOnePath, walk, writeAnswer } from './onboarding'
+import { named } from './ruleTitle'
 
 /**
  * How the household changes. Each function takes the current household and returns the next one;
  * app-api stores the result in its database, mockClient.ts in localStorage.
  */
 
-export const blankHousehold = (): Household => ({ devices: [], saved: [], decisions: {}, group_decisions: {}, answers: null, rules: [], profile: null })
+export const blankHousehold = (): Household => ({ devices: [], saved: [], answers: null, preset_id: null, rules: [], profile: null })
+
+/**
+ * A stored household in today's shape. Households saved before presets (answers to the old questionnaire,
+ * "Ask me first" rules, per-flow decisions) go back to the onboarding questions. Their custom allow and never
+ * rules stay; "Ask me first" rules are dropped, since the household is no longer asked and its preset decides.
+ */
+export function normalizeHousehold(raw: Partial<Household> & Record<string, unknown>): Household {
+  const { decisions: _d, group_decisions: _g, ...rest } = raw
+  const h: Household = { ...blankHousehold(), ...rest }
+  const rules = h.rules.filter((r) => (r.effect as string) !== 'ask').map(named)
+  if (!('preset_id' in raw)) return { ...h, answers: null, preset_id: null, rules: rules.filter((r) => r.origin.kind === 'custom') }
+  return { ...h, rules }
+}
 
 /** The fixture household (public/mock/household.json): Reolink "just joined", the others have been in the home for a day. */
 export function seedHousehold(fixture: { devices: { device_id: string; added_at: string }[] }, now = Date.now()): Household {
@@ -19,11 +34,59 @@ export function seedHousehold(fixture: { devices: { device_id: string; added_at:
   }
 }
 
-export const savePolicy = (h: Household, p: { answers: Answers; rules: Rule[]; profile: Profile }): Household => ({ ...h, answers: p.answers, rules: p.rules, profile: p.profile })
+/**
+ * Finishes the questionnaire: the answers walk the tree to a leaf (its preset), and the household's rules are rebuilt
+ * from that preset with every yes or no to a situation written in (shared/onboarding.ts). Starts over: every earlier
+ * rule is replaced, including the person's own edits and rules (the app warns before a rerun). Only answers the
+ * questionnaire would have asked are kept: stage 1's path and the leaf's follow-ups.
+ */
+export function finishOnboarding(h: Household, tree: Onboarding, presets: HouseholdPreset[], answers: Answers, now = new Date()): Household {
+  const step = walk(tree, answers)
+  if (!('leaf' in step)) throw new Error('The answers do not reach the end of the questions yet.')
+  const preset = presets.find((p) => p.id === step.leaf.preset)
+  if (!preset) throw new Error(`The questions led to a preset this app does not have (${step.leaf.preset}).`)
+  const asked = new Set([...stageOnePath(tree, answers), ...followUps(tree, step.leaf, answers)])
+  const kept: Answers = Object.fromEntries(Object.entries(answers).filter(([q]) => asked.has(q)))
+  const answered_at = Object.fromEntries(Object.keys(kept).map((q) => [q, now.toISOString()]))
+  return { ...h, preset_id: preset.id, answers: kept, answered_at, rules: rulesFromAnswers(preset, kept, tree.questions) }
+}
 
-export function upsertRule(h: Household, rule: Rule): Household {
-  const exists = h.rules.some((r) => r.id === rule.id)
-  return { ...h, rules: exists ? h.rules.map((r) => (r.id === rule.id ? rule : r)) : [...h.rules, rule] }
+/**
+ * "Help me refine my settings": one answer to a situation, written into the current rules for that situation only
+ * (shared/onboarding.ts writeAnswer). Unlike finishing the questionnaire, nothing else is rebuilt: other answers, rules
+ * the person added and their edits stay. The latest answer to a situation wins.
+ */
+export function answerQuestion(h: Household, tree: Onboarding, question: string, answer: string, now = new Date()): Household {
+  const q = tree.questions[question]
+  if (!q?.situation) throw new Error(`There is no situation question ${question}.`)
+  if (!q.options.some((o) => o.id === answer)) throw new Error(`"${answer}" is not an answer to ${question}.`)
+  if (!h.preset_id) throw new Error('Answer the first questions before refining.')
+  return {
+    ...h,
+    answers: { ...h.answers, [question]: answer },
+    answered_at: { ...h.answered_at, [question]: now.toISOString() },
+    rules: writeAnswer(h.rules, question, answer, tree.questions),
+  }
+}
+
+/**
+ * A household whose preset is no longer in the presets (they were rebuilt) goes back to the questions: its answers
+ * and rules came from the old presets. Devices stay.
+ */
+export function retirePreset(h: Household, presets: HouseholdPreset[]): Household {
+  if (!h.preset_id || presets.some((p) => p.id === h.preset_id)) return h
+  return { ...h, preset_id: null, answers: null, answered_at: {}, rules: [] }
+}
+
+export const saveProfile = (h: Household, profile: Profile): Household => ({ ...h, profile })
+
+/**
+ * Adds or changes a rule. Either way it goes to the end of the list: rules are kept oldest change first, and where
+ * rules disagree the latest change wins (shared/scope.ts decidingRule).
+ */
+export function upsertRule(h: Household, input: Rule): Household {
+  const rule = named(input)
+  return { ...h, rules: [...h.rules.filter((r) => r.id !== rule.id), rule] }
 }
 
 export const deleteRule = (h: Household, id: string): Household => ({ ...h, rules: h.rules.filter((r) => r.id !== id) })
@@ -37,10 +100,7 @@ export function addDevice(h: Household, id: string, opts?: { joined?: boolean },
   }
 }
 
-export function removeDevice(h: Household, id: string): Household {
-  const decisions = Object.fromEntries(Object.entries(h.decisions).filter(([, d]) => d.device_id !== id))
-  return { ...h, devices: h.devices.filter((d) => d.device_id !== id), decisions }
-}
+export const removeDevice = (h: Household, id: string): Household => ({ ...h, devices: h.devices.filter((d) => d.device_id !== id) })
 
 export const saveForLater = (h: Household, id: string): Household => ({ ...h, saved: h.saved.includes(id) ? h.saved : [...h.saved, id] })
 
@@ -48,17 +108,6 @@ export const markJoinedSeen = (h: Household, id: string): Household => ({
   ...h,
   devices: h.devices.map((d) => (d.device_id === id ? { ...d, joined_seen: true } : d)),
 })
-
-export function saveDecision(h: Household, d: Omit<Decision, 'decided_at'>, now = new Date()): Household {
-  const decision: Decision = { ...d, decided_at: now.toISOString() }
-  return {
-    ...h,
-    decisions: { ...h.decisions, [d.flow_id]: decision },
-    group_decisions: d.remember_similar
-      ? { ...h.group_decisions, [d.core_group_id]: decision }
-      : Object.fromEntries(Object.entries(h.group_decisions).filter(([k]) => k !== d.core_group_id)),
-  }
-}
 
 /** The fixture declarations have fixed dates; make them relative to now so the demo never looks stale. */
 export function withFreshDeclaration(d: Device, now = Date.now()): Device {

@@ -1,6 +1,7 @@
 import Fastify, { type FastifyInstance } from 'fastify'
 import { Authenticator } from './auth'
 import type { Config } from './config'
+import { AutoPublisher } from './autopublish'
 import { AppContext, httpError } from './context'
 import type { Fixtures } from './fixtures'
 import { GatewayClient } from './gateway'
@@ -27,6 +28,10 @@ export function buildApp(config: Config, fixtures: Fixtures, store: HouseholdSto
   const ctx = new AppContext(config, fixtures, store, gateway, new LiveDirectory(gateway, fixtures, loadRegistry(config.deviceRegistryPath)), overrides.auth ?? new Authenticator(config))
 
   app.decorateRequest('identity', null)
+
+  ctx.publisher = new AutoPublisher(ctx, app.log)
+  app.addHook('onReady', async () => ctx.publisher.start(config.autoPublishIntervalMs))
+  app.addHook('onClose', async () => ctx.publisher.stop())
 
   app.addHook('onRequest', async (req) => {
     const path = req.url.split('?')[0]

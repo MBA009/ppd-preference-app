@@ -62,7 +62,7 @@ export default function Scan() {
       <AppBar title="Scan the box" />
       <div style={{ padding: '0 16px' }}>
         <div style={{ fontSize: 16, lineHeight: '22px', fontWeight: 500 }}>Point at the privacy code on the box</div>
-        <div className="sub" style={{ paddingTop: 2 }}>Before you buy, see what this device says it does with your data, checked against your household rules.</div>
+        <div className="sub" style={{ paddingTop: 2 }}>Before you buy, see what this device says it does with your data, checked against your household policy.</div>
       </div>
 
       <div className="cam">

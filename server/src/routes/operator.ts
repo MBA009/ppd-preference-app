@@ -1,9 +1,9 @@
 import type { FastifyInstance } from 'fastify'
 import type { HealthCheck, Overview, Policy, Preset, PublishResult, SystemStatus, UnmanagedDevice } from '../../../shared/types'
-import { compileHouseholdPolicy, newPolicyId } from '../compiler'
+import { compileHouseholdPolicy } from '../compiler'
+import { publishHousehold } from '../autopublish'
 import { httpError, requireOperator, type AppContext } from '../context'
 import { GatewayError } from '../gateway'
-import { tupleKey } from '../live'
 import * as hh from '../../../shared/household'
 import { idParams } from './household'
 
@@ -35,8 +35,11 @@ export function operatorRoutes(app: FastifyInstance, ctx: AppContext): void {
   app.get('/api/overview', async (): Promise<Overview> => {
     const meta = await ctx.gateway.serviceMetadata().catch(() => null)
     try {
-      const { summary: s } = await ctx.live.snapshot()
+      const { summary: s, devices } = await ctx.live.snapshot()
       const n = (v: number | undefined) => v ?? 0
+      // Counted per device, so one device never counts twice: it holds the rules (associated, no runtime conflict
+      // reported) or it needs attention.
+      const holding = devices.filter((d) => d.association_status === 'associated' && !d.conflict_active).length
       return {
         gateway: { reachable: true, security: meta?.security_profile ?? 'unknown', mutual_tls_required: !!s.mutual_tls_required, tls_enabled: !!s.tls_enabled, freshness_interval: s.association_freshness_interval ?? null, error: null },
         counts: {
@@ -45,14 +48,16 @@ export function operatorRoutes(app: FastifyInstance, ctx: AppContext): void {
           stale: n(s.stale_association_devices), broken: n(s.broken_association_devices), policy_conflict: n(s.policy_conflict_devices),
           overrides: n(s.override_devices), authenticated: n(s.authenticated_devices), compatibility_mode: n(s.compatibility_mode_devices),
           network_observed: n(s.network_observed_devices), unmanaged: n(s.unmanaged_devices),
-          // The CableLabs dashboard's "Need attention": known devices not currently associated, plus runtime conflicts.
-          need_attention: Math.max(n(s.known_devices) - n(s.associated_devices), 0) + n(s.policy_conflict_devices),
+          // The CableLabs dashboard's "Need attention": known devices that don't hold the rules (not associated, or a
+          // runtime conflict), each counted once.
+          need_attention: Math.max(n(s.known_devices) - holding, 0),
+          have_rules: holding,
         },
         household_policy: { policy_id: s.default_policy_id ?? null, updated_at: s.default_policy_updated_at ?? null, published_by_app: !!s.default_policy_id && ctx.store.publishedByApp(s.default_policy_id) },
         updated_at: new Date().toISOString(),
       }
     } catch (e) {
-      const zero = { known: 0, registered: 0, declared: 0, policy_retrieved: 0, acknowledged: 0, associated: 0, needs_reassociation: 0, stale: 0, broken: 0, policy_conflict: 0, overrides: 0, authenticated: 0, compatibility_mode: 0, network_observed: 0, unmanaged: 0, need_attention: 0 }
+      const zero = { known: 0, registered: 0, declared: 0, policy_retrieved: 0, acknowledged: 0, associated: 0, needs_reassociation: 0, stale: 0, broken: 0, policy_conflict: 0, overrides: 0, authenticated: 0, compatibility_mode: 0, network_observed: 0, unmanaged: 0, need_attention: 0, have_rules: 0 }
       return {
         gateway: { reachable: false, security: 'unknown', mutual_tls_required: false, tls_enabled: false, freshness_interval: null, error: e instanceof Error ? e.message : 'unreachable' },
         counts: zero,
@@ -92,27 +97,27 @@ export function operatorRoutes(app: FastifyInstance, ctx: AppContext): void {
 
   app.get('/api/household/published', async (): Promise<Policy | null> => ctx.gateway.defaultPolicy().catch(unavailable))
 
-  app.get('/api/household/preview', async () => {
+  /**
+   * What sending now would change. The whole household policy is up to 6,272 policy rules, so by default only the
+   * rules the app shows are listed (those a declared flow matches, or a household condition limits) with counts for
+   * the rest; ?all=1 lists every rule.
+   */
+  app.get<{ Querystring: { all?: string } }>('/api/household/preview', async (req) => {
     const [household, devices, published] = await Promise.all([ctx.household(), ctx.liveDevices().catch(unavailable), ctx.gateway.defaultPolicy().catch(unavailable)])
-    return compileHouseholdPolicy(household, devices, published).preview
+    const preview = compileHouseholdPolicy(household, devices, published).preview
+    const counts = { rule_count: preview.rules.length, changes: preview.rules.filter((r) => r.change !== 'unchanged').length + preview.removed.length }
+    if (req.query.all === '1') return { ...preview, ...counts, sync: ctx.publisher.state }
+    return { ...preview, ...counts, rules: preview.rules.filter((r) => r.flows.length || r.limited), removed: [], sync: ctx.publisher.state }
   })
 
+  /** Sends now. The app does not need this (app-api sends on its own, see autopublish.ts); kept for operators and tests. */
   app.post('/api/household/publish', async (req): Promise<PublishResult> => {
     requireOperator(req)
-    const [household, devices, published] = await Promise.all([ctx.household(), ctx.liveDevices().catch(unavailable), ctx.gateway.defaultPolicy().catch(unavailable)])
-    const { preview, policy } = compileHouseholdPolicy(household, devices, published)
-    if (preview.blocked.length) {
-      throw httpError(409, `${preview.blocked.length} data ${preview.blocked.length === 1 ? 'flow waits' : 'flows wait'} for your decision before the rules can be sent.`)
-    }
-    const wire: Policy = { policy_id: newPolicyId(), ...policy }
-    await ctx.gateway.putDefaultPolicy(wire).catch(unavailable)
-    // Read back what the repository stored rather than assuming the write meant what we sent.
-    const stored = await ctx.gateway.defaultPolicy().catch(unavailable)
-    const same = stored?.policy_id === wire.policy_id && stored.rules.length === wire.rules.length && wire.rules.every((r) => stored.rules.some((s) => tupleKey(s) === tupleKey(r) && s.effect === r.effect))
-    if (!same) throw httpError(502, 'The gateway stored a different policy than the one sent. Nothing was recorded; try again.')
-    ctx.store.recordPublication(wire, ctx.store.revision(), req.identity?.email ?? 'unknown')
-    ctx.live.invalidate()
-    return { policy_id: wire.policy_id, rules: wire.rules.length, published_at: new Date().toISOString(), preview }
+    if (!(await ctx.household()).preset_id) throw httpError(409, 'Answer the household questions first: your rules start from the preset they choose.')
+    return publishHousehold(ctx, req.identity?.email ?? 'unknown').catch((e: unknown) => {
+      if (e instanceof Error && !(e instanceof GatewayError)) throw httpError(502, `${e.message} Nothing was recorded; try again.`)
+      return unavailable(e)
+    })
   })
 
   app.get('/api/presets', async (): Promise<Preset[]> => {
@@ -143,8 +148,8 @@ export function operatorRoutes(app: FastifyInstance, ctx: AppContext): void {
   })
 
   /**
-   * Forgets a device that has left the home: the gateway deletes its records, and it leaves the household with its
-   * saved decisions. The gateway refuses while the device is associated or still on the network. If it comes back,
+   * Forgets a device that has left the home: the gateway deletes its records, and it leaves the household.
+   * The gateway refuses while the device is associated or still on the network. If it comes back,
    * it registers again and joins as new.
    */
   app.post<{ Params: { id: string } }>('/api/devices/:id/forget', { schema: { params: idParams } }, async (req) => {

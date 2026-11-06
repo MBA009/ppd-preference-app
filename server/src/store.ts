@@ -2,7 +2,7 @@ import { mkdirSync } from 'node:fs'
 import { randomUUID } from 'node:crypto'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
-import { blankHousehold } from '../../shared/household'
+import { normalizeHousehold } from '../../shared/household'
 import type { Command, CommandAction, Household, Policy, TelemetrySample } from '../../shared/types'
 
 /**
@@ -89,7 +89,7 @@ export class HouseholdStore {
   get(): Household | null {
     const row = this.db.prepare('SELECT doc FROM household WHERE id = 1').get() as { doc: string } | undefined
     // Older documents may lack newer fields; fill them in.
-    return row ? { ...blankHousehold(), ...(JSON.parse(row.doc) as Partial<Household>) } : null
+    return row ? normalizeHousehold(JSON.parse(row.doc)) : null
   }
 
   /** Applies `change` to the current household (or `initial()` if there is none yet) and stores the result. */

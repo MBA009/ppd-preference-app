@@ -1,0 +1,3404 @@
+{
+  "version": "2.0.0",
+  "source": {
+    "generated": "2026-11-04",
+    "by": "ppd-household-presets notebooks 01-07",
+    "data": "synthetic households (not survey data); see data/DATACARD.md",
+    "k": 4,
+    "depth": 6,
+    "total_questions_cap": 15,
+    "match_all_items_cv": {
+      "one_preset": 0.739,
+      "after_profiling": 0.786,
+      "after_follow_ups": 0.803
+    },
+    "match_real_device_flows_cv": {
+      "one_preset": 0.879,
+      "after_profiling": 0.891,
+      "after_follow_ups": 0.9
+    },
+    "refine_cv": {
+      "stop_unsure": 0.3,
+      "first_n_cv": [
+        {
+          "follow_ups": 0,
+          "asked (avg)": 0.0,
+          "match_all": 0.79,
+          "match_real": 0.892
+        },
+        {
+          "follow_ups": 3,
+          "asked (avg)": 3.0,
+          "match_all": 0.794,
+          "match_real": 0.895
+        },
+        {
+          "follow_ups": 6,
+          "asked (avg)": 6.0,
+          "match_all": 0.798,
+          "match_real": 0.897
+        },
+        {
+          "follow_ups": 9,
+          "asked (avg)": 9.0,
+          "match_all": 0.802,
+          "match_real": 0.9
+        },
+        {
+          "follow_ups": 12,
+          "asked (avg)": 12.0,
+          "match_all": 0.806,
+          "match_real": 0.905
+        },
+        {
+          "follow_ups": 15,
+          "asked (avg)": 15.0,
+          "match_all": 0.81,
+          "match_real": 0.911
+        },
+        {
+          "follow_ups": 20,
+          "asked (avg)": 20.0,
+          "match_all": 0.815,
+          "match_real": 0.917
+        },
+        {
+          "follow_ups": 25,
+          "asked (avg)": 25.0,
+          "match_all": 0.819,
+          "match_real": 0.921
+        },
+        {
+          "follow_ups": 30,
+          "asked (avg)": 30.0,
+          "match_all": 0.822,
+          "match_real": 0.924
+        },
+        {
+          "follow_ups": 40,
+          "asked (avg)": 40.0,
+          "match_all": 0.827,
+          "match_real": 0.93
+        },
+        {
+          "follow_ups": 50,
+          "asked (avg)": 50.0,
+          "match_all": 0.83,
+          "match_real": 0.933
+        },
+        {
+          "follow_ups": 60,
+          "asked (avg)": 60.0,
+          "match_all": 0.832,
+          "match_real": 0.935
+        },
+        {
+          "follow_ups": 80,
+          "asked (avg)": 80.0,
+          "match_all": 0.834,
+          "match_real": 0.938
+        },
+        {
+          "follow_ups": 105,
+          "asked (avg)": 99.143,
+          "match_all": 0.834,
+          "match_real": 0.939
+        }
+      ],
+      "at_least_unsure_cv": [
+        {
+          "min_unsure": 0.9,
+          "asked (avg)": 5.819,
+          "match_all": 0.798,
+          "match_real": 0.897
+        },
+        {
+          "min_unsure": 0.8,
+          "asked (avg)": 11.84,
+          "match_all": 0.806,
+          "match_real": 0.904
+        },
+        {
+          "min_unsure": 0.7,
+          "asked (avg)": 16.872,
+          "match_all": 0.812,
+          "match_real": 0.911
+        },
+        {
+          "min_unsure": 0.6,
+          "asked (avg)": 22.336,
+          "match_all": 0.817,
+          "match_real": 0.916
+        },
+        {
+          "min_unsure": 0.5,
+          "asked (avg)": 27.788,
+          "match_all": 0.822,
+          "match_real": 0.921
+        },
+        {
+          "min_unsure": 0.4,
+          "asked (avg)": 34.179,
+          "match_all": 0.825,
+          "match_real": 0.926
+        },
+        {
+          "min_unsure": 0.3,
+          "asked (avg)": 43.014,
+          "match_all": 0.829,
+          "match_real": 0.931
+        },
+        {
+          "min_unsure": 0.2,
+          "asked (avg)": 52.562,
+          "match_all": 0.831,
+          "match_real": 0.934
+        },
+        {
+          "min_unsure": 0.1,
+          "asked (avg)": 64.481,
+          "match_all": 0.833,
+          "match_real": 0.937
+        },
+        {
+          "min_unsure": 0.0,
+          "asked (avg)": 99.143,
+          "match_all": 0.834,
+          "match_real": 0.939
+        }
+      ]
+    }
+  },
+  "max_rules": 30,
+  "rule_format": "Like the app's Rule (shared/types.ts): scope lists core ppd: terms per field (a missing field means any), effect allow or dont_allow; 'condition' on an allow rule is a PPD qualifier the compiler sends as constraints (protocol-04 7.11-7.12); origin kind 'preset' or 'answer'. A preset's rules never overlap.",
+  "presets": [
+    {
+      "id": "k4-p0",
+      "internal_name": "Strict · no fixing problems or legal duties",
+      "description": "Allows 22% of possible data flows, 0% only with conditions, and refuses 78%. Stricter than most households about fixing problems, legal duties.",
+      "shown_to_households": false,
+      "accepted_share": 0.224,
+      "households_share": 0.192,
+      "reached_by_onboarding": true,
+      "rules": [
+        {
+          "id": "k4-p0-r0",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:advertisingAndMarketing",
+              "ppd:analyticsAndImprovement",
+              "ppd:communicationsAndNotifications",
+              "ppd:diagnosticsAndMaintenance",
+              "ppd:legalCompliance",
+              "ppd:personalization",
+              "ppd:security"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Never: any data except device and network details, sensor readings · leaving your home · for anything except making features work"
+        },
+        {
+          "id": "k4-p0-r1",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:advertisingAndMarketing",
+              "ppd:analyticsAndImprovement",
+              "ppd:diagnosticsAndMaintenance",
+              "ppd:legalCompliance",
+              "ppd:personalization"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Never: any data except device and network details, sensor readings · staying in your home · for anything except alerts and messages, making features work, security"
+        },
+        {
+          "id": "k4-p0-r2",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData"
+            ],
+            "purpose": [
+              "ppd:advertisingAndMarketing",
+              "ppd:analyticsAndImprovement",
+              "ppd:communicationsAndNotifications",
+              "ppd:diagnosticsAndMaintenance",
+              "ppd:legalCompliance",
+              "ppd:personalization"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Never: device and network details · leaving your home · for anything except making features work, security · except when used"
+        },
+        {
+          "id": "k4-p0-r3",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:sensorData"
+            ],
+            "purpose": [
+              "ppd:advertisingAndMarketing",
+              "ppd:analyticsAndImprovement",
+              "ppd:diagnosticsAndMaintenance",
+              "ppd:legalCompliance",
+              "ppd:personalization"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Never: sensor readings · leaving your home · for anything except alerts and messages, making features work, security · except when used"
+        },
+        {
+          "id": "k4-p0-r4",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:coreFunctionality"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Never: any data except device and network details, sensor readings · made public or going to other companies · for making features work · except when used"
+        },
+        {
+          "id": "k4-p0-r5",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "purpose": [
+              "ppd:security"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Allow: staying in your home · for security"
+        },
+        {
+          "id": "k4-p0-r6",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "purpose": [
+              "ppd:coreFunctionality"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Allow: staying in your home · for making features work"
+        },
+        {
+          "id": "k4-p0-r7",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "purpose": [
+              "ppd:coreFunctionality"
+            ],
+            "action": [
+              "ppd:use"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Allow: leaving your home · for making features work · when used"
+        },
+        {
+          "id": "k4-p0-r8",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData"
+            ],
+            "purpose": [
+              "ppd:analyticsAndImprovement",
+              "ppd:communicationsAndNotifications",
+              "ppd:diagnosticsAndMaintenance",
+              "ppd:legalCompliance",
+              "ppd:personalization"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Allow: device and network details · staying in your home · for anything except advertising, making features work, security"
+        },
+        {
+          "id": "k4-p0-r9",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:sensorData"
+            ],
+            "purpose": [
+              "ppd:analyticsAndImprovement",
+              "ppd:communicationsAndNotifications",
+              "ppd:diagnosticsAndMaintenance",
+              "ppd:legalCompliance",
+              "ppd:personalization"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Allow: sensor readings · staying in your home · for anything except advertising, making features work, security"
+        },
+        {
+          "id": "k4-p0-r10",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData"
+            ],
+            "purpose": [
+              "ppd:security"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Allow: device and network details · leaving your home · for security"
+        },
+        {
+          "id": "k4-p0-r11",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:sensorData"
+            ],
+            "purpose": [
+              "ppd:security"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Allow: sensor readings · leaving your home · for security"
+        },
+        {
+          "id": "k4-p0-r12",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:sensorData"
+            ],
+            "purpose": [
+              "ppd:communicationsAndNotifications"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Allow: sensor readings · leaving your home · for alerts and messages"
+        },
+        {
+          "id": "k4-p0-r13",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:coreFunctionality"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "handling_context": [
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Never: any data except device and network details, account and identity details, sensor readings · going to the device maker · for making features work · except when used"
+        },
+        {
+          "id": "k4-p0-r14",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:communicationsAndNotifications"
+            ],
+            "source": [
+              "ppd:householdProvided",
+              "ppd:participantGenerated",
+              "ppd:userProvided",
+              "ppd:vendorProvided"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Allow: any data except device and network details, sensor readings · staying in your home · for alerts and messages · unless worked out from earlier data, the device observes, other companies provide"
+        },
+        {
+          "id": "k4-p0-r15",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData"
+            ],
+            "purpose": [
+              "ppd:advertisingAndMarketing",
+              "ppd:analyticsAndImprovement",
+              "ppd:personalization"
+            ],
+            "action": [
+              "ppd:use"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Never: device and network details · leaving your home · for advertising, improving products, personalizing what you see · when used"
+        },
+        {
+          "id": "k4-p0-r16",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:sensorData"
+            ],
+            "purpose": [
+              "ppd:advertisingAndMarketing",
+              "ppd:analyticsAndImprovement",
+              "ppd:personalization"
+            ],
+            "action": [
+              "ppd:use"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Never: sensor readings · leaving your home · for advertising, improving products, personalizing what you see · when used"
+        },
+        {
+          "id": "k4-p0-r17",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:sensorData"
+            ],
+            "purpose": [
+              "ppd:coreFunctionality"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Allow: sensor readings · leaving your home · for making features work · except when used"
+        },
+        {
+          "id": "k4-p0-r18",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData"
+            ],
+            "purpose": [
+              "ppd:coreFunctionality"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Allow: device and network details · leaving your home · for making features work · except when used"
+        },
+        {
+          "id": "k4-p0-r19",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData"
+            ],
+            "purpose": [
+              "ppd:advertisingAndMarketing"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Never: device and network details · staying in your home · for advertising"
+        },
+        {
+          "id": "k4-p0-r20",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:sensorData"
+            ],
+            "purpose": [
+              "ppd:advertisingAndMarketing"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Never: sensor readings · staying in your home · for advertising"
+        },
+        {
+          "id": "k4-p0-r21",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData"
+            ],
+            "purpose": [
+              "ppd:legalCompliance"
+            ],
+            "action": [
+              "ppd:use"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Allow: device and network details · leaving your home · for legal obligations · when used"
+        },
+        {
+          "id": "k4-p0-r22",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData"
+            ],
+            "purpose": [
+              "ppd:diagnosticsAndMaintenance"
+            ],
+            "action": [
+              "ppd:use"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Allow: device and network details · leaving your home · for fixing problems · when used"
+        },
+        {
+          "id": "k4-p0-r23",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData"
+            ],
+            "purpose": [
+              "ppd:communicationsAndNotifications"
+            ],
+            "action": [
+              "ppd:use"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Allow: device and network details · leaving your home · for alerts and messages · when used"
+        },
+        {
+          "id": "k4-p0-r24",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:sensorData"
+            ],
+            "purpose": [
+              "ppd:legalCompliance"
+            ],
+            "action": [
+              "ppd:use"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Allow: sensor readings · leaving your home · for legal obligations · when used"
+        },
+        {
+          "id": "k4-p0-r25",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:sensorData"
+            ],
+            "purpose": [
+              "ppd:diagnosticsAndMaintenance"
+            ],
+            "action": [
+              "ppd:use"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Allow: sensor readings · leaving your home · for fixing problems · when used"
+        },
+        {
+          "id": "k4-p0-r26",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:identifierData"
+            ],
+            "purpose": [
+              "ppd:coreFunctionality"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "handling_context": [
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Allow: account and identity details · going to the device maker · for making features work · except when used"
+        },
+        {
+          "id": "k4-p0-r27",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:communicationsAndNotifications"
+            ],
+            "source": [
+              "ppd:participantObserved"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Never: any data except device and network details, sensor readings · staying in your home · for alerts and messages · that the device observes"
+        },
+        {
+          "id": "k4-p0-r28",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:communicationsAndNotifications"
+            ],
+            "source": [
+              "ppd:thirdPartyProvided"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Never: any data except device and network details, sensor readings · staying in your home · for alerts and messages · that other companies provide"
+        },
+        {
+          "id": "k4-p0-r29",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:communicationsAndNotifications"
+            ],
+            "source": [
+              "ppd:derivedFromPriorData"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p0"
+          },
+          "title": "Never: any data except device and network details, sensor readings · staying in your home · for alerts and messages · that worked out from earlier data"
+        }
+      ]
+    },
+    {
+      "id": "k4-p1",
+      "internal_name": "Strict · no product improvement or personalization · OK with features",
+      "description": "Allows 41% of possible data flows, 0% only with conditions, and refuses 59%. Stricter than most households about product improvement, personalization; more open about features.",
+      "shown_to_households": false,
+      "accepted_share": 0.406,
+      "households_share": 0.347,
+      "reached_by_onboarding": true,
+      "rules": [
+        {
+          "id": "k4-p1-r0",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:advertisingAndMarketing",
+              "ppd:analyticsAndImprovement",
+              "ppd:communicationsAndNotifications",
+              "ppd:diagnosticsAndMaintenance",
+              "ppd:legalCompliance",
+              "ppd:personalization"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Never: any data except device and network details, sensor readings · leaving your home · for anything except making features work, security"
+        },
+        {
+          "id": "k4-p1-r1",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "purpose": [
+              "ppd:coreFunctionality"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Allow: for making features work"
+        },
+        {
+          "id": "k4-p1-r2",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:sensorData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:communicationsAndNotifications",
+              "ppd:diagnosticsAndMaintenance",
+              "ppd:legalCompliance",
+              "ppd:security"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Allow: any data except video, photos and sound · staying in your home · for alerts and messages, fixing problems, legal obligations, security"
+        },
+        {
+          "id": "k4-p1-r3",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData"
+            ],
+            "purpose": [
+              "ppd:communicationsAndNotifications",
+              "ppd:diagnosticsAndMaintenance",
+              "ppd:legalCompliance",
+              "ppd:security"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Allow: device and network details · leaving your home · for alerts and messages, fixing problems, legal obligations, security"
+        },
+        {
+          "id": "k4-p1-r4",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:sensorData"
+            ],
+            "purpose": [
+              "ppd:communicationsAndNotifications",
+              "ppd:diagnosticsAndMaintenance",
+              "ppd:legalCompliance",
+              "ppd:security"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Allow: sensor readings · leaving your home · for alerts and messages, fixing problems, legal obligations, security"
+        },
+        {
+          "id": "k4-p1-r5",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:security"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Never: any data except device and network details, account and identity details, sensor readings · leaving your home · for security · except when used"
+        },
+        {
+          "id": "k4-p1-r6",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:analyticsAndImprovement"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Never: any data except device and network details, sensor readings · staying in your home · for improving products"
+        },
+        {
+          "id": "k4-p1-r7",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:advertisingAndMarketing"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Never: any data except device and network details, sensor readings · staying in your home · for advertising"
+        },
+        {
+          "id": "k4-p1-r8",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData"
+            ],
+            "purpose": [
+              "ppd:personalization"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Never: any data except device and network details, sensor readings, how you use your devices · staying in your home · for personalizing what you see"
+        },
+        {
+          "id": "k4-p1-r9",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:security"
+            ],
+            "action": [
+              "ppd:use"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Allow: any data except device and network details, sensor readings · leaving your home · for security · when used"
+        },
+        {
+          "id": "k4-p1-r10",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData"
+            ],
+            "purpose": [
+              "ppd:personalization"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Never: device and network details · leaving your home · for personalizing what you see"
+        },
+        {
+          "id": "k4-p1-r11",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData"
+            ],
+            "purpose": [
+              "ppd:advertisingAndMarketing"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Never: device and network details · leaving your home · for advertising"
+        },
+        {
+          "id": "k4-p1-r12",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:sensorData"
+            ],
+            "purpose": [
+              "ppd:advertisingAndMarketing"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Never: sensor readings · leaving your home · for advertising"
+        },
+        {
+          "id": "k4-p1-r13",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:identifierData"
+            ],
+            "purpose": [
+              "ppd:security"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Never: account and identity details · leaving your home · for security · except when used"
+        },
+        {
+          "id": "k4-p1-r14",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData"
+            ],
+            "purpose": [
+              "ppd:analyticsAndImprovement"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Never: device and network details · leaving your home · for improving products · except when used"
+        },
+        {
+          "id": "k4-p1-r15",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:sensorData"
+            ],
+            "purpose": [
+              "ppd:analyticsAndImprovement"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Never: sensor readings · leaving your home · for improving products · except when used"
+        },
+        {
+          "id": "k4-p1-r16",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:sensorData"
+            ],
+            "purpose": [
+              "ppd:personalization"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Never: sensor readings · leaving your home · for personalizing what you see · except when used"
+        },
+        {
+          "id": "k4-p1-r17",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData"
+            ],
+            "purpose": [
+              "ppd:diagnosticsAndMaintenance",
+              "ppd:legalCompliance"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Never: video, photos and sound · staying in your home · for fixing problems, legal obligations"
+        },
+        {
+          "id": "k4-p1-r18",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData"
+            ],
+            "purpose": [
+              "ppd:communicationsAndNotifications"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Allow: video, photos and sound · staying in your home · for alerts and messages"
+        },
+        {
+          "id": "k4-p1-r19",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData"
+            ],
+            "purpose": [
+              "ppd:security"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Allow: video, photos and sound · staying in your home · for security"
+        },
+        {
+          "id": "k4-p1-r20",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:personalization"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Allow: how you use your devices · staying in your home · for personalizing what you see"
+        },
+        {
+          "id": "k4-p1-r21",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData"
+            ],
+            "purpose": [
+              "ppd:personalization"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Allow: device and network details · staying in your home · for personalizing what you see"
+        },
+        {
+          "id": "k4-p1-r22",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:sensorData"
+            ],
+            "purpose": [
+              "ppd:personalization"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Allow: sensor readings · staying in your home · for personalizing what you see"
+        },
+        {
+          "id": "k4-p1-r23",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:sensorData"
+            ],
+            "purpose": [
+              "ppd:analyticsAndImprovement"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Allow: sensor readings · staying in your home · for improving products"
+        },
+        {
+          "id": "k4-p1-r24",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData"
+            ],
+            "purpose": [
+              "ppd:analyticsAndImprovement"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Allow: device and network details · staying in your home · for improving products"
+        },
+        {
+          "id": "k4-p1-r25",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:sensorData"
+            ],
+            "purpose": [
+              "ppd:advertisingAndMarketing"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Allow: sensor readings · staying in your home · for advertising"
+        },
+        {
+          "id": "k4-p1-r26",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData"
+            ],
+            "purpose": [
+              "ppd:advertisingAndMarketing"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Allow: device and network details · staying in your home · for advertising"
+        },
+        {
+          "id": "k4-p1-r27",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData"
+            ],
+            "purpose": [
+              "ppd:analyticsAndImprovement"
+            ],
+            "action": [
+              "ppd:use"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Allow: device and network details · leaving your home · for improving products · when used"
+        },
+        {
+          "id": "k4-p1-r28",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:sensorData"
+            ],
+            "purpose": [
+              "ppd:analyticsAndImprovement"
+            ],
+            "action": [
+              "ppd:use"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Allow: sensor readings · leaving your home · for improving products · when used"
+        },
+        {
+          "id": "k4-p1-r29",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:sensorData"
+            ],
+            "purpose": [
+              "ppd:personalization"
+            ],
+            "action": [
+              "ppd:use"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p1"
+          },
+          "title": "Allow: sensor readings · leaving your home · for personalizing what you see · when used"
+        }
+      ]
+    },
+    {
+      "id": "k4-p2",
+      "internal_name": "Relaxed · OK with legal duties and fixing problems",
+      "description": "Allows 82% of possible data flows, 0% only with conditions, and refuses 18%. Close to most households; more open about legal duties, fixing problems.",
+      "shown_to_households": false,
+      "accepted_share": 0.816,
+      "households_share": 0.151,
+      "reached_by_onboarding": true,
+      "rules": [
+        {
+          "id": "k4-p2-r0",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:sensorData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:communicationsAndNotifications",
+              "ppd:coreFunctionality",
+              "ppd:diagnosticsAndMaintenance",
+              "ppd:legalCompliance",
+              "ppd:security"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Allow: any data except video, photos and sound · for anything except advertising, improving products, personalizing what you see"
+        },
+        {
+          "id": "k4-p2-r1",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:advertisingAndMarketing"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Never: any data except device and network details, sensor readings · leaving your home · for advertising"
+        },
+        {
+          "id": "k4-p2-r2",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData"
+            ],
+            "purpose": [
+              "ppd:communicationsAndNotifications",
+              "ppd:coreFunctionality",
+              "ppd:security"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Allow: video, photos and sound · for alerts and messages, making features work, security"
+        },
+        {
+          "id": "k4-p2-r3",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:personalization"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Never: any data except device and network details, sensor readings · made public or going to other companies · for personalizing what you see · except when used"
+        },
+        {
+          "id": "k4-p2-r4",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "purpose": [
+              "ppd:analyticsAndImprovement"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Allow: staying in your home · for improving products"
+        },
+        {
+          "id": "k4-p2-r5",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "purpose": [
+              "ppd:personalization"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Allow: staying in your home · for personalizing what you see"
+        },
+        {
+          "id": "k4-p2-r6",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:analyticsAndImprovement"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Never: any data except device and network details, account and identity details, sensor readings · made public or going to other companies · for improving products · except when used"
+        },
+        {
+          "id": "k4-p2-r7",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "purpose": [
+              "ppd:analyticsAndImprovement"
+            ],
+            "action": [
+              "ppd:use"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Allow: leaving your home · for improving products · when used"
+        },
+        {
+          "id": "k4-p2-r8",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:sensorData"
+            ],
+            "purpose": [
+              "ppd:advertisingAndMarketing"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Allow: sensor readings · for advertising"
+        },
+        {
+          "id": "k4-p2-r9",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData"
+            ],
+            "purpose": [
+              "ppd:advertisingAndMarketing"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Allow: device and network details · for advertising"
+        },
+        {
+          "id": "k4-p2-r10",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData"
+            ],
+            "purpose": [
+              "ppd:legalCompliance"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Allow: video, photos and sound · leaving your home · for legal obligations"
+        },
+        {
+          "id": "k4-p2-r11",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData"
+            ],
+            "purpose": [
+              "ppd:personalization"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "handling_context": [
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Never: any data except device and network details, sensor readings, how you use your devices · going to the device maker · for personalizing what you see · except when used"
+        },
+        {
+          "id": "k4-p2-r12",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:personalization"
+            ],
+            "action": [
+              "ppd:use"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Allow: any data except video, photos and sound, device and network details, sensor readings · leaving your home · for personalizing what you see · when used"
+        },
+        {
+          "id": "k4-p2-r13",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData"
+            ],
+            "purpose": [
+              "ppd:personalization"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Allow: device and network details · leaving your home · for personalizing what you see"
+        },
+        {
+          "id": "k4-p2-r14",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:sensorData"
+            ],
+            "purpose": [
+              "ppd:personalization"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Allow: sensor readings · leaving your home · for personalizing what you see"
+        },
+        {
+          "id": "k4-p2-r15",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData"
+            ],
+            "purpose": [
+              "ppd:advertisingAndMarketing"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Never: video, photos and sound, account and identity details, location · staying in your home · for advertising"
+        },
+        {
+          "id": "k4-p2-r16",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:analyticsAndImprovement"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "source": [
+              "ppd:derivedFromPriorData",
+              "ppd:householdProvided",
+              "ppd:participantGenerated",
+              "ppd:participantObserved",
+              "ppd:thirdPartyProvided",
+              "ppd:vendorProvided"
+            ],
+            "handling_context": [
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Never: any data except device and network details, account and identity details, sensor readings · going to the device maker · for improving products · except when used · unless you entered"
+        },
+        {
+          "id": "k4-p2-r17",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:sensorData"
+            ],
+            "purpose": [
+              "ppd:analyticsAndImprovement"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Allow: sensor readings · leaving your home · for improving products · except when used"
+        },
+        {
+          "id": "k4-p2-r18",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData"
+            ],
+            "purpose": [
+              "ppd:analyticsAndImprovement"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Allow: device and network details · leaving your home · for improving products · except when used"
+        },
+        {
+          "id": "k4-p2-r19",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData"
+            ],
+            "purpose": [
+              "ppd:diagnosticsAndMaintenance"
+            ],
+            "handling_context": [
+              "ppd:householdContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Allow: video, photos and sound · staying in your home or going to the device maker · for fixing problems"
+        },
+        {
+          "id": "k4-p2-r20",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:identifierData"
+            ],
+            "purpose": [
+              "ppd:analyticsAndImprovement"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Never: account and identity details · made public or going to other companies · for improving products · except when used"
+        },
+        {
+          "id": "k4-p2-r21",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData"
+            ],
+            "purpose": [
+              "ppd:diagnosticsAndMaintenance"
+            ],
+            "handling_context": [
+              "ppd:publicAudience"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Never: video, photos and sound · made public · for fixing problems"
+        },
+        {
+          "id": "k4-p2-r22",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData"
+            ],
+            "purpose": [
+              "ppd:diagnosticsAndMaintenance"
+            ],
+            "handling_context": [
+              "ppd:thirdPartyContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Never: video, photos and sound · going to other companies · for fixing problems"
+        },
+        {
+          "id": "k4-p2-r23",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData"
+            ],
+            "purpose": [
+              "ppd:legalCompliance"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Allow: video, photos and sound · staying in your home · for legal obligations"
+        },
+        {
+          "id": "k4-p2-r24",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:profileData"
+            ],
+            "purpose": [
+              "ppd:advertisingAndMarketing"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Allow: profile and preferences · staying in your home · for advertising"
+        },
+        {
+          "id": "k4-p2-r25",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:advertisingAndMarketing"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Allow: how you use your devices · staying in your home · for advertising"
+        },
+        {
+          "id": "k4-p2-r26",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:identifierData"
+            ],
+            "purpose": [
+              "ppd:analyticsAndImprovement"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "handling_context": [
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Allow: account and identity details · going to the device maker · for improving products · except when used"
+        },
+        {
+          "id": "k4-p2-r27",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:personalization"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "handling_context": [
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Allow: how you use your devices · going to the device maker · for personalizing what you see · except when used"
+        },
+        {
+          "id": "k4-p2-r28",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData"
+            ],
+            "purpose": [
+              "ppd:personalization"
+            ],
+            "action": [
+              "ppd:use"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Never: video, photos and sound · leaving your home · for personalizing what you see · when used"
+        },
+        {
+          "id": "k4-p2-r29",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:analyticsAndImprovement"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "source": [
+              "ppd:userProvided"
+            ],
+            "handling_context": [
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p2"
+          },
+          "title": "Allow: any data except device and network details, account and identity details, sensor readings · going to the device maker · for improving products · except when used · that you entered"
+        }
+      ]
+    },
+    {
+      "id": "k4-p3",
+      "internal_name": "Careful · no ads · OK with security and device details",
+      "description": "Allows 60% of possible data flows, 0% only with conditions, and refuses 40%. Stricter than most households about ads; more open about security, device details.",
+      "shown_to_households": false,
+      "accepted_share": 0.6,
+      "households_share": 0.31,
+      "reached_by_onboarding": true,
+      "rules": [
+        {
+          "id": "k4-p3-r0",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "purpose": [
+              "ppd:analyticsAndImprovement",
+              "ppd:communicationsAndNotifications",
+              "ppd:coreFunctionality",
+              "ppd:diagnosticsAndMaintenance",
+              "ppd:legalCompliance",
+              "ppd:security"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Allow: staying in your home · for anything except advertising, personalizing what you see"
+        },
+        {
+          "id": "k4-p3-r1",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:analyticsAndImprovement",
+              "ppd:legalCompliance",
+              "ppd:personalization"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Never: any data except device and network details, sensor readings · leaving your home · for improving products, legal obligations, personalizing what you see · except when used"
+        },
+        {
+          "id": "k4-p3-r2",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "purpose": [
+              "ppd:coreFunctionality"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Allow: leaving your home · for making features work"
+        },
+        {
+          "id": "k4-p3-r3",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:advertisingAndMarketing"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Never: any data except device and network details, sensor readings · for advertising"
+        },
+        {
+          "id": "k4-p3-r4",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData"
+            ],
+            "purpose": [
+              "ppd:analyticsAndImprovement",
+              "ppd:communicationsAndNotifications",
+              "ppd:diagnosticsAndMaintenance",
+              "ppd:legalCompliance",
+              "ppd:personalization",
+              "ppd:security"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Allow: device and network details · leaving your home · for anything except advertising, making features work"
+        },
+        {
+          "id": "k4-p3-r5",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:sensorData"
+            ],
+            "purpose": [
+              "ppd:analyticsAndImprovement",
+              "ppd:communicationsAndNotifications",
+              "ppd:diagnosticsAndMaintenance",
+              "ppd:legalCompliance",
+              "ppd:personalization",
+              "ppd:security"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Allow: sensor readings · leaving your home · for anything except advertising, making features work"
+        },
+        {
+          "id": "k4-p3-r6",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:security"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Allow: any data except device and network details, sensor readings · leaving your home · for security"
+        },
+        {
+          "id": "k4-p3-r7",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData"
+            ],
+            "purpose": [
+              "ppd:diagnosticsAndMaintenance"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Never: any data except device and network details, sensor readings, how you use your devices · leaving your home · for fixing problems · except when used"
+        },
+        {
+          "id": "k4-p3-r8",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:analyticsAndImprovement",
+              "ppd:personalization"
+            ],
+            "action": [
+              "ppd:use"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Never: any data except device and network details, sensor readings · leaving your home · for improving products, personalizing what you see · when used"
+        },
+        {
+          "id": "k4-p3-r9",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:communicationsAndNotifications"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:transfer"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Never: any data except device and network details, sensor readings · made public or going to other companies · for alerts and messages · when collected or sent on"
+        },
+        {
+          "id": "k4-p3-r10",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:sensorData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:personalization"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Allow: any data except video, photos and sound, account and identity details · staying in your home · for personalizing what you see"
+        },
+        {
+          "id": "k4-p3-r11",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:communicationsAndNotifications"
+            ],
+            "action": [
+              "ppd:use"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Allow: any data except device and network details, sensor readings · leaving your home · for alerts and messages · when used"
+        },
+        {
+          "id": "k4-p3-r12",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:diagnosticsAndMaintenance"
+            ],
+            "action": [
+              "ppd:use"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Allow: any data except video, photos and sound, device and network details, sensor readings · leaving your home · for fixing problems · when used"
+        },
+        {
+          "id": "k4-p3-r13",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:sensorData"
+            ],
+            "purpose": [
+              "ppd:advertisingAndMarketing"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Never: sensor readings · leaving your home · for advertising"
+        },
+        {
+          "id": "k4-p3-r14",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:communicationsAndNotifications"
+            ],
+            "action": [
+              "ppd:inference"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Allow: any data except device and network details, sensor readings · made public or going to the device maker · for alerts and messages · when used to work out new information"
+        },
+        {
+          "id": "k4-p3-r15",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:legalCompliance"
+            ],
+            "action": [
+              "ppd:use"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Allow: account and identity details, location, how you use your devices · leaving your home · for legal obligations · when used"
+        },
+        {
+          "id": "k4-p3-r16",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData"
+            ],
+            "purpose": [
+              "ppd:advertisingAndMarketing"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Never: device and network details · leaving your home · for advertising · except when used"
+        },
+        {
+          "id": "k4-p3-r17",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:communicationsAndNotifications"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:transfer"
+            ],
+            "source": [
+              "ppd:derivedFromPriorData",
+              "ppd:householdProvided",
+              "ppd:participantGenerated",
+              "ppd:participantObserved",
+              "ppd:thirdPartyProvided",
+              "ppd:vendorProvided"
+            ],
+            "handling_context": [
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Never: any data except device and network details, sensor readings · going to the device maker · for alerts and messages · when collected or sent on · unless you entered"
+        },
+        {
+          "id": "k4-p3-r18",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:diagnosticsAndMaintenance"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Never: how you use your devices · made public or going to other companies · for fixing problems · except when used"
+        },
+        {
+          "id": "k4-p3-r19",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:communicationsAndNotifications"
+            ],
+            "action": [
+              "ppd:inference"
+            ],
+            "handling_context": [
+              "ppd:thirdPartyContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Never: any data except device and network details, sensor readings · going to other companies · for alerts and messages · when used to work out new information"
+        },
+        {
+          "id": "k4-p3-r20",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:identifierData"
+            ],
+            "purpose": [
+              "ppd:personalization"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Never: account and identity details · staying in your home · for personalizing what you see"
+        },
+        {
+          "id": "k4-p3-r21",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData"
+            ],
+            "purpose": [
+              "ppd:personalization"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Never: video, photos and sound · staying in your home · for personalizing what you see"
+        },
+        {
+          "id": "k4-p3-r22",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:sensorData"
+            ],
+            "purpose": [
+              "ppd:advertisingAndMarketing"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Allow: sensor readings · staying in your home · for advertising"
+        },
+        {
+          "id": "k4-p3-r23",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData"
+            ],
+            "purpose": [
+              "ppd:advertisingAndMarketing"
+            ],
+            "handling_context": [
+              "ppd:householdContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Allow: device and network details · staying in your home · for advertising"
+        },
+        {
+          "id": "k4-p3-r24",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:diagnosticsAndMaintenance"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:inference",
+              "ppd:transfer"
+            ],
+            "handling_context": [
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Allow: how you use your devices · going to the device maker · for fixing problems · except when used"
+        },
+        {
+          "id": "k4-p3-r25",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:profileData"
+            ],
+            "purpose": [
+              "ppd:legalCompliance"
+            ],
+            "action": [
+              "ppd:use"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Never: profile and preferences · leaving your home · for legal obligations · when used"
+        },
+        {
+          "id": "k4-p3-r26",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData"
+            ],
+            "purpose": [
+              "ppd:legalCompliance"
+            ],
+            "action": [
+              "ppd:use"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Never: video, photos and sound · leaving your home · for legal obligations · when used"
+        },
+        {
+          "id": "k4-p3-r27",
+          "effect": "dont_allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData"
+            ],
+            "purpose": [
+              "ppd:diagnosticsAndMaintenance"
+            ],
+            "action": [
+              "ppd:use"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Never: video, photos and sound · leaving your home · for fixing problems · when used"
+        },
+        {
+          "id": "k4-p3-r28",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:deviceAndNetworkData"
+            ],
+            "purpose": [
+              "ppd:advertisingAndMarketing"
+            ],
+            "action": [
+              "ppd:use"
+            ],
+            "handling_context": [
+              "ppd:publicAudience",
+              "ppd:thirdPartyContext",
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Allow: device and network details · leaving your home · for advertising · when used"
+        },
+        {
+          "id": "k4-p3-r29",
+          "effect": "allow",
+          "condition": null,
+          "scope": {
+            "data_type": [
+              "ppd:contentData",
+              "ppd:identifierData",
+              "ppd:locationData",
+              "ppd:profileData",
+              "ppd:usageData"
+            ],
+            "purpose": [
+              "ppd:communicationsAndNotifications"
+            ],
+            "action": [
+              "ppd:collection",
+              "ppd:transfer"
+            ],
+            "source": [
+              "ppd:userProvided"
+            ],
+            "handling_context": [
+              "ppd:vendorContext"
+            ]
+          },
+          "enabled": true,
+          "origin": {
+            "kind": "preset",
+            "preset_id": "k4-p3"
+          },
+          "title": "Allow: any data except device and network details, sensor readings · going to the device maker · for alerts and messages · when collected or sent on · that you entered"
+        }
+      ]
+    }
+  ]
+}

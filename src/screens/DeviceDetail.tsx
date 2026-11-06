@@ -1,11 +1,11 @@
+import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api'
-import { AppBar, Cell, DeviceTile, ErrorBox, Group, Loading, SectionHeader } from '../components/ui'
+import { AppBar, Cell, DeviceTile, ErrorBox, Group, Loading, SectionHeader, Expander } from '../components/ui'
 import { AttentionList, ProvenanceCard } from '../components/DeviceReport'
-import { AssociationCard, DemoControls, IdentityAndNetwork, LifecycleSteps, PolicyReceipt, ReportedBehavior, TelemetryCard } from '../components/LiveDevice'
-import { useDevice, useHousehold, useMe, useRules } from '../state/data'
-import { STATE_LABEL, forgetBlocker, isConnected, kindLabel, subtitle, timeAgo } from '../lib/device'
-import { decidedCount } from '../lib/verdicts'
+import { AssociationCard, IdentityAndNetwork, LifecycleSteps, PolicyReceipt, ReportedBehavior, RuntimeWarning } from '../components/LiveDevice'
+import { useDevice, useHousehold, useMe } from '../state/data'
+import { STATE_LABEL, forgetBlocker, isConnected, kindLabel, subtitle, timeAgo, declaredNothing } from '../lib/device'
 
 /** Screen 3c. For a device the PPD gateway knows, it also shows the gateway's live view of it. */
 export default function DeviceDetail() {
@@ -13,22 +13,20 @@ export default function DeviceDetail() {
   const nav = useNavigate()
   const { household, removeDevice, addDevice, toast, reload } = useHousehold()
   const dev = useDevice(id, true)
-  const rules = useRules(true)
   const { data: me } = useMe()
+  const [details, setDetails] = useState(false)
 
   if (dev.error && !dev.data) return <><AppBar title="Device" back="/" /><ErrorBox error={dev.error} /></>
   const d = dev.data
   if (!d || !household) return <><AppBar title="Device" back="/" /><Loading /></>
 
   const inHome = household.devices.some((h) => h.device_id === d.id)
-  const ruleCount = rules.length
-  const decided = decidedCount(d, household)
   const decl = d.declaration
   const live = d.live
   const operator = me?.role === 'operator'
 
   const disassociate = async () => {
-    if (!window.confirm(`Ask ${d.short_name} to reconnect? It will receive and confirm your rules again.`)) return
+    if (!window.confirm(`Ask ${d.short_name} to reconnect? It will receive and confirm your household policy again.`)) return
     try {
       await api.disassociate(d.id)
       toast('The device will reconnect.')
@@ -66,24 +64,36 @@ export default function DeviceDetail() {
       <div className="gap" />
       {live && (
         <>
-          <AssociationCard live={live} />
+          <AssociationCard device={d} live={live} />
           <div className="gap" />
+          <RuntimeWarning device={d} live={live} />
         </>
       )}
-      <ProvenanceCard device={d} household={household} ruleCount={ruleCount} />
-      <div className="sf" style={{ fontStyle: 'italic' }}>We can’t check that the device will follow your rules.</div>
-      {decided > 0 && <div className="sf">{decided} {decided === 1 ? 'decision' : 'decisions'} made by you.</div>}
-
-      <AttentionList device={d} household={household} />
+      <ProvenanceCard device={d} />
+      {!declaredNothing(d) && (
+        <>
+          <div className="sf" style={{ fontStyle: 'italic' }}>We can’t check that the device will follow your household policy.</div>
+          <AttentionList device={d} />
+        </>
+      )}
 
       {live ? (
         <>
-          <PolicyReceipt live={live} />
-          <LifecycleSteps live={live} />
-          <ReportedBehavior live={live} />
-          <TelemetryCard device={d} />
-          {operator && <DemoControls device={d} />}
-          <IdentityAndNetwork live={live} />
+          {/* Protocol details for the curious: the state card and any runtime warning above already say what matters. */}
+          <div className="gap" />
+          <Group>
+            <Expander open={details} onToggle={() => setDetails(!details)} sub="Policy receipt, how it joined, runtime status, identity and network">
+              {details ? 'Hide technical details' : 'Technical details'}
+            </Expander>
+          </Group>
+          {details && (
+            <>
+              <PolicyReceipt live={live} />
+              <LifecycleSteps live={live} />
+              <ReportedBehavior live={live} />
+              <IdentityAndNetwork live={live} />
+            </>
+          )}
         </>
       ) : (
         decl && d.kind !== 'research' && (
@@ -95,7 +105,7 @@ export default function DeviceDetail() {
               <div className="cell kv"><span className="ttl">Renews by</span><span className="v">{new Date(decl.renew_by).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</span></div>
               <div className="cell kv"><span className="ttl">Statements</span><span className="v">{decl.statements}</span></div>
             </Group>
-            <div className="sf">“Confirmed” means the device said it received your rules. It is not proof that it follows them.</div>
+            <div className="sf">“Confirmed” means the device said it received your household policy. It is not proof that it follows them.</div>
           </>
         )
       )}

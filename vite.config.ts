@@ -40,13 +40,18 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // The app shell is precached. The /mock JSON stands in for the backend, so it is
-        // fetched network-first and cached for offline use instead of being baked into the build.
-        globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'],
-        navigateFallback: 'index.html',
-        // API responses are live household data: never served from the service worker.
-        navigateFallbackDenylist: [/^\/api\//],
+        // Scripts, styles and images are precached. The page itself is not: page loads go to the network first,
+        // so a sign-in layer in front of the app (Cloudflare Access) can send the browser to its login page when
+        // the session runs out. The saved copy is used only when the network is unreachable.
+        // The /mock JSON stands in for the backend, so it is fetched network-first and cached for offline use.
+        globPatterns: ['**/*.{js,css,svg,png,webmanifest}'],
+        navigateFallback: null,
         runtimeCaching: [
+          {
+            urlPattern: ({ request }) => request.mode === 'navigate',
+            handler: 'NetworkFirst',
+            options: { cacheName: 'ppd-pages', networkTimeoutSeconds: 5 },
+          },
           {
             urlPattern: /\/mock\/.*\.json$/,
             handler: 'NetworkFirst',

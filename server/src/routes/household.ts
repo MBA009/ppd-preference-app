@@ -1,26 +1,38 @@
 import type { FastifyInstance } from 'fastify'
 import * as hh from '../../../shared/household'
-import type { Answers, Decision, Profile, Rule } from '../../../shared/types'
+import type { Answers, Profile, Rule } from '../../../shared/types'
 import { httpError, type AppContext } from '../context'
 
-/** The household: devices in the home, saved decisions, questionnaire answers and authoring rules. */
+/** The household: devices in the home, its preset and onboarding answers, and authoring rules. */
 
 const stringList = { type: 'array', items: { type: 'string', maxLength: 200 }, maxItems: 50 } as const
 
 export const ruleSchema = {
   type: 'object',
-  required: ['id', 'title', 'effect', 'scope', 'enabled', 'origin'],
+  required: ['id', 'effect', 'scope', 'enabled', 'origin'],
   properties: {
     id: { type: 'string', minLength: 1, maxLength: 200 },
     title: { type: 'string', maxLength: 500 },
-    effect: { enum: ['allow', 'ask', 'dont_allow'] },
+    effect: { enum: ['allow', 'dont_allow'] },
+    condition: {
+      anyOf: [
+        { type: 'null' },
+        { enum: ['retention=ppd:ephemeral', 'processing_boundary=ppd:inHomeOnly', 'processing_boundary=ppd:onDeviceOnly'] },
+        // A jurisdiction (taxonomy-05 section 6.7.3): a scope and lowercase ISO 3166 codes, as shared/conditions.ts writes it.
+        { type: 'string', maxLength: 200, pattern: '^jurisdiction\\.(collection|use|inference|transfer|storage)=[a-z]{2}(-[a-z0-9]{1,3})?(,[a-z]{2}(-[a-z0-9]{1,3})?)*$' },
+      ],
+    },
     scope: {
       type: 'object',
       additionalProperties: false,
       properties: { data_type: stringList, purpose: stringList, handling_context: stringList, action: stringList, source: stringList, constraints: stringList },
     },
     enabled: { type: 'boolean' },
-    origin: { type: 'object', required: ['kind'], properties: { kind: { enum: ['questionnaire', 'custom'] } } },
+    origin: {
+      type: 'object',
+      required: ['kind'],
+      properties: { kind: { enum: ['preset', 'answer', 'custom'] }, preset_id: { type: 'string', maxLength: 100 }, question: { type: 'string', maxLength: 200 } },
+    },
   },
 } as const
 
@@ -37,45 +49,81 @@ const profileSchema = {
   properties: { summary_frequency: { enum: ['daily', 'monthly', 'yearly', 'never'] }, warn_on_conflict: { type: 'boolean' } },
 } as const
 
-const answersSchema = {
-  type: 'object',
-  maxProperties: 50,
-  additionalProperties: { anyOf: [{ type: 'string', maxLength: 200 }, { type: 'object', maxProperties: 50, additionalProperties: { anyOf: [{ type: 'string', maxLength: 200 }, { type: 'boolean' }] } }] },
-} as const
+const answersSchema = { type: 'object', maxProperties: 200, additionalProperties: { type: 'string', maxLength: 200 } } as const
 
 export function householdRoutes(app: FastifyInstance, ctx: AppContext): void {
   const requireDevice = async (id: string) => {
     if (!(await ctx.knownDevice(id))) throw httpError(404, `Device ${id} not found.`)
   }
 
-  app.get('/api/questionnaire', async () => ctx.fixtures.questionnaire)
+  app.get('/api/onboarding', async () => ctx.fixtures.onboarding)
+
+  app.get('/api/household-presets', async () => ctx.fixtures.presets)
 
   app.get('/api/household', async () => ctx.household())
 
   app.get('/api/household/rules', async () => (await ctx.household()).rules)
 
-  app.put<{ Body: { answers: Answers; rules: Rule[]; profile: Profile } }>(
-    '/api/household/policy',
-    {
-      schema: {
-        body: {
-          type: 'object',
-          required: ['answers', 'rules', 'profile'],
-          properties: { answers: answersSchema, rules: { type: 'array', items: ruleSchema, maxItems: 500 }, profile: profileSchema },
-        },
-      },
+  // The questionnaire is finished: the server walks the tree itself (the client only sends answers), assigns the preset
+  // and rebuilds the household's rules from it and the answers. Starts over: earlier rules and edits are replaced.
+  app.put<{ Body: { answers: Answers } }>(
+    '/api/household/onboarding',
+    { schema: { body: { type: 'object', required: ['answers'], properties: { answers: answersSchema } } } },
+    async (req) => {
+      const { onboarding, presets } = ctx.fixtures
+      for (const [q, a] of Object.entries(req.body.answers)) {
+        const question = onboarding.questions[q]
+        if (!question) throw httpError(400, `There is no question ${q}.`)
+        if (!question.options.some((o) => o.id === a)) throw httpError(400, `"${a}" is not an answer to ${q}.`)
+      }
+      let preset = ''
+      const h = ctx.change(req, 'finish_onboarding', (h) => {
+        try {
+          const next = hh.finishOnboarding(h, onboarding, presets, req.body.answers)
+          preset = next.preset_id ?? ''
+          return next
+        } catch (e) {
+          throw httpError(400, (e as Error).message)
+        }
+      })
+      await ctx.publisher.sync(`questionnaire finished (${preset})`)
+      return h
     },
-    async (req) => ctx.change(req, 'save_policy', (h) => hh.savePolicy(h, req.body), `${req.body.rules.length} rules`),
+  )
+
+  // "Help me refine my settings": one answer at a time, written into the current rules for that situation only.
+  app.put<{ Params: { question: string }; Body: { answer: string } }>(
+    '/api/household/answers/:question',
+    { schema: { params: { type: 'object', properties: { question: { type: 'string', maxLength: 200 } } }, body: { type: 'object', required: ['answer'], properties: { answer: { type: 'string', maxLength: 200 } } } } },
+    async (req) => {
+      const h = ctx.change(req, 'answer_question', (h) => {
+        try {
+          return hh.answerQuestion(h, ctx.fixtures.onboarding, req.params.question, req.body.answer)
+        } catch (e) {
+          throw httpError(400, (e as Error).message)
+        }
+      }, req.params.question)
+      await ctx.publisher.sync('answer saved')
+      return h
+    },
+  )
+
+  app.put<{ Body: Profile }>('/api/household/profile', { schema: { body: { ...profileSchema, required: ['summary_frequency', 'warn_on_conflict'] } } }, async (req) =>
+    ctx.change(req, 'save_profile', (h) => hh.saveProfile(h, req.body)),
   )
 
   app.put<{ Params: { id: string }; Body: Rule }>('/api/household/rules/:id', { schema: { params: idParams, body: ruleSchema } }, async (req) => {
     if (req.body.id !== req.params.id) throw httpError(400, 'The rule id in the body does not match the URL.')
-    return ctx.change(req, 'upsert_rule', (h) => hh.upsertRule(h, req.body), req.body.id)
+    const h = ctx.change(req, 'upsert_rule', (h) => hh.upsertRule(h, req.body), req.body.id)
+    await ctx.publisher.sync('rule saved')
+    return h
   })
 
-  app.delete<{ Params: { id: string } }>('/api/household/rules/:id', { schema: { params: idParams } }, async (req) =>
-    ctx.change(req, 'delete_rule', (h) => hh.deleteRule(h, req.params.id), req.params.id),
-  )
+  app.delete<{ Params: { id: string } }>('/api/household/rules/:id', { schema: { params: idParams } }, async (req) => {
+    const h = ctx.change(req, 'delete_rule', (h) => hh.deleteRule(h, req.params.id), req.params.id)
+    await ctx.publisher.sync('rule deleted')
+    return h
+  })
 
   app.post<{ Body: { device_id: string; joined?: boolean } }>('/api/household/devices', { schema: { body: deviceBody } }, async (req) => {
     await requireDevice(req.body.device_id)
@@ -95,37 +143,10 @@ export function householdRoutes(app: FastifyInstance, ctx: AppContext): void {
     return ctx.change(req, 'save_for_later', (h) => hh.saveForLater(h, req.body.device_id), req.body.device_id)
   })
 
-  app.post<{ Body: Omit<Decision, 'decided_at'> }>(
-    '/api/household/decisions',
-    {
-      schema: {
-        body: {
-          type: 'object',
-          required: ['flow_id', 'device_id', 'preference', 'remember_similar', 'core_group_id'],
-          properties: {
-            flow_id: { type: 'string', minLength: 1, maxLength: 300 },
-            device_id: { type: 'string', minLength: 1, maxLength: 200 },
-            preference: { enum: ['allow', 'allow_with_limits', 'dont_allow'] },
-            keep: { enum: ['briefly', 'until_deleted'] },
-            region: { type: 'string', maxLength: 100 },
-            remember_similar: { type: 'boolean' },
-            core_group_id: { type: 'string', minLength: 1, maxLength: 100 },
-          },
-        },
-      },
-    },
-    async (req) => {
-      const device = await ctx.device(req.body.device_id)
-      if (!device) throw httpError(404, `Device ${req.body.device_id} not found.`)
-      if (!device.flows.some((f) => f.id === req.body.flow_id)) throw httpError(404, `Flow ${req.body.flow_id} not found.`)
-      return ctx.change(req, 'save_decision', (h) => hh.saveDecision(h, req.body), req.body.flow_id)
-    },
-  )
-
   app.post<{ Body: { mode: 'seed' | 'empty' } }>(
     '/api/household/reset',
     { schema: { body: { type: 'object', required: ['mode'], properties: { mode: { enum: ['seed', 'empty'] } } } } },
-    // Both modes return to first launch: no answers and no rules yet. Gateway devices stay in the home.
+    // Both modes return to first launch: no preset, answers or rules yet. Gateway devices stay in the home.
     async (req) => {
       ctx.change(req, 'reset', () => (req.body.mode === 'seed' ? ctx.seed() : hh.blankHousehold()), req.body.mode)
       const live = await ctx.live.gatewayDevices().catch(() => [])

@@ -1,10 +1,12 @@
-import { Link } from 'react-router-dom'
-import { AppBar, Cell, DeviceTile, Footnote, Group, SectionHeader, Tile, VerdictChip, VerdictChips, Loading, ErrorBox } from '../components/ui'
-import { DashedCircle, Icon, SmallCheck } from '../components/icons'
+import { AppBar, Cell, DeviceTile, Footnote, Group, SectionHeader, StateChip, Tile, VerdictChip, VerdictChips, Loading, ErrorBox } from '../components/ui'
+import { Icon } from '../components/icons'
 import { useDevices, useHousehold, useOverview, useUnmanaged } from '../state/data'
-import { countVerdicts, pendingFlows, plural } from '../lib/verdicts'
-import { hasRules, isConnected, stateLabel } from '../lib/device'
-import type { Device, Household, Overview, UnmanagedDevice } from '../api'
+import { countVerdicts, plural } from '../lib/verdicts'
+import { declaredNothing, hasRules, isConnected, timeAgo } from '../lib/device'
+import type { Device, Overview, UnmanagedDevice } from '../api'
+import { flowPath } from '../components/DeviceReport'
+
+type Notice = { key: string; tone: 'red' | 'orange' | 'blue'; icon: 'status' | 'plus' | 'publish'; title: string; sub: string; to?: string }
 
 /**
  * Screen 3a. Three kinds of device, kept apart:
@@ -28,30 +30,79 @@ export default function Home() {
   const advisory = list.filter((d) => !isConnected(d))
   const withRules = connected.filter(hasRules)
   const attentionDevices = connected.filter((d) => !hasRules(d))
-  const waiting = list.map((d) => ({ d, n: pendingFlows(d, household).length })).filter((x) => x.n > 0)
-  const totalWaiting = waiting.reduce((s, x) => s + x.n, 0)
-  const updating = connected.filter((d) => d.live?.publication === 'waiting').length
   const unseen = household.devices.find((h) => h.joined_seen === false && connected.some((d) => d.id === h.device_id))
-  const first = waiting[0]?.d
+  const status = (d: Device) => d.live?.association.status
+  const reported = (d: Device) => !!d.live?.runtime.conflict_active || status(d) === 'policy_conflict'
+  const stale = connected.filter((d) => status(d) === 'stale_association')
+  const reconnect = connected.filter((d) => status(d) === 'needs_reassociation' || status(d) === 'broken')
+  // One notice per device: a device that lost touch says so, and mentions a conflict it reported before.
+  // Only devices still in touch are "updating": a device that stopped checking in is not about to pick anything up.
+  const lost = new Set([...stale, ...reconnect].map((d) => d.id))
+  const conflicting = connected.filter((d) => reported(d) && !lost.has(d.id))
+  const earlier = (list: Device[]) => list.length === 1 && reported(list[0]) ? ' Before that, it reported sending data against your rules.' : ''
+  const updating = connected.filter((d) => d.live?.publication === 'waiting' && !lost.has(d.id)).length
+  const joined = unseen && connected.find((d) => d.id === unseen.device_id)
+  // Flows no rule decides: only after the household deleted or switched off the rule that did (Nov 2: no preference yet).
+  // One notice per device, straight to the flow (one) or the device's "Needs your decision" list (several).
+  const undecided = connected
+    .map((d) => ({ d, flows: d.flows.filter((f) => f.evaluation.verdict === 'decision_required') }))
+    .filter((x) => x.flows.length)
 
-  const bannerTo = unseen ? `/device/${unseen.device_id}/joined` : first ? `/device/${first.id}` : undefined
-  const joinedName = unseen ? connected.find((d) => d.id === unseen.device_id)?.short_name : undefined
-  const bannerTitle = joinedName ? `${joinedName} joined your home` : totalWaiting > 0 ? `${plural(totalWaiting, 'decision')} waiting` : 'Rules are updating'
-  const bannerSub = [first ? first.short_name + (waiting.length > 1 ? ` and ${waiting.length - 1} more` : '') + ' · decisions waiting' : null, updating ? `${plural(updating, 'device is', 'devices are')} picking up a rule change` : null].filter(Boolean).join(' · ')
+  const names = (list: Device[]) => list.length === 1 ? list[0].short_name : `${list.length} devices`
+  const lastSeen = (d: Device) => (d.live?.receipt?.acknowledged_at ? ` since ${timeAgo(d.live.receipt.acknowledged_at)}` : '')
+  const to = (list: Device[]) => (list.length === 1 ? `/device/${encodeURIComponent(list[0].id)}` : undefined)
+
+  // Every notice on My home, most urgent first. Each says what happened and what to do; the device lists below have
+  // the detail.
+  const notices: Notice[] = [
+    conflicting.length > 0 && {
+      key: 'conflict', tone: 'red', icon: 'status', to: to(conflicting),
+      title: `${names(conflicting)} ${conflicting.length === 1 ? 'is' : 'are'} doing something your rules don’t allow`,
+      sub: conflicting.length === 1 ? 'See what it is doing' : conflicting.map((d) => d.short_name).join(', '),
+    },
+    ...undecided.map(({ d, flows }): Notice => ({
+      key: `undecided-${d.id}`, tone: 'orange', icon: 'status',
+      to: flows.length === 1 ? flowPath(d.id, flows[0].id) : `/device/${encodeURIComponent(d.id)}`,
+      title: flows.length === 1 ? `${d.short_name}: “${flows[0].title}” has no rule` : `${d.short_name}: ${flows.length} data flows have no rule`,
+      sub: `A rule that covered ${flows.length === 1 ? 'it' : 'them'} was deleted or switched off, so ${d.short_name} gets no rule for ${flows.length === 1 ? 'it' : 'them'}. Tap to decide what should happen.`,
+    })),
+    stale.length > 0 && {
+      key: 'stale', tone: stale.some(reported) ? 'red' : 'orange', icon: 'status', to: to(stale),
+      title: `${names(stale)} stopped checking in`,
+      sub: stale.length === 1
+        ? `It hasn’t confirmed your rules${lastSeen(stale[0])}. It may be unplugged or offline, and gets your rules again when it’s back.${earlier(stale)}`
+        : `${stale.map((d) => d.short_name).join(', ')}. They may be unplugged or offline.`,
+    },
+    reconnect.length > 0 && {
+      key: 'reconnect', tone: reconnect.some(reported) ? 'red' : 'orange', icon: 'status', to: to(reconnect),
+      title: `${names(reconnect)} ${reconnect.length === 1 ? 'needs' : 'need'} to reconnect`,
+      sub: `${reconnect.length === 1 ? 'It' : 'They'} can’t get your household policy until ${reconnect.length === 1 ? 'it joins' : 'they join'} again.${earlier(reconnect)}`,
+    },
+    !!joined && {
+      key: 'joined', tone: 'blue', icon: 'plus', to: `/device/${encodeURIComponent(joined.id)}/joined`,
+      title: `${joined.short_name} joined your home`, sub: 'See what it does with your data',
+    },
+    updating > 0 && {
+      key: 'updating', tone: 'blue', icon: 'publish',
+      title: 'Rules are updating', sub: `${plural(updating, 'device is', 'devices are')} picking up your latest rule change. This takes a minute or two.`,
+    },
+  ].filter((n): n is Notice => !!n)
 
   return (
     <div className="screen">
-      <AppBar title="My home" right={<Link to="/library" className="ntr" aria-label="Add a device"><Icon name="plus" /></Link>} />
+      <AppBar title="My home" />
 
-      {(unseen || totalWaiting > 0 || updating > 0) && (
+      {notices.length > 0 && (
         <Group style={{ marginTop: 4 }}>
-          <Cell className="t" to={bannerTo} chevron={!!bannerTo}>
-            <Tile tone={unseen ? 'blue' : 'orange'}>{unseen ? <Icon name="plus" size={18} /> : <DecisionGlyph />}</Tile>
-            <div className="cb">
-              <span className="ttl" style={{ fontWeight: 500 }}>{bannerTitle}</span>
-              <span className="sub">{bannerSub || 'See what it does with your data'}</span>
-            </div>
-          </Cell>
+          {notices.map((n) => (
+            <Cell key={n.key} className="t" to={n.to} chevron={!!n.to} style={{ alignItems: 'flex-start' }}>
+              <Tile tone={n.tone} style={{ marginTop: 10 }}><Icon name={n.icon} size={18} /></Tile>
+              <div className="cb">
+                <span className="ttl" style={{ fontWeight: 500 }}>{n.title}</span>
+                <span className="sub">{n.sub}</span>
+              </div>
+            </Cell>
+          ))}
         </Group>
       )}
 
@@ -67,7 +118,7 @@ export default function Home() {
       {attentionDevices.length > 0 && (
         <>
           <SectionHeader>Need attention · {attentionDevices.length}</SectionHeader>
-          <Group>{attentionDevices.map((d) => <DeviceRow key={d.id} device={d} household={household} />)}</Group>
+          <Group>{attentionDevices.map((d) => <DeviceRow key={d.id} device={d} />)}</Group>
           <Footnote>These devices connected through PPD but don’t hold your current rules: they haven’t confirmed them yet, stopped renewing, or need to reconnect. A device that has left for good can be forgotten from its page.</Footnote>
         </>
       )}
@@ -75,7 +126,7 @@ export default function Home() {
       {withRules.length > 0 && (
         <>
           <SectionHeader>Have your rules · {withRules.length}</SectionHeader>
-          <Group>{withRules.map((d) => <DeviceRow key={d.id} device={d} household={household} />)}</Group>
+          <Group>{withRules.map((d) => <DeviceRow key={d.id} device={d} />)}</Group>
         </>
       )}
 
@@ -87,14 +138,14 @@ export default function Home() {
           ) : (
             <Group><div className="empty" style={{ padding: 20 }}>Your home gateway hasn’t seen any device that doesn’t support PPD.</div></Group>
           )}
-          <Footnote>These devices are on your home network but don’t support PPD, so your rules can’t reach them.</Footnote>
+          <Footnote>These devices are on your home network but don’t support PPD, so your household policy can’t reach them.</Footnote>
         </>
       )}
 
       {advisory.length > 0 && (
         <>
           <SectionHeader>Advisory devices you added · {advisory.length}</SectionHeader>
-          <Group>{advisory.map((d) => <DeviceRow key={d.id} device={d} household={household} />)}</Group>
+          <Group>{advisory.map((d) => <DeviceRow key={d.id} device={d} />)}</Group>
           <Footnote>From our research. Nothing is sent to these devices.</Footnote>
         </>
       )}
@@ -102,33 +153,38 @@ export default function Home() {
       <div className="gap" />
       <Group>
         <Cell className="t" to="/library">
-          <Tile tone="blue"><Icon name="plus" size={18} /></Tile>
+          <Tile tone="blue"><Icon name="search" size={18} /></Tile>
           <div className="cb">
-            <span className="ttl" style={{ color: '#0066CC' }}>Add a device</span>
-            <span className="sub">Scan its code or pick it from our research library</span>
+            <span className="ttl" style={{ color: '#0066CC' }}>Check a device before you buy it</span>
+            <span className="sub">See how what it says it does fits your household policy. Scan its privacy code, or look it up in our research library.</span>
           </div>
         </Cell>
       </Group>
-      <Footnote>Devices that support PPD join by themselves when they connect to your network.</Footnote>
+      <Footnote>This checks what the device declares, not what it will actually do. You don’t need to add devices you own: devices that support PPD join and get your household policy by themselves when they connect to your network.</Footnote>
       <div className="spacer" />
     </div>
   )
 }
 
-function DeviceRow({ device: d, household }: { device: Device; household: Household }) {
-  const counts = countVerdicts(d, household)
-  const attention = (['unsatisfiable', 'decision_required', 'indeterminate'] as const).some((v) => counts[v])
+function DeviceRow({ device: d }: { device: Device }) {
+  const counts = countVerdicts(d)
+  const attention = !!counts.unsatisfiable
   return (
     <Cell className="d" to={`/device/${d.id}`}>
       <DeviceTile device={d} />
       <div className="cb">
-        <span className="ttl">{d.short_name}{d.kind === 'simulated' && <span className="tag" style={{ marginLeft: 8 }}>Simulated</span>}</span>
+        <span className="ttl">{d.short_name}{d.kind === 'simulated' && <span className="tag sm">Simulated</span>}</span>
         <span className="st">
-          {hasRules(d) ? <SmallCheck /> : <DashedCircle />}
-          <span>{d.live && !hasRules(d) ? d.live.association.label : stateLabel(d)}</span>
+          <StateChip device={d} />
         </span>
         <span className="ln">
-          {attention ? <VerdictChips counts={counts} order={['unsatisfiable', 'decision_required', 'indeterminate']} /> : <VerdictChip verdict="compatible" n={(counts.compatible ?? 0) + (counts.conditionally_satisfiable ?? 0)} />}
+          {declaredNothing(d) ? (
+            <span className="sub" style={{ fontSize: 13 }}>No per-flow verdicts: it declared nothing</span>
+          ) : attention || counts.decision_required ? (
+            <VerdictChips counts={counts} order={['unsatisfiable', 'decision_required']} />
+          ) : (
+            <VerdictChip verdict="compatible" n={(counts.compatible ?? 0) + (counts.conditionally_satisfiable ?? 0)} />
+          )}
         </span>
       </div>
     </Cell>
@@ -141,7 +197,7 @@ function UnmanagedRow({ device: u }: { device: UnmanagedDevice }) {
     <>
       <Tile tone="grey" size="device"><Icon name="status" size={20} /></Tile>
       <div className="cb">
-        <span className="ttl">{u.hostname ?? 'Unnamed device'}{u.simulated && <span className="tag" style={{ marginLeft: 8 }}>Simulated</span>}</span>
+        <span className="ttl">{u.hostname ?? 'Unnamed device'}{u.simulated && <span className="tag sm">Simulated</span>}</span>
         <span className="sub">{[u.ip_address, guess || null].filter(Boolean).join(' · ')}</span>
         <span className="sub" style={{ fontSize: 13 }}>{u.research_match ? `Looks like ${u.research_match.short_name} · see what it does` : 'Doesn’t support PPD · doesn’t get your rules'}</span>
       </div>
@@ -165,7 +221,7 @@ function Readiness({ overview: o }: { overview: Overview }) {
   }
   const stats: [string, number, string | undefined][] = [
     ['On your network', c.known, undefined],
-    ['Have your rules', c.associated, 'ok'],
+    ['Have your rules', c.have_rules, 'ok'],
     ['Don’t support PPD', c.unmanaged, undefined],
     ['Need attention', c.need_attention, c.need_attention ? 'dec' : undefined],
   ]
@@ -187,13 +243,5 @@ function Readiness({ overview: o }: { overview: Overview }) {
         </Cell>
       </Group>
     </>
-  )
-}
-
-export function DecisionGlyph() {
-  return (
-    <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-      <circle cx="7" cy="7" r="5.5" /><path d="M7 4v3.3" /><circle cx="7" cy="10" r=".7" fill="currentColor" />
-    </svg>
   )
 }

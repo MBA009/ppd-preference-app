@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
 import { after, before, beforeEach, describe, test } from 'node:test'
 import type { FastifyInstance } from 'fastify'
-import type { Device, Household, Policy, PublishPreview, Rule } from '../../shared/types'
+import type { Answers, Device, Household, HouseholdPreset, Onboarding, Policy, PublishPreview, Rule } from '../../shared/types'
+import { followUps, walk } from '../../shared/onboarding'
 import { buildApp } from '../src/app'
 import { Authenticator } from '../src/auth'
 import { loadConfig, type Config } from '../src/config'
@@ -16,11 +17,22 @@ const config: Config = {
   databasePath: ':memory:',
   logLevel: 'silent',
   internalServiceToken: 'test-service-token',
+  autoPublishIntervalMs: 0, // tests trigger sends themselves; one test runs the timer
   gateway: { ...baseConfig.gateway, url: gateway.url, operatorToken: gateway.token },
 }
 
 let app: FastifyInstance
 let store: HouseholdStore
+
+/** Answers that finish the questionnaire: the first option at every tree question, then `followUp` to every follow-up. */
+function finishingAnswers(tree: Onboarding, followUp = 'depends'): Answers {
+  const answers: Answers = {}
+  for (let step = walk(tree, answers); 'question' in step; step = walk(tree, answers)) answers[step.question] = tree.questions[step.question].options[0].id
+  const step = walk(tree, answers)
+  if ('leaf' in step) for (const q of followUps(tree, step.leaf, answers)) answers[q] = followUp
+  return answers
+}
+const ANSWERS = finishingAnswers((await loadFixtures(config.fixturesDir)).onboarding)
 
 const reset = async () => {
   store = new HouseholdStore(':memory:')
@@ -43,7 +55,7 @@ const json = async <T>(method: Method, url: string, payload?: object, status = 2
   return (res.body ? res.json() : null) as T
 }
 
-const rule = (id: string, effect: Rule['effect'], scope: Rule['scope']): Rule => ({ id, title: id, effect, scope, enabled: true, origin: { kind: 'custom' } })
+const rule = (id: string, effect: Rule['effect'], scope: Rule['scope'], condition: Rule['condition'] = null): Rule => ({ id, title: id, effect, condition, scope, enabled: true, origin: { kind: 'custom' } })
 const neverRule = rule('r-test', 'dont_allow', { data_type: ['ppd:contentData'], handling_context: ['ppd:vendorContext'] })
 
 describe('household (fixtures)', () => {
@@ -57,6 +69,7 @@ describe('household (fixtures)', () => {
   test('first read returns the seeded household at first launch', async () => {
     const h = await json<Household>('GET', '/api/household')
     assert.equal(h.answers, null)
+    assert.equal(h.preset_id, null)
     // Every researched fixture has a simulated stand-in, so first launch starts with no research devices:
     // devices join from the gateway, or are added from the library.
     assert.deepEqual(h.devices.map((d) => d.device_id), [])
@@ -73,12 +86,17 @@ describe('household (fixtures)', () => {
 
   test('saving a rule changes the verdicts computed for a device', async () => {
     const upload = (await json<Device>('GET', '/api/devices/reolink-e1-zoom')).flows.find((f) => f.title === 'Cloud video upload')!
-    assert.notEqual(upload.evaluation.verdict, 'unsatisfiable')
+    // No rule covers it: it needs a decision, citing no rule (there is no default).
+    assert.equal(upload.evaluation.verdict, 'decision_required')
+    assert.equal(upload.evaluation.rule_id, null)
+    await json<Household>('PUT', '/api/household/rules/r-allow', rule('r-allow', 'allow', { data_type: ['ppd:contentData'] }))
+    assert.equal((await json<Device>('GET', '/api/devices/reolink-e1-zoom')).flows.find((f) => f.title === 'Cloud video upload')!.evaluation.verdict, 'compatible')
     await json<Household>('PUT', '/api/household/rules/r-test', neverRule)
     const evaluated = (await json<Device>('GET', '/api/devices/reolink-e1-zoom')).flows.find((f) => f.title === 'Cloud video upload')!.evaluation
     assert.equal(evaluated.verdict, 'unsatisfiable')
     assert.equal(evaluated.rule_id, 'r-test')
     await json<Household>('DELETE', '/api/household/rules/r-test')
+    await json<Household>('DELETE', '/api/household/rules/r-allow')
   })
 
   test('rules can be scoped by source', async () => {
@@ -89,7 +107,7 @@ describe('household (fixtures)', () => {
     await json<Household>('DELETE', '/api/household/rules/r-src')
   })
 
-  test('device membership, saved list and decisions', async () => {
+  test('device membership and the saved list', async () => {
     await json<Household>('POST', '/api/household/reset', { mode: 'empty' })
     let h = await json<Household>('POST', '/api/household/saved', { device_id: 'level-lock' })
     assert.deepEqual(h.saved, ['level-lock'])
@@ -97,11 +115,63 @@ describe('household (fixtures)', () => {
     assert.deepEqual(h.saved, [])
     h = await json<Household>('POST', '/api/household/devices/level-lock/seen')
     assert.equal(h.devices.find((d) => d.device_id === 'level-lock')!.joined_seen, true)
-    const flow = (await json<Device>('GET', '/api/devices/level-lock')).flows[0]
-    h = await json<Household>('POST', '/api/household/decisions', { flow_id: flow.id, device_id: 'level-lock', preference: 'dont_allow', remember_similar: true, core_group_id: flow.core_group.id })
-    assert.equal(h.decisions[flow.id].preference, 'dont_allow')
     h = await json<Household>('DELETE', '/api/household/devices/level-lock')
-    assert.deepEqual(h.decisions, {})
+    assert.deepEqual(h.devices, [])
+  })
+
+  test('finishing the questionnaire assigns a preset and rebuilds the rules from it and the answers (start over)', async () => {
+    const tree = await json<Onboarding>('GET', '/api/onboarding')
+    const presets = await json<HouseholdPreset[]>('GET', '/api/household-presets')
+    assert.ok('question' in tree.root)
+    assert.ok(tree.splash.text && tree.source.total_questions_cap === 15)
+    assert.equal(presets.length, 4)
+    assert.ok(presets.every((p) => p.shown_to_households === false))
+    await json<Household>('PUT', '/api/household/rules/r-mine', rule('r-mine', 'dont_allow', { purpose: ['ppd:advertisingAndMarketing'] }))
+    const answers = finishingAnswers(tree, 'yes')
+    const step = walk(tree, answers)
+    assert.ok('leaf' in step)
+    let h = await json<Household>('PUT', '/api/household/onboarding', { answers })
+    assert.equal(h.preset_id, step.leaf.preset)
+    assert.deepEqual(h.answers, answers)
+    assert.ok(!h.rules.some((r) => r.id === 'r-mine'), 'starting over replaces the rules the person added')
+    assert.ok(h.rules.every((r) => r.origin.kind === 'preset' || r.origin.kind === 'answer'))
+    // Answering "Not sure" to every follow-up keeps the preset's rules (stage 1 answers can still split some).
+    h = await json<Household>('PUT', '/api/household/onboarding', { answers: finishingAnswers(tree, 'depends') })
+    assert.ok(h.rules.length >= presets.find((p) => p.id === h.preset_id)!.rules.length)
+    // Unknown questions or answers, and answers that stop halfway, are refused.
+    await json('PUT', '/api/household/onboarding', { answers: { nope: 'yes' } }, 400)
+    await json('PUT', '/api/household/onboarding', { answers: { [Object.keys(answers)[0]]: 'maybe' } }, 400)
+    await json('PUT', '/api/household/onboarding', { answers: {} }, 400)
+  })
+
+  test('a household on a preset that has since been rebuilt goes back to the questions', async () => {
+    store.update('test', () => { throw new Error('unused') }, (h) => ({ ...h, preset_id: 'k8-p0', answers: { concern: '5' }, rules: [neverRule] }))
+    const h = await json<Household>('GET', '/api/household')
+    assert.equal(h.preset_id, null)
+    assert.equal(h.answers, null)
+    assert.deepEqual(h.rules, [])
+    await json<Household>('PUT', '/api/household/onboarding', { answers: ANSWERS })
+  })
+
+  test('refining saves one answer at a time, into its own situation, and keeps the rules the person added', async () => {
+    const tree = await json<Onboarding>('GET', '/api/onboarding')
+    let h = await json<Household>('PUT', '/api/household/onboarding', { answers: ANSWERS })
+    h = await json<Household>('PUT', '/api/household/rules/r-mine', rule('r-mine', 'dont_allow', { purpose: ['ppd:advertisingAndMarketing'] }))
+    const step = walk(tree, h.answers!)
+    assert.ok('leaf' in step)
+    const q = step.leaf.queue!.find((e) => !(e.question in h.answers!))!.question
+    h = await json<Household>('PUT', `/api/household/answers/${q}`, { answer: 'no' })
+    assert.equal(h.answers![q], 'no')
+    assert.ok(h.answered_at![q])
+    assert.ok(h.rules.some((r) => r.id === 'r-mine'), 'refining keeps the rules the person added')
+    assert.ok(h.rules.some((r) => r.id === `answer.${q}` && r.effect === 'dont_allow'))
+    await json('PUT', '/api/household/answers/nope', { answer: 'yes' }, 400)
+    await json('PUT', `/api/household/answers/${q}`, { answer: 'maybe' }, 400)
+  })
+
+  test('profile settings are saved on their own', async () => {
+    const h = await json<Household>('PUT', '/api/household/profile', { summary_frequency: 'yearly', warn_on_conflict: false })
+    assert.deepEqual(h.profile, { summary_frequency: 'yearly', warn_on_conflict: false })
   })
 
   test('privacy codes resolve to devices and Matter codes are refused', async () => {
@@ -113,6 +183,8 @@ describe('household (fixtures)', () => {
     await json('GET', '/api/devices/not-a-device', undefined, 404)
     await json('POST', '/api/household/devices', { device_id: 'not-a-device' }, 404)
     await json('PUT', '/api/household/rules/r-test', { ...neverRule, effect: 'maybe' }, 400)
+    await json('PUT', '/api/household/rules/r-test', { ...neverRule, effect: 'ask' }, 400)
+    await json('PUT', '/api/household/rules/r-test', { ...neverRule, condition: 'jurisdiction=us' }, 400)
     await json('PUT', '/api/household/rules/other-id', neverRule, 400)
     await json('POST', '/api/household/reset', { mode: 'everything' }, 400)
     const res = await json<{ message: string }>('GET', '/api/nope', undefined, 404)
@@ -165,46 +237,131 @@ describe('gateway devices', () => {
     assert.ok(!s.checks.some((c) => c.id === 'dhcp-lease-source'))
   })
 
-  test('preview compiles one atomic rule per declared dataflow and waits on undecided flows', async () => {
-    const preview = await json<PublishPreview>('GET', '/api/household/preview')
+  test('preview compiles one atomic rule per core dataflow the household policy answers, whatever devices declare', async () => {
+    const preview = await json<PublishPreview>('GET', '/api/household/preview?all=1')
     assert.equal(preview.devices, 1)
-    // Power and brightness share one dataflow; the in-home rule is allowed by default.
-    const home = preview.rules.find((r) => r.data_type === 'ppd:deviceAndNetworkData')!
-    assert.equal(home.effect, 'allow')
-    assert.equal(home.flows.length, 2)
-    // Nothing covers the two cloud dataflows yet, so they wait for a decision.
-    assert.equal(preview.blocked.length, 3)
+    // No household rules yet and no default: none of the bulb's dataflows gets a rule.
+    assert.equal(preview.rules.length, 0)
+    const bulb = await json<Device>('GET', '/api/devices/superduperlight-bulb-esp32')
+    assert.ok(bulb.flows.every((f) => f.evaluation.verdict === 'decision_required'))
+    await json<Household>('PUT', '/api/household/rules/home-ok', rule('home-ok', 'allow', { handling_context: ['ppd:householdContext'] }))
+    // Every core dataflow that stays in the home now has a rule (7 x 8 x 4 x 7 data types, purposes, actions, sources),
+    // not only the bulb's. Power and brightness share one of them; the cloud dataflows still get none.
+    const after = await json<PublishPreview>('GET', '/api/household/preview?all=1')
+    assert.equal(after.rules.length, 7 * 8 * 4 * 7)
+    assert.ok(after.rules.every((r) => r.effect === 'allow' && r.handling_context === 'ppd:householdContext'))
+    assert.deepEqual(after.rules.filter((r) => r.flows.length).map((r) => [r.data_type, r.effect, r.flows.length]), [['ppd:deviceAndNetworkData', 'allow', 2]])
+    await json<Household>('DELETE', '/api/household/rules/home-ok')
+    // No preset yet: the household has not been through onboarding, so nothing is sent.
     await json('POST', '/api/household/publish', {}, 409)
   })
 
   test('publishing sends a -04 policy, reads it back, and records it', async () => {
+    await json<Household>('PUT', '/api/household/onboarding', { answers: ANSWERS })
     await json<Household>('PUT', '/api/household/rules/allow-monitoring', rule('allow-monitoring', 'allow', { data_type: ['ppd:sensorData'], purpose: ['ppd:coreFunctionality'] }))
     await json<Household>('PUT', '/api/household/rules/no-analytics', rule('no-analytics', 'dont_allow', { purpose: ['ppd:analyticsAndImprovement'] }))
     const result = await json<{ policy_id: string; rules: number }>('POST', '/api/household/publish', {})
     assert.match(result.policy_id, /^household-\d{8}-\d{6}Z$/)
-    assert.equal(result.rules, 3)
+    // A preset answers every core dataflow, so the whole household policy is sent: 6,272 atomic rules.
+    assert.equal(result.rules, 6272)
     const sent = gateway.puts.at(-1)!
     assert.deepEqual(sent.taxonomy, { release: 'ppd-core-2026-05' })
     assert.ok(sent.rules.every((r) => r.effect === 'allow' || r.effect === 'deny'))
-    const analytics = sent.rules.find((r) => r.purpose === 'ppd:analyticsAndImprovement')!
+    const analytics = sent.rules.find((r) => r.data_type === 'ppd:sensorData' && r.purpose === 'ppd:analyticsAndImprovement' && r.action === 'ppd:transfer' && r.source === 'ppd:participantObserved' && r.handling_context === 'ppd:vendorContext')!
     assert.equal(analytics.effect, 'deny')
-    assert.deepEqual(analytics.constraints, { retention: 'ppd:indefinite' })
+    // Constraints come only from a household condition, never from what a device declared.
+    assert.equal(analytics.constraints, undefined)
     const overview = await json<{ household_policy: { published_by_app: boolean } }>('GET', '/api/overview')
     assert.equal(overview.household_policy.published_by_app, true)
     // The device has not picked up the new instance yet.
     assert.equal((await json<Device>('GET', '/api/devices/superduperlight-bulb-esp32')).live?.publication, 'waiting')
   })
 
-  test('a saved decision resolves an undecided flow, and "allow with limits" adds limits', async () => {
-    await json<Household>('PUT', '/api/household/rules/no-analytics', rule('no-analytics', 'dont_allow', { purpose: ['ppd:analyticsAndImprovement'] }))
+  test('an "allowed only if" rule is sent as constraints; a processing boundary covers only use and inference', async () => {
+    await json<Household>('PUT', '/api/household/rules/not-kept', rule('not-kept', 'allow', { data_type: ['ppd:sensorData'], purpose: ['ppd:coreFunctionality'] }, 'retention=ppd:ephemeral'))
+    await json<Household>('PUT', '/api/household/rules/in-home', rule('in-home', 'allow', { purpose: ['ppd:analyticsAndImprovement'] }, 'processing_boundary=ppd:inHomeOnly'))
+    const preview = await json<PublishPreview>('GET', '/api/household/preview?all=1')
+    const monitoring = preview.rules.find((x) => x.purpose === 'ppd:coreFunctionality' && x.data_type === 'ppd:sensorData')!
+    assert.equal(monitoring.effect, 'allow')
+    // The rule's condition is the only constraint.
+    assert.ok(preview.rules.filter((x) => x.purpose === 'ppd:coreFunctionality' && x.data_type === 'ppd:sensorData').every((x) => JSON.stringify(x.constraints) === JSON.stringify({ retention: 'ppd:ephemeral' })))
+    assert.equal(monitoring.limited, true)
+    // The in-home rule covers analytics use and inference, never a transfer: with no default, transfers get no rule.
+    const analytics = preview.rules.filter((x) => x.purpose === 'ppd:analyticsAndImprovement')
+    assert.ok(analytics.length > 0)
+    assert.ok(analytics.every((x) => (x.action === 'ppd:use' || x.action === 'ppd:inference') && x.constraints?.processing_boundary === 'ppd:inHomeOnly'))
     const d = await json<Device>('GET', '/api/devices/superduperlight-bulb-esp32')
-    const monitoring = d.flows.find((f) => f.id.endsWith('temperature-remote-monitoring-cloud'))!
-    await json<Household>('POST', '/api/household/decisions', { flow_id: monitoring.id, device_id: d.id, preference: 'allow_with_limits', keep: 'briefly', region: 'United States', remember_similar: true, core_group_id: monitoring.core_group.id })
-    const preview = await json<PublishPreview>('GET', '/api/household/preview')
-    assert.equal(preview.blocked.length, 0)
-    const r = preview.rules.find((x) => x.purpose === 'ppd:coreFunctionality' && x.data_type === 'ppd:sensorData')!
-    assert.equal(r.effect, 'allow')
-    assert.deepEqual(r.constraints, { retention: 'ppd:ephemeral', jurisdiction: { scope: 'storage', countrycode: ['us'] } })
+    assert.equal(d.flows.find((f) => f.id.endsWith('temperature-analytics-cloud'))!.evaluation.verdict, 'decision_required')
+    const flow = d.flows.find((f) => f.id.endsWith('temperature-remote-monitoring-cloud'))!
+    assert.equal(flow.evaluation.verdict, 'conditionally_satisfiable')
+    assert.equal(flow.evaluation.rule_id, 'not-kept')
+  })
+
+  test('where rules disagree, the policy follows the latest change; saving an older rule again makes it the latest', async () => {
+    const ads = (p: PublishPreview) => p.rules.filter((x) => x.data_type === 'ppd:locationData' && x.purpose === 'ppd:advertisingAndMarketing')
+    const never = rule('loc-never', 'dont_allow', { data_type: ['ppd:locationData'] })
+    await json<Household>('PUT', '/api/household/rules/loc-never', never)
+    await json<Household>('PUT', '/api/household/rules/loc-ads', rule('loc-ads', 'allow', { data_type: ['ppd:locationData'], purpose: ['ppd:advertisingAndMarketing'] }))
+    let preview = await json<PublishPreview>('GET', '/api/household/preview?all=1')
+    assert.ok(ads(preview).length === 112 && ads(preview).every((x) => x.effect === 'allow'), 'the later Allow wins where they overlap')
+    assert.ok(preview.rules.filter((x) => x.data_type === 'ppd:locationData' && x.purpose === 'ppd:security').every((x) => x.effect === 'deny'), 'the Never still decides the rest')
+    await json<Household>('PUT', '/api/household/rules/loc-never', never)
+    preview = await json<PublishPreview>('GET', '/api/household/preview?all=1')
+    assert.ok(ads(preview).every((x) => x.effect === 'deny'), 'saving the Never again makes it the latest')
+    await json<Household>('DELETE', '/api/household/rules/loc-never')
+    await json<Household>('DELETE', '/api/household/rules/loc-ads')
+  })
+
+  test('a place condition is sent as a jurisdiction; a transfer-scoped one covers only transfers', async () => {
+    await json<Household>('PUT', '/api/household/rules/us-only', rule('us-only', 'allow', { data_type: ['ppd:contentData'], purpose: ['ppd:security'] }, 'jurisdiction.transfer=us,us-ca'))
+    await json('PUT', '/api/household/rules/bad', rule('bad', 'allow', {}, 'jurisdiction.transfer=USA' as Rule['condition']), 400)
+    const preview = await json<PublishPreview>('GET', '/api/household/preview?all=1')
+    const rules = preview.rules.filter((x) => x.data_type === 'ppd:contentData' && x.purpose === 'ppd:security' && x.constraints?.jurisdiction)
+    assert.ok(rules.length > 0)
+    assert.ok(rules.every((x) => x.action === 'ppd:transfer'))
+    assert.deepEqual(rules[0].constraints, { jurisdiction: { scope: 'transfer', countrycode: ['us'], subdivisioncode: ['us-ca'] } })
+    await json<Household>('DELETE', '/api/household/rules/us-only')
+  })
+
+  test('the household policy is sent automatically after a preset is chosen, and only when it changes', async () => {
+    // No preset yet: nothing is sent, even after a rule change.
+    await json<Household>('PUT', '/api/household/rules/r-x', rule('r-x', 'dont_allow', { purpose: ['ppd:advertisingAndMarketing'] }))
+    assert.equal(gateway.puts.length, 0)
+    await json<Household>('PUT', '/api/household/onboarding', { answers: ANSWERS })
+    assert.equal(gateway.puts.length, 1)
+    assert.equal(gateway.puts[0].rules.length, 6272) // the whole household policy, not only the bulb's dataflows
+    // A rule that changes nothing in the household policy sends nothing.
+    await json<Household>('PUT', '/api/household/rules/r-y', rule('r-y', 'dont_allow', { purpose: ['ppd:advertisingAndMarketing'] }))
+    assert.equal(gateway.puts.length, 1)
+    // A rule that does change it is sent at once.
+    await json<Household>('PUT', '/api/household/rules/r-z', rule('r-z', 'dont_allow', { purpose: ['ppd:coreFunctionality'], handling_context: ['ppd:vendorContext'] }))
+    assert.equal(gateway.puts.length, 2)
+    const preview = await json<PublishPreview>('GET', '/api/household/preview?all=1')
+    assert.equal(preview.sync?.last_error, null)
+    assert.equal(preview.sync?.last_sent?.policy_id, gateway.puts[1].policy_id)
+  })
+
+  test('a device that joins is already covered: the household policy does not change, so nothing is sent', async () => {
+    const timed = buildApp({ ...config, autoPublishIntervalMs: 50 }, await loadFixtures(config.fixturesDir), new HouseholdStore(':memory:'))
+    await timed.ready()
+    try {
+      await timed.inject({ method: 'PUT', url: '/api/household/onboarding', payload: { answers: ANSWERS }, headers: { 'x-ppd-client': 'web' } })
+      assert.equal(gateway.puts.at(-1)!.rules.length, 6272)
+      const sends = gateway.puts.length
+      const base = bulb()
+      gateway.devices = [base, bulb({
+        device_id: 'lamp-2',
+        declaration_statements: [...base.declaration_statements!, { statement_id: 'usage-ads', data_type: 'ppd:usageData', purpose: 'ppd:advertisingAndMarketing', action: 'ppd:transfer', source: 'ppd:participantGenerated', handling_context: 'ppd:thirdPartyContext' }],
+      })]
+      // Give the publisher time to notice the new device: it has nothing new to send.
+      await new Promise((r) => setTimeout(r, 500))
+      assert.equal(gateway.puts.length, sends)
+      const sent = gateway.puts.at(-1)!
+      const ads = sent.rules.find((r) => r.data_type === 'ppd:usageData' && r.purpose === 'ppd:advertisingAndMarketing' && r.action === 'ppd:transfer' && r.source === 'ppd:participantGenerated' && r.handling_context === 'ppd:thirdPartyContext')
+      assert.equal(ads?.effect, 'deny')
+    } finally {
+      await timed.close()
+    }
   })
 
   test('presets and disassociation go through the gateway', async () => {

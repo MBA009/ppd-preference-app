@@ -11,13 +11,17 @@ import Library from './screens/Library'
 import DeviceDetail from './screens/DeviceDetail'
 import Rules from './screens/Rules'
 import RuleEditor from './screens/RuleEditor'
-import Questionnaire from './screens/Questionnaire'
+import Onboarding from './screens/Onboarding'
+import Refine from './screens/Refine'
+import Settle from './screens/Settle'
 import Sources from './screens/Sources'
+import RulesJson from './screens/RulesJson'
 import Dev from './screens/Dev'
 import SystemStatus from './screens/SystemStatus'
 import DemoDevices from './screens/DemoDevices'
+import DeviceConsole from './screens/DeviceConsole'
 
-/** Until the household has answered the questions, the only screens are the questions themselves and the test tools. */
+/** Until the household has answered the questions, the only screens are the questions, how they were made and the test tools. */
 function OnboardingGate() {
   const { household, error, reload } = useHousehold()
   const { pathname } = useLocation()
@@ -30,8 +34,8 @@ function OnboardingGate() {
     )
   }
   if (!household) return <Loading />
-  const onboarding = household.answers === null
-  if (onboarding && pathname !== '/rules' && pathname !== '/rules/sources' && pathname !== '/dev') return <Navigate to="/rules" replace />
+  const onboarding = household.preset_id === null
+  if (onboarding && !['/rules', '/rules/sources', '/dev'].includes(pathname)) return <Navigate to="/rules" replace />
   return <Outlet />
 }
 
@@ -40,7 +44,7 @@ function WithTabs() {
   return (
     <>
       <Outlet />
-      {household?.answers !== null && <BottomNav />}
+      {!!household?.preset_id && <BottomNav />}
     </>
   )
 }
@@ -50,16 +54,16 @@ function Shell() {
   const { household } = useHousehold()
   return (
     <>
-      {household && household.answers !== null && <SideRail />}
+      {!!household?.preset_id && <SideRail />}
       <main className="main"><Outlet /></main>
     </>
   )
 }
 
-/** Household rules beside the rule editor on desktop, once the questions are answered. */
+/** Household rules beside the rule editor on desktop, once the household has a preset. */
 function RulesSplit({ mode }: { mode: 'list' | 'detail' }) {
   const { household } = useHousehold()
-  if (!household || household.answers === null) return mode === 'list' ? <Rules /> : <RuleEditor />
+  if (!household?.preset_id) return mode === 'list' ? <Rules /> : <RuleEditor />
   return <Split mode={mode} list={<Rules />} detail={mode === 'detail' ? <RuleEditor /> : null} placeholder="Pick a rule to see or change it." />
 }
 
@@ -76,14 +80,18 @@ export default function App() {
                   <Route path="scan" element={<Scan />} />
                   <Route path="rules" element={<RulesSplit mode="list" />} />
                 </Route>
-                <Route path="rules/update" element={<Questionnaire retake />} />
+                <Route path="rules/update" element={<Onboarding mode="retake" />} />
+                <Route path="rules/refine" element={<Refine />} />
+                <Route path="rules/settle" element={<Settle />} />
                 <Route path="rules/sources" element={<Sources />} />
+                <Route path="rules/json" element={<RulesJson />} />
                 <Route path="rules/new" element={<RulesSplit mode="detail" />} />
                 <Route path="rules/:ruleId" element={<RulesSplit mode="detail" />} />
                 <Route path="preview/:id" element={<Preview />} />
                 <Route path="library" element={<Library />} />
                 <Route path="status" element={<SystemStatus />} />
                 <Route path="demo-devices" element={<DemoDevices />} />
+                <Route path="demo-devices/:id" element={<DeviceConsole />} />
                 <Route path="device/:id" element={<Split mode="detail" list={<Home />} detail={<DeviceDetail />} />} />
                 <Route path="device/:id/joined" element={<NewDevice />} />
                 <Route path="device/:id/flow/:flowId" element={<FlowDetail />} />
