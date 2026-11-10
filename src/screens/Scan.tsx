@@ -4,11 +4,13 @@ import { api } from '../api'
 import { AppBar, Cell, Footnote, Group, Tile } from '../components/ui'
 import { Icon } from '../components/icons'
 import { useQrScanner, type ScanStatus } from '../scanner/useQrScanner'
+import { decodeDeclaration, isDeclarationCode, saveScanned } from '../lib/declarationCode'
 
 const PROBLEM: Record<string, string> = {
   matter_code: 'That is the Matter setup code. It connects a device to your home. Look for the privacy code instead.',
   unknown_code: 'We do not know that code yet. Try the device library instead.',
   not_a_code: 'That does not look like a privacy code.',
+  bad_declaration: 'That privacy code could not be read. Try again, a little closer.',
 }
 
 const CAMERA_TEXT: Partial<Record<ScanStatus, string>> = {
@@ -35,6 +37,18 @@ export default function Scan() {
     last.current = { text: payload, at: now }
     busy.current = true
     try {
+      // The code carries the declaration itself (JSON): read it here, no lookup.
+      if (isDeclarationCode(payload)) {
+        try {
+          saveScanned(await decodeDeclaration(payload))
+        } catch {
+          setProblem(PROBLEM.bad_declaration)
+          return
+        }
+        if (navigator.userActivation?.hasBeenActive) navigator.vibrate?.(30)
+        nav('/viewer/scanned')
+        return
+      }
       const r = await api.resolveCode(payload)
       if (r.ok) {
         if (navigator.userActivation?.hasBeenActive) navigator.vibrate?.(30) // only after a tap, or the browser logs an error

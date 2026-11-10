@@ -6,8 +6,14 @@
  "category_label": "Smart door lock",
  "icon": "lock",
  "matter": true,
- "source": "advisory",
- "declaration": null,
+ "source": "declared",
+ "declaration": {
+  "state": "rules_confirmed",
+  "declaration_id": "level-lock-01",
+  "received_at": "2026-10-14T09:12:00Z",
+  "renew_by": "2026-10-21T09:12:00Z",
+  "statements": 20
+ },
  "declaration_id_example": "level-lock-01",
  "flow_count": 21,
  "flows": [

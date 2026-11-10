@@ -15,6 +15,15 @@ export const STATE_LABEL: Record<DeclarationState, string> = {
 export const isConnected = (d: DeviceSummary) => d.kind === 'real' || d.kind === 'simulated'
 
 /**
+ * A library entry with an example declaration (Reolink E1 Zoom, Aqara W200): it stands for a device that supports PPD,
+ * written by our team from research. It doesn't connect to the home gateway.
+ */
+export const isPpdExample = (d: DeviceSummary) => d.kind === 'research' && d.source === 'declared'
+
+/** Supports PPD: connects to the gateway, or stands for a device that does. Only these get the privacy viewer. */
+export const supportsPpd = (d: DeviceSummary) => isConnected(d) || isPpdExample(d)
+
+/**
  * A connected device that speaks PPD but sent no declaration (optional in PPD). It gets the household's rules like
  * every device and is assumed to follow them; with nothing it said to compare, it has no per-flow verdicts.
  */

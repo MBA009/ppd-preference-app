@@ -3,7 +3,7 @@ import type { Device, DeviceSummary, Flow } from '../api'
 import { DocIcon, NoDeclarationIcon, ShieldCheck } from './icons'
 import { Cell, Expander, Group, SectionHeader, Tile, VerdictChips, VerdictMark } from './ui'
 import { VERDICT_ORDER, countVerdicts, needsAttention } from '../lib/verdicts'
-import { DEVICE_STATE, declaredNothing, deviceState, isConnected, vendorOf } from '../lib/device'
+import { DEVICE_STATE, declaredNothing, deviceState, isConnected, isPpdExample, vendorOf } from '../lib/device'
 
 const NOUN: Record<string, string> = { thermostat: 'the thermostat', lock: 'the lock', tv: 'the TV', camera: 'the camera', bulb: 'the bulb', plug: 'the plug' }
 export const nounOf = (d: DeviceSummary) => NOUN[d.icon] ?? 'the device'
@@ -12,13 +12,18 @@ export const flowPath = (deviceId: string, flowId: string) => `/device/${encodeU
 
 /** Whether the device can receive the household policy at all: the first thing to know about it. */
 export function PpdStatus({ device }: { device: DeviceSummary | Device }) {
-  const yes = isConnected(device)
+  const example = isPpdExample(device)
+  const yes = isConnected(device) || example
   return (
     <div className={'ppd ' + (yes ? 'yes' : 'no')}>
       {yes ? <ShieldCheck size={20} /> : <NoDeclarationIcon />}
       <div>
-        <b>{yes ? 'Supports PPD' : 'Doesn’t support PPD'}</b>
-        <span>{yes ? DEVICE_STATE[deviceState(device)].meaning : 'It can’t receive your household policy. What you see here comes from our research.'}</span>
+        <b>{example ? 'Supports PPD · example' : yes ? 'Supports PPD' : 'Doesn’t support PPD'}</b>
+        <span>
+          {example
+            ? 'An example of a device that supports PPD: it declares what it does with your data. Our team wrote the declaration from research.'
+            : yes ? DEVICE_STATE[deviceState(device)].meaning : 'It can’t receive your household policy. What you see here comes from our research.'}
+        </span>
       </div>
     </div>
   )

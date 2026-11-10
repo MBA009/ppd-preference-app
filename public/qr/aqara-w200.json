@@ -1,0 +1,213 @@
+{
+ "ppd": 1,
+ "device": "aqara-w200",
+ "id": "aqara-w200-01",
+ "name": "Aqara Thermostat Hub W200",
+ "cat": "thermostat",
+ "cat_label": "Thermostat",
+ "icon": "thermostat",
+ "matter": true,
+ "flows": [
+  [
+   "ppd:deviceAndNetworkData",
+   "ppd:coreFunctionality",
+   "ppd:collection",
+   "ppd:userProvided",
+   "ppd:householdContext",
+   "Your household",
+   "Wi-Fi network credential entered during pairing"
+  ],
+  [
+   "ppd:identifierData",
+   "ppd:coreFunctionality",
+   "ppd:collection",
+   "ppd:userProvided",
+   "ppd:vendorContext",
+   "Aqara",
+   "Aqara account identifiers"
+  ],
+  [
+   "ppd:deviceAndNetworkData",
+   "ppd:coreFunctionality",
+   "ppd:collection",
+   "ppd:userProvided",
+   "ppd:householdContext",
+   "Your household",
+   "HVAC system / wiring compatibility profile"
+  ],
+  [
+   "ppd:contentData",
+   "ppd:diagnosticsAndMaintenance",
+   "ppd:collection",
+   "ppd:userProvided",
+   "ppd:vendorContext",
+   "Aqara",
+   "Customer-support photo/video attachment upload"
+  ],
+  [
+   "ppd:usageData",
+   "ppd:advertisingAndMarketing",
+   "ppd:transfer",
+   "ppd:participantObserved",
+   "ppd:thirdPartyContext",
+   "A third-party service",
+   "Usage shared with ad partners"
+  ],
+  [
+   "ppd:sensorData",
+   "ppd:coreFunctionality",
+   "ppd:collection",
+   "ppd:householdProvided",
+   "ppd:householdContext",
+   "Your household",
+   "Linked temperature sensor input for HVAC control"
+  ],
+  [
+   "ppd:sensorData",
+   "ppd:coreFunctionality",
+   "ppd:collection",
+   "ppd:householdProvided",
+   "ppd:householdContext",
+   "Your household",
+   "Linked humidity sensor input for climate balancing"
+  ],
+  [
+   "ppd:sensorData",
+   "ppd:coreFunctionality",
+   "ppd:collection",
+   "ppd:participantObserved",
+   "ppd:householdContext",
+   "Your household",
+   "Built-in mmWave presence/occupancy sensing"
+  ],
+  [
+   "ppd:sensorData",
+   "ppd:personalization",
+   "ppd:use",
+   "ppd:derivedFromPriorData",
+   "ppd:householdContext",
+   "Your household",
+   "Presence data used for Follow Presence / adaptive HVAC"
+  ],
+  [
+   "ppd:sensorData",
+   "ppd:personalization",
+   "ppd:use",
+   "ppd:derivedFromPriorData",
+   "ppd:householdContext",
+   "Your household",
+   "Climate/environment data used for adaptive HVAC"
+  ],
+  [
+   "ppd:contentData",
+   "ppd:coreFunctionality",
+   "ppd:use",
+   "ppd:householdProvided",
+   "ppd:householdContext",
+   "Your household",
+   "Doorbell visitor snapshot displayed on W200",
+   {
+    "processing_boundary": "ppd:inHomeOnly"
+   }
+  ],
+  [
+   "ppd:deviceAndNetworkData",
+   "ppd:coreFunctionality",
+   "ppd:transfer",
+   "ppd:userProvided",
+   "ppd:householdContext",
+   "Your household",
+   "Smart-lock unlock command from W200 screen"
+  ],
+  [
+   "ppd:deviceAndNetworkData",
+   "ppd:coreFunctionality",
+   "ppd:transfer",
+   "ppd:userProvided",
+   "ppd:householdContext",
+   "Your household",
+   "Smart-home device / scene control from W200 panel"
+  ],
+  [
+   "ppd:deviceAndNetworkData",
+   "ppd:coreFunctionality",
+   "ppd:transfer",
+   "ppd:householdProvided",
+   "ppd:thirdPartyContext",
+   "Your smart-home app (Alexa, Google…)",
+   "Aqara Zigbee / household device state bridged to external Matter ecosystems"
+  ],
+  [
+   "ppd:deviceAndNetworkData",
+   "ppd:coreFunctionality",
+   "ppd:collection",
+   "ppd:thirdPartyProvided",
+   "ppd:householdContext",
+   "Your household",
+   "Control command received from external Matter ecosystem"
+  ],
+  [
+   "ppd:deviceAndNetworkData",
+   "ppd:coreFunctionality",
+   "ppd:collection",
+   "ppd:userProvided",
+   "ppd:vendorContext",
+   "Aqara",
+   "Remote thermostat command through Aqara Home service"
+  ],
+  [
+   "ppd:deviceAndNetworkData",
+   "ppd:diagnosticsAndMaintenance",
+   "ppd:transfer",
+   "ppd:participantGenerated",
+   "ppd:vendorContext",
+   "Aqara",
+   "Device logs sent to Aqara"
+  ],
+  [
+   "ppd:usageData",
+   "ppd:analyticsAndImprovement",
+   "ppd:transfer",
+   "ppd:participantGenerated",
+   "ppd:vendorContext",
+   "Aqara",
+   "Usage history sent to Aqara"
+  ],
+  [
+   "ppd:deviceAndNetworkData",
+   "ppd:diagnosticsAndMaintenance",
+   "ppd:transfer",
+   "ppd:participantGenerated",
+   "ppd:vendorContext",
+   "Aqara",
+   "Wi-Fi details sent to Aqara"
+  ],
+  [
+   "ppd:identifierData",
+   "ppd:diagnosticsAndMaintenance",
+   "ppd:transfer",
+   "ppd:participantGenerated",
+   "ppd:vendorContext",
+   "Aqara",
+   "MAC / device identifier sent to Aqara"
+  ],
+  [
+   "ppd:locationData",
+   "ppd:coreFunctionality",
+   "ppd:collection",
+   "ppd:userProvided",
+   "ppd:vendorContext",
+   "Aqara",
+   "Installation / pairing location metadata"
+  ],
+  [
+   "ppd:locationData",
+   "ppd:advertisingAndMarketing",
+   "ppd:collection",
+   "ppd:participantObserved",
+   "ppd:vendorContext",
+   "Aqara",
+   "Phone location for marketing"
+  ]
+ ]
+}

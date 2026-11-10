@@ -317,10 +317,11 @@ button.cell:active, a.cell:active { background: #f1f3f6; }
 
 /* Privacy viewer: where a device's data goes (components/DataflowDiagram.tsx). */
 .df-card { padding: 16px 12px 12px; }
-.df { width: 100%; height: auto; overflow: visible; font-size: 11px; }
+.df-box { width: 100%; }
+.df { display: block; max-width: 100%; height: auto; margin: 0 auto; overflow: visible; font-size: 12px; }
 .df text { fill: var(--text); }
 .df .df-h { font-size: 11px; font-weight: 600; fill: var(--heading); letter-spacing: 0.2px; text-transform: uppercase; }
-.df .df-n { font-size: 10px; fill: var(--text-2); }
+.df .df-n { font-size: 11px; fill: var(--text-2); }
 .df-bar { fill: #5f6368; }
 .df-band { fill: var(--c); fill-opacity: 0.38; transition: fill-opacity 0.15s; }
 .df-band.dim { fill-opacity: 0.07; }
@@ -331,12 +332,17 @@ button.cell:active, a.cell:active { background: #f1f3f6; }
 .df-node.on text { font-weight: 700; }
 .df-node.on .df-bar { fill: var(--primary); }
 .df-node:focus-visible .df-bar { stroke: #7aa9e6; stroke-width: 3; }
-.df.compact { font-size: 10px; }
-.df-legend { margin-top: 12px; padding: 0 4px; font-size: 13px; line-height: 18px; }
+.df.compact { font-size: 12px; }
+.df-legend { margin-top: 10px; padding: 0 4px; font-size: 12px; line-height: 16px; }
+/* Legend entries that filter by verdict: a quiet pill, filled when on. */
+.df-legend .df-vf { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; margin: -4px -8px; padding: 0 8px; border-radius: 16px; color: inherit; }
+.df-legend .df-vf:hover { background: #f1f3f6; }
+.df-legend .df-vf.on { background: color-mix(in srgb, var(--c, #5f6368) 12%, var(--surface)); color: var(--text); }
+.df-legend .df-vf.dim { opacity: 0.45; }
 .df-split { display: flex; gap: 8px; margin: 12px 16px; }
-.df-stat { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 14px; background: var(--surface); display: flex; flex-direction: column; box-shadow: inset 3px 0 0 var(--k, #9aa0a6); }
-.df-stat b { font-size: 24px; line-height: 28px; font-weight: 500; }
-.df-stat span { font-size: 13px; line-height: 17px; color: var(--text-2); }
+.df-stat { flex: 1; min-width: 0; padding: 8px 10px; border-radius: 14px; background: var(--surface); display: flex; flex-direction: column; box-shadow: inset 3px 0 0 var(--k, #9aa0a6); }
+.df-stat b { font-size: 20px; line-height: 24px; font-weight: 500; }
+.df-stat span { font-size: 12px; line-height: 15px; color: var(--text-2); }
 .df-stat.householdContext { --k: var(--ok); }
 .df-stat.vendorContext { --k: var(--dec); }
 .df-stat.thirdPartyContext { --k: var(--bad); }

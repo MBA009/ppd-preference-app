@@ -2,7 +2,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ActionBar, AppBar, DeviceTile, ErrorBox, Group, Loading, Cell, SectionHeader } from '../components/ui'
 import { AttentionList, PpdStatus, ProvenanceCard } from '../components/DeviceReport'
 import { useDevice, useHousehold } from '../state/data'
-import { declaredNothing, subtitle } from '../lib/device'
+import { declaredNothing, subtitle, supportsPpd } from '../lib/device'
 import { DataflowDiagram, contextSplit } from '../components/DataflowDiagram'
 
 /** Screens 1b (declared device) and 1c (researched device): what a device says, before it joins the home. */
@@ -33,7 +33,7 @@ export default function Preview() {
         <PpdStatus device={d} />
       </Group>
       <div className="gap" />
-      {!declaredNothing(d) && d.flows.length > 0 && (
+      {supportsPpd(d) && !declaredNothing(d) && d.flows.length > 0 && (
         <>
           <SectionHeader>Where its data goes</SectionHeader>
           <Group>

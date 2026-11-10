@@ -4,6 +4,7 @@ import type { DeviceSummary } from '../api'
 import { AppBar, DeviceTile, ErrorBox, Footnote, Loading, SectionHeader } from '../components/ui'
 import { Icon, SmallCheck } from '../components/icons'
 import { useHousehold, useLibrary } from '../state/data'
+import { supportsPpd } from '../lib/device'
 
 /** Screen 3b: researched (advisory) devices, plus any device that has published a declaration. */
 export default function Library() {
@@ -20,6 +21,9 @@ export default function Library() {
   const connected = matching.filter((d) => d.kind === 'real' || d.kind === 'simulated')
   const shown = matching.filter((d) => d.kind !== 'real' && d.kind !== 'simulated')
   const inHome = (d: DeviceSummary) => household.devices.some((h) => h.device_id === d.id)
+  // The library is for checking devices against your household policy: devices that support PPD open in the privacy
+  // viewer; the others have no declaration to draw, so they open the device check.
+  const open = (d: DeviceSummary) => (supportsPpd(d) ? `/viewer/${encodeURIComponent(d.id)}` : `/preview/${encodeURIComponent(d.id)}`)
 
   // Research entries are advice only: adding one lists it in My home, nothing connects to anything.
   const add = async (d: DeviceSummary) => {
@@ -40,7 +44,7 @@ export default function Library() {
           <SectionHeader>Connected to your home gateway · {connected.length}</SectionHeader>
           <div className="grp">
             {connected.map((d) => (
-              <Link key={d.id} to={`/device/${encodeURIComponent(d.id)}`} className="cell d">
+              <Link key={d.id} to={open(d)} className="cell d">
                 <DeviceTile device={d} />
                 <div className="cb">
                   <span className="ttl">{d.short_name}</span>
@@ -57,18 +61,19 @@ export default function Library() {
         </>
       )}
 
-      <div className="sf" style={{ paddingTop: 10 }}><b>Library devices are advisory.</b> Verdicts come from our research of vendor sources, and nothing is sent to the device.</div>
+      <div className="sf" style={{ paddingTop: 10 }}><b>Researched devices come from our team’s research</b> of vendor sources, and nothing is sent to them. Those marked PPD have an example declaration and open in the privacy viewer, compared with your household policy.</div>
 
       <SectionHeader>Researched devices · {shown.length}</SectionHeader>
       <div className="grp">
         {shown.map((d) => (
           <div key={d.id} className="cell d">
-            <Link to={`/preview/${d.id}`} style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 14, color: 'inherit' }}>
+            <Link to={open(d)} style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 14, color: 'inherit' }}>
               <DeviceTile device={d} />
               <div className="cb">
                 <span className="ttl">{d.short_name}</span>
                 <span className="ln">
                   <span className="sub">{d.category_label} · {d.flow_count} flows</span>
+                  {supportsPpd(d) && <span className="tag">PPD</span>}
                   {d.matter && <span className="tag">Matter</span>}
                   {!inHome(d) && household.saved.includes(d.id) && <span className="tag">Saved</span>}
                 </span>

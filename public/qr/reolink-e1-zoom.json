@@ -1,0 +1,264 @@
+{
+ "ppd": 1,
+ "device": "reolink-e1-zoom",
+ "id": "reolink-e1-zoom-01",
+ "name": "Reolink E1 Zoom",
+ "cat": "camera",
+ "cat_label": "Camera",
+ "icon": "camera",
+ "matter": false,
+ "flows": [
+  [
+   "ppd:deviceAndNetworkData",
+   "ppd:coreFunctionality",
+   "ppd:collection",
+   "ppd:userProvided",
+   "ppd:householdContext",
+   "Your household",
+   "Wi-Fi network password/credential entered during initialization"
+  ],
+  [
+   "ppd:deviceAndNetworkData",
+   "ppd:coreFunctionality",
+   "ppd:collection",
+   "ppd:userProvided",
+   "ppd:householdContext",
+   "Your household",
+   "Local camera/device password created during initialization"
+  ],
+  [
+   "ppd:identifierData",
+   "ppd:coreFunctionality",
+   "ppd:collection",
+   "ppd:userProvided",
+   "ppd:vendorContext",
+   "Reolink",
+   "Optional Reolink account identifiers for cloud / smart-home services"
+  ],
+  [
+   "ppd:contentData",
+   "ppd:security",
+   "ppd:collection",
+   "ppd:participantObserved",
+   "ppd:householdContext",
+   "Your household",
+   "Video capture from camera sensor"
+  ],
+  [
+   "ppd:contentData",
+   "ppd:security",
+   "ppd:collection",
+   "ppd:participantObserved",
+   "ppd:householdContext",
+   "Your household",
+   "Audio capture from built-in microphone"
+  ],
+  [
+   "ppd:sensorData",
+   "ppd:coreFunctionality",
+   "ppd:collection",
+   "ppd:participantObserved",
+   "ppd:householdContext",
+   "Your household",
+   "Ambient-light / daylight sensing for camera operation"
+  ],
+  [
+   "ppd:sensorData",
+   "ppd:security",
+   "ppd:inference",
+   "ppd:derivedFromPriorData",
+   "ppd:householdContext",
+   "Your household",
+   "Motion event inferred by local detection",
+   {
+    "processing_boundary": "ppd:onDeviceOnly"
+   }
+  ],
+  [
+   "ppd:sensorData",
+   "ppd:security",
+   "ppd:inference",
+   "ppd:derivedFromPriorData",
+   "ppd:householdContext",
+   "Your household",
+   "Person event inferred by local AI",
+   {
+    "processing_boundary": "ppd:onDeviceOnly"
+   }
+  ],
+  [
+   "ppd:sensorData",
+   "ppd:security",
+   "ppd:inference",
+   "ppd:derivedFromPriorData",
+   "ppd:householdContext",
+   "Your household",
+   "Pet event inferred by local AI",
+   {
+    "processing_boundary": "ppd:onDeviceOnly"
+   }
+  ],
+  [
+   "ppd:sensorData",
+   "ppd:security",
+   "ppd:inference",
+   "ppd:derivedFromPriorData",
+   "ppd:householdContext",
+   "Your household",
+   "Crying-sound event inferred by local AI",
+   {
+    "processing_boundary": "ppd:onDeviceOnly"
+   }
+  ],
+  [
+   "ppd:sensorData",
+   "ppd:security",
+   "ppd:use",
+   "ppd:derivedFromPriorData",
+   "ppd:householdContext",
+   "Your household",
+   "PTZ auto-tracking uses detection results to follow subject"
+  ],
+  [
+   "ppd:contentData",
+   "ppd:security",
+   "ppd:use",
+   "ppd:derivedFromPriorData",
+   "ppd:householdContext",
+   "Your household",
+   "Local microSD video recording / playback"
+  ],
+  [
+   "ppd:contentData",
+   "ppd:security",
+   "ppd:use",
+   "ppd:derivedFromPriorData",
+   "ppd:householdContext",
+   "Your household",
+   "Local microSD audio recording / playback"
+  ],
+  [
+   "ppd:contentData",
+   "ppd:security",
+   "ppd:transfer",
+   "ppd:participantGenerated",
+   "ppd:householdContext",
+   "Your household",
+   "Video transferred to local NVR / Home Hub / FTP / NAS"
+  ],
+  [
+   "ppd:contentData",
+   "ppd:security",
+   "ppd:transfer",
+   "ppd:participantGenerated",
+   "ppd:householdContext",
+   "Your household",
+   "Audio transferred to local NVR / Home Hub / FTP / NAS"
+  ],
+  [
+   "ppd:contentData",
+   "ppd:coreFunctionality",
+   "ppd:transfer",
+   "ppd:participantGenerated",
+   "ppd:vendorContext",
+   "Reolink",
+   "Remote viewing through Reolink"
+  ],
+  [
+   "ppd:contentData",
+   "ppd:coreFunctionality",
+   "ppd:transfer",
+   "ppd:participantGenerated",
+   "ppd:vendorContext",
+   "Reolink",
+   "Live / recorded audio delivered through Reolink remote app or client"
+  ],
+  [
+   "ppd:contentData",
+   "ppd:coreFunctionality",
+   "ppd:collection",
+   "ppd:vendorProvided",
+   "ppd:householdContext",
+   "Your household",
+   "Two-way audio from remote user delivered to camera speaker"
+  ],
+  [
+   "ppd:contentData",
+   "ppd:coreFunctionality",
+   "ppd:transfer",
+   "ppd:participantGenerated",
+   "ppd:vendorContext",
+   "Reolink Cloud",
+   "Cloud video upload",
+   {
+    "retention": "ppd:indefinite"
+   }
+  ],
+  [
+   "ppd:sensorData",
+   "ppd:communicationsAndNotifications",
+   "ppd:transfer",
+   "ppd:participantGenerated",
+   "ppd:vendorContext",
+   "Reolink",
+   "Push alerts through Reolink"
+  ],
+  [
+   "ppd:sensorData",
+   "ppd:communicationsAndNotifications",
+   "ppd:transfer",
+   "ppd:participantGenerated",
+   "ppd:thirdPartyContext",
+   "A third-party service",
+   "Email alert event sent when email alerts are enabled"
+  ],
+  [
+   "ppd:contentData",
+   "ppd:coreFunctionality",
+   "ppd:transfer",
+   "ppd:participantGenerated",
+   "ppd:thirdPartyContext",
+   "Your smart-home app (Alexa, Google…)",
+   "Smart-display sharing"
+  ],
+  [
+   "ppd:identifierData",
+   "ppd:coreFunctionality",
+   "ppd:transfer",
+   "ppd:participantGenerated",
+   "ppd:vendorContext",
+   "Reolink",
+   "Device UID sent to Reolink for device binding"
+  ],
+  [
+   "ppd:deviceAndNetworkData",
+   "ppd:coreFunctionality",
+   "ppd:transfer",
+   "ppd:participantGenerated",
+   "ppd:vendorContext",
+   "Reolink",
+   "Device model / setup information sent to Reolink"
+  ],
+  [
+   "ppd:deviceAndNetworkData",
+   "ppd:coreFunctionality",
+   "ppd:collection",
+   "ppd:participantObserved",
+   "ppd:householdContext",
+   "Your household",
+   "Wi-Fi SSID accessed locally during setup and not uploaded/retained by Reolink",
+   {
+    "retention": "ppd:ephemeral"
+   }
+  ],
+  [
+   "ppd:usageData",
+   "ppd:analyticsAndImprovement",
+   "ppd:transfer",
+   "ppd:participantGenerated",
+   "ppd:vendorContext",
+   "Reolink",
+   "App analytics"
+  ]
+ ]
+}

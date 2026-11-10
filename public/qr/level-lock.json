@@ -1,0 +1,204 @@
+{
+ "ppd": 1,
+ "device": "level-lock",
+ "id": "level-lock-01",
+ "name": "Level Lock",
+ "cat": "smart_lock",
+ "cat_label": "Smart door lock",
+ "icon": "lock",
+ "matter": true,
+ "flows": [
+  [
+   "ppd:deviceAndNetworkData",
+   "ppd:coreFunctionality",
+   "ppd:collection",
+   "ppd:userProvided",
+   "ppd:householdContext",
+   "Your household",
+   "Bluetooth/Matter pairing credential or setup code"
+  ],
+  [
+   "ppd:identifierData",
+   "ppd:coreFunctionality",
+   "ppd:collection",
+   "ppd:userProvided",
+   "ppd:vendorContext",
+   "Level",
+   "Level Home app account identifiers"
+  ],
+  [
+   "ppd:profileData",
+   "ppd:coreFunctionality",
+   "ppd:collection",
+   "ppd:userProvided",
+   "ppd:vendorContext",
+   "Level",
+   "Household member / guest access grant and role assignment"
+  ],
+  [
+   "ppd:usageData",
+   "ppd:coreFunctionality",
+   "ppd:collection",
+   "ppd:participantObserved",
+   "ppd:householdContext",
+   "Your household",
+   "Lock/unlock event recorded by the lock"
+  ],
+  [
+   "ppd:usageData",
+   "ppd:coreFunctionality",
+   "ppd:transfer",
+   "ppd:participantGenerated",
+   "ppd:vendorContext",
+   "Level",
+   "Lock/unlock activity communicated to Level services",
+   {
+    "retention": "ppd:indefinite"
+   }
+  ],
+  [
+   "ppd:usageData",
+   "ppd:coreFunctionality",
+   "ppd:use",
+   "ppd:vendorProvided",
+   "ppd:householdContext",
+   "Your household",
+   "Activity event/history displayed to authorized household admins/users"
+  ],
+  [
+   "ppd:identifierData",
+   "ppd:coreFunctionality",
+   "ppd:use",
+   "ppd:vendorProvided",
+   "ppd:householdContext",
+   "Your household",
+   "Actor / method identifier displayed with access event"
+  ],
+  [
+   "ppd:identifierData",
+   "ppd:coreFunctionality",
+   "ppd:collection",
+   "ppd:userProvided",
+   "ppd:vendorContext",
+   "Level",
+   "Guest / authorized-user contact information collected for access sharing"
+  ],
+  [
+   "ppd:identifierData",
+   "ppd:coreFunctionality",
+   "ppd:collection",
+   "ppd:userProvided",
+   "ppd:vendorContext",
+   "Level",
+   "Pass / keypad-code / access credential provisioning"
+  ],
+  [
+   "ppd:locationData",
+   "ppd:coreFunctionality",
+   "ppd:collection",
+   "ppd:participantObserved",
+   "ppd:vendorContext",
+   "Level",
+   "Mobile geolocation collected for Home/Away boundary features"
+  ],
+  [
+   "ppd:locationData",
+   "ppd:coreFunctionality",
+   "ppd:use",
+   "ppd:derivedFromPriorData",
+   "ppd:vendorContext",
+   "Level",
+   "Geofence state used for Auto Unlock / Touch to Unlock"
+  ],
+  [
+   "ppd:locationData",
+   "ppd:coreFunctionality",
+   "ppd:collection",
+   "ppd:userProvided",
+   "ppd:vendorContext",
+   "Level",
+   "Home address / ZIP supplied during setup"
+  ],
+  [
+   "ppd:contentData",
+   "ppd:coreFunctionality",
+   "ppd:collection",
+   "ppd:userProvided",
+   "ppd:vendorContext",
+   "Level",
+   "Door / home photo supplied during setup"
+  ],
+  [
+   "ppd:deviceAndNetworkData",
+   "ppd:coreFunctionality",
+   "ppd:collection",
+   "ppd:userProvided",
+   "ppd:vendorContext",
+   "Level",
+   "Remote lock/unlock command through Level app"
+  ],
+  [
+   "ppd:deviceAndNetworkData",
+   "ppd:coreFunctionality",
+   "ppd:transfer",
+   "ppd:participantGenerated",
+   "ppd:vendorContext",
+   "Level",
+   "Lock state / activity returned to Level service"
+  ],
+  [
+   "ppd:deviceAndNetworkData",
+   "ppd:coreFunctionality",
+   "ppd:collection",
+   "ppd:thirdPartyProvided",
+   "ppd:householdContext",
+   "Your household",
+   "Matter ecosystem lock/unlock command received"
+  ],
+  [
+   "ppd:deviceAndNetworkData",
+   "ppd:coreFunctionality",
+   "ppd:transfer",
+   "ppd:participantGenerated",
+   "ppd:thirdPartyContext",
+   "Your smart-home app (Alexa, Google…)",
+   "Lock state shared with Matter ecosystem"
+  ],
+  [
+   "ppd:deviceAndNetworkData",
+   "ppd:diagnosticsAndMaintenance",
+   "ppd:transfer",
+   "ppd:participantGenerated",
+   "ppd:vendorContext",
+   "Level",
+   "Device software / battery / status telemetry sent to Level"
+  ],
+  [
+   "ppd:identifierData",
+   "ppd:diagnosticsAndMaintenance",
+   "ppd:transfer",
+   "ppd:participantGenerated",
+   "ppd:vendorContext",
+   "Level",
+   "Device serial / stable device identifier sent to Level"
+  ],
+  [
+   "ppd:identifierData",
+   "ppd:coreFunctionality",
+   "ppd:transfer",
+   "ppd:participantGenerated",
+   "ppd:householdContext",
+   "Your household",
+   "Bluetooth identifying signal broadcast for nearby connection"
+  ],
+  [
+   "ppd:usageData",
+   "ppd:analyticsAndImprovement",
+   "ppd:inference",
+   "ppd:derivedFromPriorData",
+   "ppd:vendorContext",
+   "Level",
+   "Access-event data aggregated / inferred for product research and service…"
+  ]
+ ]
+}

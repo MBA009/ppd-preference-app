@@ -75,13 +75,6 @@ export default function DeviceDetail() {
         <>
           <div className="sf" style={{ fontStyle: 'italic' }}>We can’t check that the device will follow your household policy.</div>
           <AttentionList device={d} />
-          {d.flows.length > 0 && (
-            <Group style={{ marginTop: 12 }}>
-              <Cell className="t" to={`/viewer/${d.id}`}>
-                <div className="cb"><span className="ttl">Where its data goes</span><span className="sub">See every flow in the privacy viewer</span></div>
-              </Cell>
-            </Group>
-          )}
         </>
       )}
 

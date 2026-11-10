@@ -5,8 +5,8 @@ import { AppBar, Cell, ErrorBox, Footnote, Group, Loading, SectionHeader } from 
 import { useHousehold, useLibrary } from '../state/data'
 
 const MATTER_DECOY = 'MT:Y.K9042C00KA0648G00'
-/** The four devices from the research workbook; public/qr/ has printed codes for them (tools/make_qr_codes.mjs). */
-const RESEARCH = ['reolink-e1-zoom', 'aqara-w200', 'level-lock', 'lg-oled65c6pua-c6']
+/** The researched devices with example PPD declarations; public/qr/ has printed codes for them (tools/make_qr_codes.mjs). */
+const RESEARCH = ['reolink-e1-zoom', 'aqara-w200', 'level-lock']
 
 function Code({ payload, label }: { payload: string; label: string }) {
   const [src, setSrc] = useState<string>()
@@ -54,7 +54,7 @@ export default function Dev() {
       <Group>{lib.data.map((d) => <Code key={d.id} label={d.short_name} payload={`https://ppd.example/d/${d.declaration_id_example}`} />)}</Group>
 
       <Group style={{ marginTop: 12 }}>
-        <a className="cell" href="qr/index.html" target="_blank" rel="noreferrer"><div className="cb" style={{ padding: '12px 0' }}><span className="ttl">Printable privacy codes</span><span className="sub">Labelled cards for the four researched devices (npm run qr makes them)</span></div></a>
+        <a className="cell" href="qr/index.html" target="_blank" rel="noreferrer"><div className="cb" style={{ padding: '12px 0' }}><span className="ttl">Printable PPD QR codes</span><span className="sub">Labelled cards for the three devices that support PPD (npm run qr makes them)</span></div></a>
       </Group>
 
       <SectionHeader>Privacy viewer</SectionHeader>

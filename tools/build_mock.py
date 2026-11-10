@@ -171,7 +171,7 @@ def title_for(dev, text):
 # ---------------------------------------------------------------- devices (app-level facts the workbook does not hold)
 DEVICE_META = {
     "aqara-w200":        {"short": "Aqara Thermostat Hub W200", "icon": "thermostat", "matter": True,  "source": "declared", "state": "waiting_for_renewal"},
-    "level-lock":        {"short": "Level Lock",                "icon": "lock",       "matter": True,  "source": "advisory", "state": "advisory"},
+    "level-lock":        {"short": "Level Lock",                "icon": "lock",       "matter": True,  "source": "declared", "state": "rules_confirmed"},
     "lg-oled65c6pua-c6": {"short": "LG OLED65C6PUA C6",         "icon": "tv",         "matter": False, "source": "advisory", "state": "advisory"},
     "reolink-e1-zoom":   {"short": "Reolink E1 Zoom",           "icon": "camera",     "matter": False, "source": "declared", "state": "rules_confirmed"},
     "tp-link-kasa-kp125m": {"short": "Kasa Smart Plug KP125M",  "icon": "plug",       "matter": True,  "source": "advisory", "state": "advisory"},
