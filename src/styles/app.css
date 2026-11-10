@@ -314,3 +314,33 @@ button.cell:active, a.cell:active { background: #f1f3f6; }
 
 /* A small secondary tag next to a name, e.g. "Simulated": quieter than the name and the state chip. */
 .tag.sm { height: 18px; padding: 0 6px; border-radius: 5px; margin-left: 6px; font-size: 11px; line-height: 14px; font-weight: 500; color: var(--text-2); background: #eef0f3; vertical-align: 2px; }
+
+/* Privacy viewer: where a device's data goes (components/DataflowDiagram.tsx). */
+.df-card { padding: 16px 12px 12px; }
+.df { width: 100%; height: auto; overflow: visible; font-size: 11px; }
+.df text { fill: var(--text); }
+.df .df-h { font-size: 11px; font-weight: 600; fill: var(--heading); letter-spacing: 0.2px; text-transform: uppercase; }
+.df .df-n { font-size: 10px; fill: var(--text-2); }
+.df-bar { fill: #5f6368; }
+.df-band { fill: var(--c); fill-opacity: 0.38; transition: fill-opacity 0.15s; }
+.df-band.dim { fill-opacity: 0.07; }
+.df-node { outline: none; }
+.df-node[role='button'] { cursor: pointer; }
+.df-node.dim text { fill: #b0b4ba; }
+.df-node.dim .df-bar { fill: #c4c7cc; }
+.df-node.on text { font-weight: 700; }
+.df-node.on .df-bar { fill: var(--primary); }
+.df-node:focus-visible .df-bar { stroke: #7aa9e6; stroke-width: 3; }
+.df.compact { font-size: 10px; }
+.df-legend { margin-top: 12px; padding: 0 4px; font-size: 13px; line-height: 18px; }
+.df-split { display: flex; gap: 8px; margin: 12px 16px; }
+.df-stat { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 14px; background: var(--surface); display: flex; flex-direction: column; box-shadow: inset 3px 0 0 var(--k, #9aa0a6); }
+.df-stat b { font-size: 24px; line-height: 28px; font-weight: 500; }
+.df-stat span { font-size: 13px; line-height: 17px; color: var(--text-2); }
+.df-stat.householdContext { --k: var(--ok); }
+.df-stat.vendorContext { --k: var(--dec); }
+.df-stat.thirdPartyContext { --k: var(--bad); }
+.df-filter { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.df-filter .link { font-size: 14px; font-weight: 500; }
+.df-peek { display: block; padding: 12px 12px 4px; }
+.df-peek:active { background: #f1f3f6; }

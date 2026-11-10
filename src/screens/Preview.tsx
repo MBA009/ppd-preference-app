@@ -1,8 +1,9 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ActionBar, AppBar, DeviceTile, ErrorBox, Group, Loading, Cell } from '../components/ui'
+import { ActionBar, AppBar, DeviceTile, ErrorBox, Group, Loading, Cell, SectionHeader } from '../components/ui'
 import { AttentionList, PpdStatus, ProvenanceCard } from '../components/DeviceReport'
 import { useDevice, useHousehold } from '../state/data'
-import { subtitle } from '../lib/device'
+import { declaredNothing, subtitle } from '../lib/device'
+import { DataflowDiagram, contextSplit } from '../components/DataflowDiagram'
 
 /** Screens 1b (declared device) and 1c (researched device): what a device says, before it joins the home. */
 export default function Preview() {
@@ -32,6 +33,23 @@ export default function Preview() {
         <PpdStatus device={d} />
       </Group>
       <div className="gap" />
+      {!declaredNothing(d) && d.flows.length > 0 && (
+        <>
+          <SectionHeader>Where its data goes</SectionHeader>
+          <Group>
+            <Link to={`/viewer/${d.id}`} className="df-peek" aria-label={`Open the privacy viewer for ${d.short_name}`}>
+              <DataflowDiagram device={d} pick={null} compact />
+            </Link>
+            <Cell className="t" to={`/viewer/${d.id}`}>
+              <div className="cb">
+                <span className="ttl">Open the privacy viewer</span>
+                <span className="sub">{contextSplit(d).map((s) => `${s.n} ${s.label[0].toLowerCase() + s.label.slice(1)}`).join(' · ')}</span>
+              </div>
+            </Cell>
+          </Group>
+          <div className="gap" />
+        </>
+      )}
       <ProvenanceCard device={d} />
       {d.source === 'declared' && <div className="sf" style={{ fontStyle: 'italic' }}>We can’t check that the device will follow your household policy.</div>}
       <AttentionList device={d} />

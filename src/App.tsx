@@ -20,6 +20,7 @@ import Dev from './screens/Dev'
 import SystemStatus from './screens/SystemStatus'
 import DemoDevices from './screens/DemoDevices'
 import DeviceConsole from './screens/DeviceConsole'
+import PrivacyViewer from './screens/PrivacyViewer'
 
 /** Until the household has answered the questions, the only screens are the questions, how they were made and the test tools. */
 function OnboardingGate() {
@@ -88,6 +89,7 @@ export default function App() {
                 <Route path="rules/new" element={<RulesSplit mode="detail" />} />
                 <Route path="rules/:ruleId" element={<RulesSplit mode="detail" />} />
                 <Route path="preview/:id" element={<Preview />} />
+                <Route path="viewer/:id" element={<PrivacyViewer />} />
                 <Route path="library" element={<Library />} />
                 <Route path="status" element={<SystemStatus />} />
                 <Route path="demo-devices" element={<DemoDevices />} />
