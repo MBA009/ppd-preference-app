@@ -11,7 +11,20 @@ export const nounOf = (d: DeviceSummary) => NOUN[d.icon] ?? 'the device'
 export const flowPath = (deviceId: string, flowId: string) => `/device/${encodeURIComponent(deviceId)}/flow/${encodeURIComponent(flowId)}`
 
 /** Whether the device can receive the household policy at all: the first thing to know about it. */
-export function PpdStatus({ device }: { device: DeviceSummary | Device }) {
+export function PpdStatus({ device, viewer }: { device: DeviceSummary | Device; viewer?: boolean }) {
+  // The privacy viewer shows what a device declares, as read from its PPD QR code. It is not about the home network,
+  // so it states only that the device supports PPD: no connection status, no caveats.
+  if (viewer) return (
+    <div className="ppd yes">
+      <ShieldCheck size={20} />
+      <div>
+        <b>Supports PPD</b>
+        <span>{declaredNothing(device) || device.flow_count === 0
+          ? 'This device supports PPD but hasn’t declared what it does with your data.'
+          : 'This device supports PPD and declares what it does with your data.'}</span>
+      </div>
+    </div>
+  )
   const example = isPpdExample(device)
   const yes = isConnected(device) || example
   return (

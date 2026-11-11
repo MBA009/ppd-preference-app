@@ -7,7 +7,7 @@ import { DataflowDiagram, DataflowLegend, contextSplit, matches, whoOf, type Pic
 import { useDevice, useHousehold } from '../state/data'
 import { VERDICTS, VERDICT_ORDER } from '../lib/verdicts'
 import type { Verdict } from '../api'
-import { declaredNothing, subtitle, supportsPpd } from '../lib/device'
+import { declaredNothing, supportsPpd } from '../lib/device'
 import { deviceFromCode, loadScanned } from '../lib/declarationCode'
 
 /**
@@ -64,17 +64,13 @@ function CodeFlowRow({ flow }: { flow: Flow }) {
 }
 
 function ViewerBody({ device: d, back, scanned = false }: { device: Device; back: () => void; scanned?: boolean }) {
-  const { household } = useHousehold()
   const [pick, setPick] = useState<Pick>(null)
-  const inHome = !!household?.devices.some((h) => h.device_id === d.id)
 
   const shown = d.flows.filter((f) => matches(f, pick))
   const worst = (a: Flow, b: Flow) => VERDICT_ORDER.indexOf(a.evaluation.verdict) - VERDICT_ORDER.indexOf(b.evaluation.verdict)
   const groups = [...new Set(shown.map(whoOf))].map((who) => ({ who, flows: shown.filter((f) => whoOf(f) === who).sort(worst) }))
   const split = contextSplit(d)
-  const origin = scanned
-    ? 'Read from the privacy code you scanned, and checked against your household policy on this phone'
-    : d.kind === 'research' ? 'From an example declaration in our research' : 'Declared by the device'
+  const origin = 'What the device declares, compared with your household policy on this phone'
 
   return (
     <div className="screen">
@@ -84,10 +80,10 @@ function ViewerBody({ device: d, back, scanned = false }: { device: Device; back
           <DeviceTile device={d} size="hero" />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 18, lineHeight: '24px', fontWeight: 500 }}>Where its data goes</div>
-            <div className="sub">{scanned ? `${d.category_label} · ${d.flows.length} data flows in the code` : subtitle(d, inHome ? 'In your home' : 'Not in your home yet')}</div>
+            <div className="sub">{`${d.category_label} · ${d.flows.length} data flows`}</div>
           </div>
         </Cell>
-        <PpdStatus device={d} />
+        <PpdStatus device={d} viewer />
       </Group>
 
       {!supportsPpd(d) ? (

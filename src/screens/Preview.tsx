@@ -11,17 +11,19 @@ export default function Preview() {
   const nav = useNavigate()
   const { household, saveForLater, toast } = useHousehold()
   const dev = useDevice(id)
+  // Back to where it was opened from (the device library, or Scan); a link opened directly goes to Scan.
+  const back = () => ((window.history.state?.idx ?? 0) > 0 ? nav(-1) : nav('/scan'))
 
-  if (dev.error) return <><AppBar title="Check a device" back="/scan" /><ErrorBox error={dev.error} /></>
+  if (dev.error) return <><AppBar title="Check a device" back={back} /><ErrorBox error={dev.error} /></>
   const d = dev.data
-  if (!d || !household) return <><AppBar title="Check a device" back="/scan" /><Loading /></>
+  if (!d || !household) return <><AppBar title="Check a device" back={back} /><Loading /></>
 
   const inHome = household.devices.some((h) => h.device_id === d.id)
   const saved = household.saved.includes(d.id)
 
   return (
     <div className="screen">
-      <AppBar title="Check a device" back="/scan" />
+      <AppBar title="Check a device" back={back} />
       <Group style={{ marginTop: 4 }}>
         <Cell className="t" chevron={false} style={{ padding: '14px 16px' }}>
           <DeviceTile device={d} size="hero" />

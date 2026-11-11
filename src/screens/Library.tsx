@@ -25,6 +25,30 @@ export default function Library() {
   // viewer; the others have no declaration to draw, so they open the device check.
   const open = (d: DeviceSummary) => (supportsPpd(d) ? `/viewer/${encodeURIComponent(d.id)}` : `/preview/${encodeURIComponent(d.id)}`)
 
+  const ppd = shown.filter(supportsPpd)
+  const other = shown.filter((d) => !supportsPpd(d))
+
+  const row = (d: DeviceSummary) => (
+    <div key={d.id} className="cell d">
+      <Link to={open(d)} style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 14, color: 'inherit' }}>
+        <DeviceTile device={d} />
+        <div className="cb">
+          <span className="ttl">{d.short_name}</span>
+          <span className="ln">
+            <span className="sub">{d.category_label} · {d.flow_count} {supportsPpd(d) ? 'flows declared' : 'flows researched'}</span>
+            {d.matter && <span className="tag">Matter</span>}
+            {!inHome(d) && household.saved.includes(d.id) && <span className="tag">Saved</span>}
+          </span>
+        </div>
+      </Link>
+      {inHome(d) ? (
+        <span className="tr"><span className="in"><SmallCheck />In your home</span></span>
+      ) : (
+        <button className="tr get" aria-label={`Add ${d.short_name}`} onClick={() => add(d)}><span>Add</span></button>
+      )}
+    </div>
+  )
+
   // Research entries are advice only: adding one lists it in My Home, nothing connects to anything.
   const add = async (d: DeviceSummary) => {
     await addDevice(d.id)
@@ -61,43 +85,29 @@ export default function Library() {
         </>
       )}
 
-      <div className="sf" style={{ paddingTop: 10 }}><b>Researched devices come from our team’s research</b> of vendor sources, and nothing is sent to them. Those marked PPD have an example declaration and open in the privacy viewer, compared with your household policy.</div>
-
-      <SectionHeader>Researched devices · {shown.length}</SectionHeader>
-      <div className="grp">
-        {shown.map((d) => (
-          <div key={d.id} className="cell d">
-            <Link to={open(d)} style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 14, color: 'inherit' }}>
-              <DeviceTile device={d} />
-              <div className="cb">
-                <span className="ttl">{d.short_name}</span>
-                <span className="ln">
-                  <span className="sub">{d.category_label} · {d.flow_count} flows</span>
-                  {supportsPpd(d) && <span className="tag">PPD</span>}
-                  {d.matter && <span className="tag">Matter</span>}
-                  {!inHome(d) && household.saved.includes(d.id) && <span className="tag">Saved</span>}
-                </span>
+      {ppd.length > 0 && (
+        <>
+          <SectionHeader>Supports PPD · {ppd.length}</SectionHeader>
+          <div className="grp">{ppd.map(row)}</div>
+          <Footnote>These devices say what they do with your data. Open one to see where its data goes, compared with your household policy.</Footnote>
+          <div className="grp" style={{ marginTop: 8 }}>
+            <a className="cell" href="qr/index.html" target="_blank" rel="noreferrer">
+              <div className="cb" style={{ padding: '12px 0' }}>
+                <span className="ttl" style={{ color: 'var(--primary)' }}>PPD QR codes for these devices</span>
+                <span className="sub">Printable codes. Scan one to open it in the privacy viewer.</span>
               </div>
-            </Link>
-            {inHome(d) ? (
-              <span className="tr"><span className="in"><SmallCheck />In your home</span></span>
-            ) : (
-              <button className="tr get" aria-label={`Add ${d.short_name}`} onClick={() => add(d)}><span>Add</span></button>
-            )}
+            </a>
           </div>
-        ))}
-        {shown.length === 0 && <div className="empty">No match for “{q}”.</div>}
-      </div>
-      {lib.data.some((d) => d.kind === 'research' && supportsPpd(d)) && (
-        <div className="grp" style={{ marginTop: 12 }}>
-          <a className="cell" href="qr/index.html" target="_blank" rel="noreferrer">
-            <div className="cb" style={{ padding: '12px 0' }}>
-              <span className="ttl" style={{ color: 'var(--primary)' }}>PPD QR codes for these devices</span>
-              <span className="sub">Printable codes for the researched devices marked PPD. Scan one to open it in the privacy viewer.</span>
-            </div>
-          </a>
-        </div>
+        </>
       )}
+      {other.length > 0 && (
+        <>
+          <SectionHeader>Doesn’t support PPD · {other.length}</SectionHeader>
+          <div className="grp">{other.map(row)}</div>
+          <Footnote>These devices can’t receive your rules or say what they do with your data. What you see comes from our team’s reading of the maker’s public privacy statements.</Footnote>
+        </>
+      )}
+      {shown.length === 0 && <div className="empty">No match for “{q}”.</div>}
       <Footnote>Not listed? Scan the box, or wait for the device to register itself if it supports PPD.</Footnote>
       <div className="spacer" />
     </div>
