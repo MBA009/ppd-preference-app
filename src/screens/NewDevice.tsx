@@ -44,7 +44,7 @@ export default function NewDevice() {
       <div className="gap" />
       <ProvenanceCard device={d} sub={`${d.category_label} · Gets your rules`} stacked />
       <div className="sf">
-        <b>Nothing was changed on {nounOf(d)}.</b> {!silent ? 'These verdicts compare what it says it does with your household policy. ' : ''}The app can’t switch anything on or off in the device, or check that it follows your rules.
+        <b>Nothing was changed on {nounOf(d)}.</b> {!silent ? 'These verdicts compare what it says it does with your household policy. ' : ''}The app can’t switch anything on or off in the device.
       </div>
 
       {conflicts.length > 0 && (

@@ -51,7 +51,6 @@ export default function Preview() {
         </>
       )}
       <ProvenanceCard device={d} />
-      {d.source === 'declared' && <div className="sf" style={{ fontStyle: 'italic' }}>We can’t check that the device will follow your household policy.</div>}
       <AttentionList device={d} />
       <div className="spacer" />
       <ActionBar>

@@ -77,10 +77,10 @@ function Detail({ device, flow }: { device: Device; flow: Flow }) {
       </Group>
 
       {verdict === 'unsatisfiable' && (
-        <Footnote>Your rules say no to this, and devices that get your rules are told so. We can’t check that they follow them. To allow it, change your rules.</Footnote>
+        <Footnote>Your rules say no to this, and devices that get your rules are told so. To allow it, change your rules.</Footnote>
       )}
       {verdict === 'conditionally_satisfiable' && flow.evaluation.rule_id && (
-        <Footnote>Devices that get your rules receive this condition with the rule. We can’t check that they follow it.</Footnote>
+        <Footnote>Devices that get your rules receive this condition with the rule.</Footnote>
       )}
       {verdict === 'decision_required' && <Decide device={device} flow={flow} />}
       {verdict === 'indeterminate' && (

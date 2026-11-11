@@ -88,6 +88,16 @@ export default function Library() {
         ))}
         {shown.length === 0 && <div className="empty">No match for “{q}”.</div>}
       </div>
+      {lib.data.some((d) => d.kind === 'research' && supportsPpd(d)) && (
+        <div className="grp" style={{ marginTop: 12 }}>
+          <a className="cell" href="qr/index.html" target="_blank" rel="noreferrer">
+            <div className="cb" style={{ padding: '12px 0' }}>
+              <span className="ttl" style={{ color: 'var(--primary)' }}>PPD QR codes for these devices</span>
+              <span className="sub">Printable codes for the researched devices marked PPD. Scan one to open it in the privacy viewer.</span>
+            </div>
+          </a>
+        </div>
+      )}
       <Footnote>Not listed? Scan the box, or wait for the device to register itself if it supports PPD.</Footnote>
       <div className="spacer" />
     </div>

@@ -50,7 +50,7 @@ export type DeviceStateKey = 'advisory' | 'no_declaration' | 'confirmed' | 'wait
 export const DEVICE_STATE: Record<DeviceStateKey, { label: string; meaning: string }> = {
   advisory: { label: 'Advisory only', meaning: 'The device doesn’t register with your home gateway. What you see comes from our library.' },
   no_declaration: { label: 'Registered, no declaration', meaning: 'The device joined and fetched your household policy, but declared nothing.' },
-  confirmed: { label: 'Rules confirmed', meaning: 'The device confirmed it received your latest rules and renewed in time. Receipt only: we can’t check that it follows them.' },
+  confirmed: { label: 'Rules confirmed', meaning: 'The device confirmed it received your latest rules and renewed in time.' },
   waiting: { label: 'Waiting for renewal', meaning: 'Your rules changed and the device hasn’t fetched them yet.' },
   stale: { label: 'Stale', meaning: 'The device didn’t renew before its freshness limit, so its last confirmation is out of date.' },
   reassociate: { label: 'Needs reassociation', meaning: 'The rules or the device’s own state changed enough that it must start over. It isn’t confirmed until it registers again.' },

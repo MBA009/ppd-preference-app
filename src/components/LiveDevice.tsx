@@ -107,7 +107,6 @@ export function PolicyReceipt({ live }: { live: LiveState }) {
         )}
         <Kv k="Receipt" v={r ? (r.current ? `Confirmed ${when(r.acknowledged_at)}` : 'For an older instance') : 'Not confirmed'} />
       </Group>
-      <Footnote>A receipt means the device said it received exactly these rules. It is not proof that it follows them.</Footnote>
     </>
   )
 }

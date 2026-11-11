@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api'
 import { AppBar, Cell, DeviceTile, ErrorBox, Group, Loading, SectionHeader, Expander } from '../components/ui'
 import { AttentionList, PpdStatus, ProvenanceCard } from '../components/DeviceReport'
@@ -73,7 +73,6 @@ export default function DeviceDetail() {
       <ProvenanceCard device={d} />
       {!declaredNothing(d) && (
         <>
-          <div className="sf" style={{ fontStyle: 'italic' }}>We can’t check that the device will follow your household policy.</div>
           <AttentionList device={d} />
         </>
       )}
@@ -106,7 +105,7 @@ export default function DeviceDetail() {
               <div className="cell kv"><span className="ttl">Renews by</span><span className="v">{new Date(decl.renew_by).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</span></div>
               <div className="cell kv"><span className="ttl">Statements</span><span className="v">{decl.statements}</span></div>
             </Group>
-            <div className="sf">“Confirmed” means the device said it received your household policy. It is not proof that it follows them.</div>
+            <div className="sf">“Confirmed” means the device said it received your household policy.</div>
           </>
         )
       )}
@@ -136,7 +135,6 @@ export default function DeviceDetail() {
           </Cell>
         )}
       </Group>
-      <div className="sf"><Link to="/library" className="link">Device library</Link></div>
       <div className="spacer" />
     </div>
   )
