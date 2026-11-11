@@ -9,7 +9,7 @@ import { timeAgo, DEVICE_STATE, deviceState } from '../lib/device'
  * The presenter's control page: the demo simulator (app-api with SIMULATOR=1), whose devices join the home
  * gateway exactly like real hardware, and the real ESP32 bulb's uploads and remote controls. None of the latter
  * is PPD: it plays the device maker's side, so the audience can see the bulb change what it sends when the
- * household's rules change. Meant for the presenter's laptop while the audience watches My home.
+ * household's rules change. Meant for the presenter's laptop while the audience watches My Home.
  */
 
 const STATE: Record<SimDevice['state'], { label: string; cls: string }> = {
@@ -78,7 +78,7 @@ export default function DemoDevices() {
     <div className="screen">
       <AppBar title="Demo devices" back="/" />
       <div className="sf" style={{ paddingTop: 0 }}>
-        For the presenter. Simulated devices reach the home gateway the same way real ones do; My home learns about them from the gateway, so keep it open on another screen and watch them join.
+        For the presenter. Simulated devices reach the home gateway the same way real ones do; My Home learns about them from the gateway, so keep it open on another screen and watch them join.
       </div>
 
       <SectionHeader>Real devices</SectionHeader>
@@ -104,7 +104,7 @@ export default function DemoDevices() {
 
           <SectionHeader>On the network without PPD</SectionHeader>
           <Group>{network.map(card)}</Group>
-          <Footnote>Appears under “On your network, no PPD” in My home. It never receives your rules.</Footnote>
+          <Footnote>Appears under “On your network, no PPD” in My Home. It never receives your rules.</Footnote>
         </>
       ) : (
         <Footnote>The demo simulator is off. Start app-api with SIMULATOR=1 to add simulated devices.</Footnote>
@@ -116,7 +116,7 @@ export default function DemoDevices() {
           <div className="cb" style={{ padding: '12px 0' }}><span className="ttl" style={{ color: '#B3261E' }}>Reset demo devices</span><span className="sub">Unplug every simulated device and take them off the network</span></div>
         </Cell>
       </Group>}
-      <Footnote><Link to="/" className="link">My home</Link></Footnote>
+      <Footnote><Link to="/" className="link">My Home</Link></Footnote>
       <div className="spacer" />
     </div>
   )

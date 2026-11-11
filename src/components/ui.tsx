@@ -5,10 +5,18 @@ import { VERDICTS } from '../lib/verdicts'
 import { DEVICE_STATE, deviceState } from '../lib/device'
 import { ChevronDown, ChevronRight, ChipGlyph, DeviceGlyph, Icon, RowGlyph, StateGlyph } from './icons'
 import { useMe } from '../state/data'
+import { BrandLockup } from './Brand'
 
 /* ---------- app bars ---------- */
-export function AppBar({ title, subtitle, back, right }: { title: string; subtitle?: string; back?: string | true | (() => void); right?: ReactNode }) {
+export function AppBar({ title, subtitle, back, right, brand }: { title: string; subtitle?: string; back?: string | true | (() => void); right?: ReactNode; brand?: boolean }) {
   const nav = useNavigate()
+  // Top-level screens (the bottom-nav tabs) carry the product brand above their title. On desktop the side rail shows it.
+  if (brand) return (
+    <div className="nav branded">
+      <div className="brandrow"><BrandLockup size={28} /></div>
+      <div className="navrow"><h1 className="ntt lead" style={{ margin: 0 }}>{title}</h1>{right}</div>
+    </div>
+  )
   return (
     <div className="nav">
       {back && (
@@ -31,7 +39,7 @@ export function AppBar({ title, subtitle, back, right }: { title: string; subtit
 
 export function BottomNav() {
   const items = [
-    { to: '/', icon: 'home', label: 'My home', end: true },
+    { to: '/', icon: 'home', label: 'My Home', end: true },
     { to: '/scan', icon: 'scan', label: 'Scan', end: false },
     { to: '/rules', icon: 'rules', label: 'Policy', end: false },
   ] as const
@@ -51,7 +59,7 @@ export function BottomNav() {
 export function SideRail() {
   const { data: me } = useMe()
   const items = [
-    { to: '/', icon: 'home', label: 'My home', end: true },
+    { to: '/', icon: 'home', label: 'My Home', end: true },
     { to: '/scan', icon: 'scan', label: 'Scan', end: false },
     { to: '/rules', icon: 'rules', label: 'Household policy', end: false },
     { to: '/library', icon: 'plus', label: 'Device library', end: false },
@@ -60,7 +68,7 @@ export function SideRail() {
   ] as const
   return (
     <nav className="rail" aria-label="Main">
-      <div className="rail-brand">Privacy Preferences</div>
+      <div className="rail-brand"><BrandLockup size={32} /></div>
       {items.map((i) => (
         <NavLink key={i.to} to={i.to} end={i.end} className={({ isActive }) => 'rail-item' + (isActive ? ' on' : '')}>
           <Icon name={i.icon} size={20} />

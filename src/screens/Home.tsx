@@ -22,8 +22,8 @@ export default function Home() {
   const { data: overview } = useOverview()
   const { data: unmanaged } = useUnmanaged()
 
-  if (error || (loadError && !devices)) return <><AppBar title="My home" /><ErrorBox error={(error ?? loadError)!} /></>
-  if (!household || (loading && ids.length > 0 && !devices)) return <><AppBar title="My home" /><Loading /></>
+  if (error || (loadError && !devices)) return <><AppBar title="My Home" brand /><ErrorBox error={(error ?? loadError)!} /></>
+  if (!household || (loading && ids.length > 0 && !devices)) return <><AppBar title="My Home" brand /><Loading /></>
 
   const list = devices ?? []
   const connected = list.filter(isConnected)
@@ -52,7 +52,7 @@ export default function Home() {
   const lastSeen = (d: Device) => (d.live?.receipt?.acknowledged_at ? ` since ${timeAgo(d.live.receipt.acknowledged_at)}` : '')
   const to = (list: Device[]) => (list.length === 1 ? `/device/${encodeURIComponent(list[0].id)}` : undefined)
 
-  // Every notice on My home, most urgent first. Each says what happened and what to do; the device lists below have
+  // Every notice on My Home, most urgent first. Each says what happened and what to do; the device lists below have
   // the detail.
   const notices: Notice[] = [
     conflicting.length > 0 && {
@@ -90,7 +90,7 @@ export default function Home() {
 
   return (
     <div className="screen">
-      <AppBar title="My home" />
+      <AppBar title="My Home" brand />
 
       {notices.length > 0 && (
         <Group style={{ marginTop: 4 }}>

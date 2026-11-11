@@ -18,6 +18,12 @@ const out = join(root, 'public', 'qr')
 // LG OLED C6 doesn't support PPD, so it has no privacy code.
 const RESEARCH = ['reolink-e1-zoom', 'aqara-w200', 'level-lock']
 
+// The blue tile with the roofed-o mark, 28 px, at (20, 18).
+const BRAND_TILE = `<rect x="20" y="18" width="28" height="28" rx="7" fill="#0066cc"/><g transform="translate(23.5 21.5) scale(0.4375)" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 22.5 24 9.5l14 13"/><circle cx="24" cy="31" r="8.5"/></g>`
+
+// "homeclause" at 17 px with every letter placed (Roboto advance widths), so the roof sits over the o in any font.
+const WORD_X = '56 65.57 75.26 90.15 99.16 108.05 112.18 121.43 131 139.77'
+
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])
 
 
@@ -44,15 +50,21 @@ for (const id of RESEARCH) {
   await QRCode.toFile(join(out, `${id}.png`), payload, { margin: 2, width: 900, errorCorrectionLevel: 'L' })
   const qrSvg = await QRCode.toString(payload, { type: 'svg', margin: 0, errorCorrectionLevel: 'L' })
 
-  // A labelled card: 300 x 380.
-  const card = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="380" viewBox="0 0 300 380" font-family="Roboto, system-ui, sans-serif">
-  <rect x="1" y="1" width="298" height="378" rx="18" fill="#fff" stroke="#c4c7cc" stroke-width="2"/>
-  <text x="150" y="34" text-anchor="middle" font-size="12" font-weight="700" fill="#0066cc" letter-spacing="1.5">PPD QR CODE</text>
-  <svg x="40" y="48" width="220" height="220">${qrSvg.replace(/^<\?xml[^>]*>/, '').replace(/<svg /, '<svg width="220" height="220" ')}</svg>
-  <text x="150" y="298" text-anchor="middle" font-size="17" font-weight="500" fill="#1d2024">${esc(device.short_name)}</text>
-  <text x="150" y="318" text-anchor="middle" font-size="12" fill="#5f6368">${esc(device.category_label)} · ${flows.length} data flows</text>
-  <text x="150" y="344" text-anchor="middle" font-size="11" fill="#5f6368">${esc(origin)}</text>
-  <text x="150" y="362" text-anchor="middle" font-size="11" fill="#9aa0a6">Scan in the PPD app to see where its data goes</text>
+  // A labelled card, 300 x 392: the app's brand (homeclause, the blue tile and the roofed o; src/components/Brand.tsx)
+  // at the top, then the code, then what it is. The logo stays out of the code itself: at error correction L,
+  // covering any modules would make it unreadable.
+  const card = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="392" viewBox="0 0 300 392" font-family="Roboto, system-ui, sans-serif">
+  <rect x="1" y="1" width="298" height="390" rx="18" fill="#fff" stroke="#c4c7cc" stroke-width="2"/>
+  ${BRAND_TILE}
+  <text x="${WORD_X}" y="38" font-size="17" font-weight="500" fill="#1d2024">homeclause</text>
+  <path d="M63.3 27.6 70.4 21.6l7.1 6" fill="none" stroke="#0066cc" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="280" y="37" text-anchor="end" font-size="10" font-weight="700" fill="#0066cc" letter-spacing="1.2">PPD QR CODE</text>
+  <line x1="20" y1="58" x2="280" y2="58" stroke="#e6e8eb"/>
+  <svg x="40" y="72" width="220" height="220">${qrSvg.replace(/^<\?xml[^>]*>/, '').replace(/<svg /, '<svg width="220" height="220" ')}</svg>
+  <text x="150" y="318" text-anchor="middle" font-size="17" font-weight="500" fill="#1d2024">${esc(device.short_name)}</text>
+  <text x="150" y="338" text-anchor="middle" font-size="12" fill="#5f6368">${esc(device.category_label)} · ${flows.length} data flows</text>
+  <text x="150" y="360" text-anchor="middle" font-size="11" fill="#5f6368">${esc(origin)}</text>
+  <text x="150" y="376" text-anchor="middle" font-size="11" fill="#9aa0a6">Scan in homeclause to see where its data goes</text>
 </svg>
 `
   await writeFile(join(out, `${id}.svg`), card)

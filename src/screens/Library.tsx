@@ -25,7 +25,7 @@ export default function Library() {
   // viewer; the others have no declaration to draw, so they open the device check.
   const open = (d: DeviceSummary) => (supportsPpd(d) ? `/viewer/${encodeURIComponent(d.id)}` : `/preview/${encodeURIComponent(d.id)}`)
 
-  // Research entries are advice only: adding one lists it in My home, nothing connects to anything.
+  // Research entries are advice only: adding one lists it in My Home, nothing connects to anything.
   const add = async (d: DeviceSummary) => {
     await addDevice(d.id)
     nav(`/device/${d.id}`)

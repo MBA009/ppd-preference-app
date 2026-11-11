@@ -19,7 +19,7 @@ import { PublishCard } from '../components/Publish'
  */
 export default function Rules() {
   const { household } = useHousehold()
-  if (!household) return <><AppBar title="Household policy" /><Loading /></>
+  if (!household) return <><AppBar title="Household policy" brand /><Loading /></>
   if (!household.preset_id) return <Onboarding />
   return <Policy />
 }
@@ -69,7 +69,7 @@ function Policy() {
   // Flows no rule decides: a rule that covered them was deleted or switched off (Nov 2: no preference yet).
   const gap = useMemo(() => undecidedFlows(rules).length, [rules])
 
-  if (!household) return <><AppBar title="Household policy" /><Loading /></>
+  if (!household) return <><AppBar title="Household policy" brand /><Loading /></>
 
   const decide = (devices ?? []).reduce((n, d) => n + d.flows.filter((f) => f.evaluation.verdict === 'decision_required').length, 0)
   const fromAnswers = rules.filter((r) => r.origin.kind === 'answer').length
@@ -137,7 +137,7 @@ function Policy() {
 
   return (
     <div className="screen">
-      <AppBar title="Household policy" right={<Link className="ntr" aria-label="Add a rule" to="/rules/new"><Icon name="plus" /></Link>} />
+      <AppBar title="Household policy" brand right={<Link className="ntr" aria-label="Add a rule" to="/rules/new"><Icon name="plus" /></Link>} />
 
       {isNew && (
         <Group style={{ marginBottom: 12 }}>

@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import type { Answers, DeviceSummary, Household, HouseholdPreset, Onboarding as Tree } from '../api'
 import { ActionBar, AppBar, Cell, ErrorBox, Footnote, Group, Loading, Tile } from '../components/ui'
 import { ShieldCheck } from '../components/icons'
+import { BRAND, BrandTile, Wordmark } from '../components/Brand'
 import { useHousehold, useHouseholdPresets, useLibrary, useOnboarding } from '../state/data'
 import { CATEGORY_CLASS, followUps, questionText, rulesFromAnswers, situationAnswers, stageOnePath, walk } from '../../shared/onboarding'
 import { plural } from '../lib/verdicts'
@@ -198,6 +199,21 @@ function Start({ tree, mode, onStart }: { tree: Tree; mode: Mode; onStart: () =>
   return (
     <div className="screen">
       <AppBar title="Household policy" back={mode === 'first' ? undefined : '/rules'} />
+      {mode === 'first' && (
+        <div className="welcome">
+          <div className="whead">
+            <BrandTile size={64} />
+            <div className="wtext">
+              <div className="wname"><Wordmark /><span className="concept">Concept</span></div>
+              <p>{BRAND.tagline}</p>
+            </div>
+          </div>
+          <div className="wppd">
+            <span className="ppd-pill">Works with PPD</span>
+            <p className="small">{BRAND.ppd}</p>
+          </div>
+        </div>
+      )}
       <Group>
         <Cell className="t" chevron={false} style={{ alignItems: 'flex-start' }}>
           <Tile tone="blue" style={{ marginTop: 10 }}><ShieldCheck /></Tile>

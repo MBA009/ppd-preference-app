@@ -23,9 +23,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icons/apple-touch-icon.png', 'favicon.svg'],
       manifest: {
-        name: 'Privacy Preferences',
-        short_name: 'Privacy',
-        description: 'See what a connected-home device says it does with your data, and compare it with your household rules.',
+        name: 'homeclause',
+        short_name: 'homeclause',
+        description: 'A concept app built on PPD. See what a connected-home device says it does with your data, and compare it with your household rules.',
         lang: 'en',
         start_url: './',
         scope: './',

@@ -59,6 +59,35 @@ svg { display: block; flex: none; }
 .back { flex: none; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 24px; color: var(--text); }
 .ntt { flex: 1; min-width: 0; padding-left: 4px; font-size: 22px; line-height: 28px; font-weight: 400; }
 .ntt.lead { padding-left: 12px; }
+/* product brand (components/Brand.tsx): the top banner on the tab screens, the side rail, the first-run welcome */
+/* The brand sits in its own band (app chrome), with a hairline under it; the screen title sits below on the page. */
+.nav.branded { height: auto; flex-direction: column; align-items: stretch; padding: var(--safe-top) 0 0; }
+.brandrow { display: flex; align-items: center; height: 48px; padding: 0 16px; background: var(--surface); border-bottom: 1px solid var(--divider); }
+.brandrow .bword { font-size: 16px; line-height: 20px; }
+.navrow { display: flex; align-items: center; min-height: 52px; padding: 6px 4px 0; }
+.navrow .ntt { font-size: 26px; line-height: 32px; font-weight: 500; color: var(--text); }
+.brand { display: inline-flex; align-items: center; gap: 10px; }
+.btile { flex: none; display: inline-flex; align-items: center; justify-content: center; background: var(--primary); color: #fff; }
+.bword { font-size: 17px; line-height: 22px; font-weight: 500; letter-spacing: -0.01em; color: var(--text); }
+.broof { position: relative; display: inline-block; line-height: 1; }
+.broof svg {
+  position: absolute; left: 50%; top: -0.17em; width: 0.84em; height: 0.42em; transform: translateX(-50%); overflow: visible;
+  fill: none; stroke: var(--primary); stroke-width: 4.6; stroke-linecap: round; stroke-linejoin: round;
+}
+.rail-brand .bword { font-size: 19px; }
+.welcome { margin: 4px 16px 12px; border-radius: 16px; background: var(--surface); overflow: hidden; }
+.whead { display: flex; align-items: center; gap: 16px; padding: 20px 20px 18px; }
+.wtext { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.welcome .wname { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.welcome .wname .bword { font-size: 24px; line-height: 30px; }
+.welcome p { margin: 0; color: var(--text-2); font-size: 14px; line-height: 20px; }
+.wppd { display: flex; align-items: center; gap: 12px; padding: 12px 20px 14px; border-top: 1px solid var(--divider); background: var(--primary-tonal); }
+.wppd .ppd-pill { flex: none; background: var(--surface); }
+.welcome p.small { font-size: 13px; line-height: 18px; color: var(--primary-on-tonal); }
+.concept { font-size: 10px; line-height: 1; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-2); border: 1px solid var(--divider); border-radius: 5px; padding: 3px 5px; }
+.ppd-pill { font-size: 12px; line-height: 16px; font-weight: 500; color: var(--primary); border: 1px solid currentColor; border-radius: 99px; padding: 2px 10px; }
+@media (min-width: 1200px) { .nav.branded .brandrow { display: none; } }
+
 .ntr { flex: none; min-width: 48px; min-height: 48px; display: flex; align-items: center; justify-content: center; padding: 0 12px; color: var(--primary); font-size: 14px; line-height: 20px; font-weight: 500; }
 
 .sh { flex: none; padding: 14px 32px 6px; font-size: 14px; line-height: 20px; font-weight: 500; color: var(--heading); }

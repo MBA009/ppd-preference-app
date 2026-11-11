@@ -14,7 +14,7 @@ import { nounOf } from '../components/DeviceReport'
  * the answer is saved as a new rule for exactly this kind of data flow.
  */
 /**
- * Back to wherever the flow was opened from (the device page, or a notice on My home), or to the device page when the
+ * Back to wherever the flow was opened from (the device page, or a notice on My Home), or to the device page when the
  * flow was opened directly. React Router's history index says whether there is an app page to go back to.
  */
 function useBack(deviceId: string) {
