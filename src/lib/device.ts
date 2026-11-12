@@ -47,9 +47,13 @@ export function forgetBlocker(d: Device): string | null {
  */
 export type DeviceStateKey = 'advisory' | 'no_declaration' | 'confirmed' | 'waiting' | 'stale' | 'reassociate'
 
-export const DEVICE_STATE: Record<DeviceStateKey, { label: string; meaning: string }> = {
+/** `plain` explains a label in everyday words, shown when someone hovers over it or presses and holds it. */
+export const DEVICE_STATE: Record<DeviceStateKey, { label: string; meaning: string; plain?: string }> = {
   advisory: { label: 'Advisory only', meaning: 'The device doesn’t register with your home gateway. What you see comes from our library.' },
-  no_declaration: { label: 'Registered, no declaration', meaning: 'The device joined and fetched your household policy, but declared nothing.' },
+  no_declaration: {
+    label: 'Registered, no declaration', meaning: 'The device joined and fetched your household policy, but declared nothing.',
+    plain: 'It has your household policy, but it hasn’t said what it does with your data, so there’s nothing to check against your rules.',
+  },
   confirmed: { label: 'Rules confirmed', meaning: 'The device confirmed it received your latest rules and renewed in time.' },
   waiting: { label: 'Waiting for renewal', meaning: 'Your rules changed and the device hasn’t fetched them yet.' },
   stale: { label: 'Stale', meaning: 'The device didn’t renew before its freshness limit, so its last confirmation is out of date.' },

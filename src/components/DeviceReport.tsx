@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { Device, DeviceSummary, Flow } from '../api'
 import { DocIcon, NoDeclarationIcon, ShieldCheck } from './icons'
-import { Cell, Expander, Group, SectionHeader, Tile, VerdictChips, VerdictMark } from './ui'
+import { Cell, Expander, Group, Hint, SectionHeader, Tile, VerdictChips, VerdictMark } from './ui'
 import { VERDICT_ORDER, countVerdicts, needsAttention } from '../lib/verdicts'
 import { DEVICE_STATE, declaredNothing, deviceState, isConnected, isPpdExample, vendorOf } from '../lib/device'
 
@@ -27,6 +27,9 @@ export function PpdStatus({ device, viewer }: { device: DeviceSummary | Device; 
   )
   const example = isPpdExample(device)
   const yes = isConnected(device) || example
+  // With the gateway's live view, the state card under this says how the device stands, so this only says it can get
+  // the household policy.
+  const live = 'live' in device && !!device.live
   return (
     <div className={'ppd ' + (yes ? 'yes' : 'no')}>
       {yes ? <ShieldCheck size={20} /> : <NoDeclarationIcon />}
@@ -35,7 +38,7 @@ export function PpdStatus({ device, viewer }: { device: DeviceSummary | Device; 
         <span>
           {example
             ? 'An example of a device that supports PPD: it declares what it does with your data. Our team wrote the declaration from research.'
-            : yes ? DEVICE_STATE[deviceState(device)].meaning : 'It can’t receive your household policy. What you see here comes from our research.'}
+            : yes ? (live ? 'It gets your household policy.' : DEVICE_STATE[deviceState(device)].meaning) : 'It can’t receive your household policy. What you see here comes from our research.'}
         </span>
       </div>
     </div>
@@ -54,7 +57,7 @@ export function ProvenanceCard({ device, sub, stacked }: {
         <Cell className="t" chevron={false} style={{ alignItems: 'flex-start' }}>
           <Tile tone="grey" style={{ marginTop: 12 }}><NoDeclarationIcon /></Tile>
           <div className="cb">
-            <span className="ttl">Registered, no declaration</span>
+            <span className="ttl"><Hint text={DEVICE_STATE.no_declaration.plain!}>Registered, no declaration</Hint></span>
             <span className="sub">
               {sub ? `${sub}. ` : ''}{device.short_name} fetched your household policy but hasn’t said what it does with your data.
             </span>

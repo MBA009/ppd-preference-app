@@ -1,8 +1,8 @@
-import { AppBar, Cell, DeviceTile, Footnote, Group, SectionHeader, StateChip, Tile, VerdictChip, VerdictChips, Loading, ErrorBox } from '../components/ui'
+import { AppBar, Cell, DeviceTile, Footnote, Group, SectionHeader, StateChip, Hint, Tile, VerdictChip, VerdictChips, Loading, ErrorBox } from '../components/ui'
 import { Icon } from '../components/icons'
 import { useDevices, useHousehold, useOverview, useUnmanaged } from '../state/data'
 import { countVerdicts, plural } from '../lib/verdicts'
-import { declaredNothing, hasRules, isConnected, timeAgo } from '../lib/device'
+import { DEVICE_STATE, declaredNothing, hasRules, isConnected, timeAgo } from '../lib/device'
 import type { Device, Overview, UnmanagedDevice } from '../api'
 import { flowPath } from '../components/DeviceReport'
 
@@ -179,7 +179,7 @@ function DeviceRow({ device: d }: { device: Device }) {
         </span>
         <span className="ln">
           {declaredNothing(d) ? (
-            <span className="sub" style={{ fontSize: 13 }}>No per-flow verdicts: it declared nothing</span>
+            <span className="sub" style={{ fontSize: 13 }}><Hint text={DEVICE_STATE.no_declaration.plain!}>No per-flow verdicts: it declared nothing</Hint></span>
           ) : attention || counts.decision_required ? (
             <VerdictChips counts={counts} order={['unsatisfiable', 'decision_required']} />
           ) : (

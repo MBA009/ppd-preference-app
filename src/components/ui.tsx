@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import type { Device, DeviceSummary, Verdict } from '../api'
 import { VERDICTS } from '../lib/verdicts'
@@ -109,7 +109,55 @@ export function DeviceTile({ device, size = 'device' }: { device: DeviceSummary;
 /** One of the six device states, as a bordered chip (design board "Six device states"). */
 export function StateChip({ device }: { device: DeviceSummary | Device }) {
   const key = deviceState(device)
-  return <span className={`state s-${key}`} title={DEVICE_STATE[key].meaning}><StateGlyph state={key} /><span>{DEVICE_STATE[key].label}</span></span>
+  const { label, meaning, plain } = DEVICE_STATE[key]
+  if (plain) return <Hint text={plain}><span className={`state s-${key}`}><StateGlyph state={key} /><span>{label}</span></span></Hint>
+  return <span className={`state s-${key}`} title={meaning}><StateGlyph state={key} /><span>{label}</span></span>
+}
+
+/**
+ * A term with a plain-language explanation: shown while the mouse is over it, after pressing and holding it on a touch
+ * screen, or when it has keyboard focus. A long press inside a link doesn't follow the link.
+ */
+export function Hint({ text, children }: { text: string; children: ReactNode }) {
+  const id = useId()
+  const ref = useRef<HTMLSpanElement>(null)
+  const timer = useRef<number>()
+  const held = useRef(false)
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
+  const show = () => {
+    const r = ref.current?.getBoundingClientRect()
+    if (r) setPos({ top: r.bottom + 6, left: Math.max(8, Math.min(r.left, window.innerWidth - 288)) })
+  }
+  const hide = () => setPos(null)
+  useEffect(() => {
+    if (!pos) return
+    const away = (e: Event) => { if (!ref.current?.contains(e.target as Node)) hide() }
+    window.addEventListener('scroll', hide, true)
+    document.addEventListener('pointerdown', away)
+    return () => { window.removeEventListener('scroll', hide, true); document.removeEventListener('pointerdown', away) }
+  }, [pos])
+  useEffect(() => () => window.clearTimeout(timer.current), [])
+  return (
+    <span
+      ref={ref} className="hint" tabIndex={0} aria-describedby={pos ? id : undefined}
+      onPointerEnter={(e) => { if (e.pointerType === 'mouse') show() }}
+      onPointerLeave={(e) => { if (e.pointerType === 'mouse') hide() }}
+      onPointerDown={(e) => {
+        if (e.pointerType === 'mouse') return
+        held.current = false
+        timer.current = window.setTimeout(() => { held.current = true; show() }, 450)
+      }}
+      onPointerUp={() => window.clearTimeout(timer.current)}
+      onPointerCancel={() => window.clearTimeout(timer.current)}
+      onContextMenu={(e) => e.preventDefault()}
+      onClickCapture={(e) => { if (held.current) { e.preventDefault(); e.stopPropagation(); held.current = false } }}
+      onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) show() }}
+      onBlur={hide}
+    >
+      {children}
+      {pos && <span role="tooltip" id={id} className="hint-pop" style={{ top: pos.top, left: pos.left }} onClick={(e) => { e.preventDefault(); e.stopPropagation() }}>{text}</span>}
+    </span>
+  )
 }
 
 /* ---------- verdict marks ---------- */

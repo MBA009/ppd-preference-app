@@ -70,9 +70,10 @@ export default function DeviceDetail() {
           <RuntimeWarning device={d} live={live} />
         </>
       )}
-      <ProvenanceCard device={d} />
+      {/* A device that declared nothing: the state above already says so, and there is nothing to check. */}
       {!declaredNothing(d) && (
         <>
+          <ProvenanceCard device={d} />
           <AttentionList device={d} />
         </>
       )}
