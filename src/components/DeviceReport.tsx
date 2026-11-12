@@ -56,7 +56,7 @@ export function ProvenanceCard({ device, sub, stacked }: {
           <div className="cb">
             <span className="ttl">Registered, no declaration</span>
             <span className="sub">
-              {sub ? `${sub}. ` : ''}{device.short_name} fetched your household policy but hasn’t said what it does with your data. That’s allowed in PPD. With nothing to compare, there are no per-flow verdicts.
+              {sub ? `${sub}. ` : ''}{device.short_name} fetched your household policy but hasn’t said what it does with your data.
             </span>
           </div>
         </Cell>
