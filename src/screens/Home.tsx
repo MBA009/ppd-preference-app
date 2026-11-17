@@ -108,6 +108,7 @@ export default function Home() {
 
       {overview && <Readiness overview={overview} />}
 
+      <div data-tour="home-devices">
       {connected.length === 0 && (
         <>
           <SectionHeader>Connected through PPD · 0</SectionHeader>
@@ -129,9 +130,10 @@ export default function Home() {
           <Group>{withRules.map((d) => <DeviceRow key={d.id} device={d} />)}</Group>
         </>
       )}
+      </div>
 
       {overview?.gateway.reachable && (
-        <>
+        <div data-tour="home-unmanaged">
           <SectionHeader>On your network, no PPD · {unmanaged?.length ?? 0}</SectionHeader>
           {unmanaged && unmanaged.length > 0 ? (
             <Group>{unmanaged.map((u) => <UnmanagedRow key={u.id} device={u} />)}</Group>
@@ -139,7 +141,7 @@ export default function Home() {
             <Group><div className="empty" style={{ padding: 20 }}>Your home gateway hasn’t seen any device that doesn’t support PPD.</div></Group>
           )}
           <Footnote>These devices are on your home network but don’t support PPD, so your household policy can’t reach them.</Footnote>
-        </>
+        </div>
       )}
 
       {advisory.length > 0 && (
@@ -211,7 +213,7 @@ function Readiness({ overview: o }: { overview: Overview }) {
   const c = o.counts
   if (!o.gateway.reachable) {
     return (
-      <Group style={{ marginTop: 8 }}>
+      <Group style={{ marginTop: 8 }} tour="home-readiness">
         <Cell className="t" to="/status">
           <Tile tone="grey"><Icon name="status" size={18} /></Tile>
           <div className="cb"><span className="ttl">Home gateway not reachable</span><span className="sub">Devices that get your rules can’t be checked right now</span></div>
@@ -228,7 +230,7 @@ function Readiness({ overview: o }: { overview: Overview }) {
   return (
     <>
       <SectionHeader>Privacy readiness</SectionHeader>
-      <Group>
+      <Group tour="home-readiness">
         <div className="stats">
           {stats.map(([label, n, cls]) => (
             <div key={label} className="stat"><span className={'n ' + (cls ?? '')}>{n}</span><span className="sub">{label}</span></div>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { AppBar, Cell, ErrorBox, Footnote, Group, Loading, SectionHeader } from '../components/ui'
 import { useHousehold, useLibrary } from '../state/data'
+import { useTour } from '../tour/Tour'
 
 const MATTER_DECOY = 'MT:Y.K9042C00KA0648G00'
 /** The researched devices with example PPD declarations; public/qr/ has printed codes for them (tools/make_qr_codes.mjs). */
@@ -27,6 +28,7 @@ export default function Dev() {
   const nav = useNavigate()
   const lib = useLibrary()
   const { household, resetDemo, toast } = useHousehold()
+  const tour = useTour()
   const [sw, setSw] = useState('checking…')
 
   useEffect(() => {
@@ -68,6 +70,7 @@ export default function Dev() {
 
       <SectionHeader>Demo</SectionHeader>
       <Group>
+        <Cell onClick={() => void tour.start()}><div className="cb" style={{ padding: '12px 0' }}><span className="ttl">Guided setup</span><span className="sub">Starts over at first launch and walks through the questions with coach marks. Once the policy is saved, the demo devices switch on and join; then My Home and the Household policy page. Link: #/tour</span></div></Cell>
         <Cell to="/demo-devices"><div className="cb" style={{ padding: '12px 0' }}><span className="ttl">Demo devices</span><span className="sub">Simulated devices, and the ESP32 bulb’s uploads and remote controls</span></div></Cell>
       </Group>
 

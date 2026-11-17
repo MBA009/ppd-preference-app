@@ -174,7 +174,7 @@ function Policy() {
       )}
 
       {rules.length > 0 && (
-        <div className="grp ov">
+        <div className="grp ov" data-tour="rules-overview">
           <div className="ov-top">
             <div>
               <div className="ov-n">{rules.length}</div>
@@ -201,7 +201,7 @@ function Policy() {
         </div>
       )}
 
-      {!isNew && <div style={{ marginTop: 8 }}><PublishCard /></div>}
+      {!isNew && <div style={{ marginTop: 8 }} data-tour="rules-publish"><PublishCard /></div>}
 
       {GROUPS.map((g) => {
         // Rules your devices use first; the rest are kept for devices that may join.
@@ -219,7 +219,7 @@ function Policy() {
         return (
           <div key={g.kind}>
             <Group style={{ marginTop: 8 }}>
-              <button className="cell t" aria-expanded={isOpen} onClick={() => setOpen((o) => ({ ...o, [g.kind]: !isOpen }))}>
+              <button className="cell t" data-tour="rules-group" aria-expanded={isOpen} onClick={() => setOpen((o) => ({ ...o, [g.kind]: !isOpen }))}>
                 <Tile tone={g.tone}>{g.icon}</Tile>
                 <div className="cb" style={{ padding: '12px 0' }}>
                   <span className="ttl" style={{ fontWeight: 500, color: k.color }}>{GROUP_TITLE[g.kind]}</span>
@@ -255,11 +255,11 @@ function Policy() {
 
       <SectionHeader>Change your rules</SectionHeader>
       <Group>
-        <Cell className="t" to="/rules/refine">
+        <Cell className="t" to="/rules/refine" data-tour="rules-refine">
           <Tile tone="blue"><ShieldCheck /></Tile>
           <div className="cb"><span className="ttl" style={{ color: '#0066CC', fontWeight: 500 }}>Help me refine my settings</span><span className="sub">{refineText}</span></div>
         </Cell>
-        <Cell className="t" to="/rules/new">
+        <Cell className="t" to="/rules/new" data-tour="rules-add">
           <Tile tone="blue"><Icon name="plus" size={18} /></Tile>
           <div className="cb"><span className="ttl" style={{ color: '#0066CC', fontWeight: 500 }}>Add a rule</span></div>
         </Cell>
@@ -270,13 +270,13 @@ function Policy() {
         <Cell className="t" to="/rules/sources">
           <div className="cb"><span className="ttl">How the questions were made</span><span className="sub">Synthetic households from published studies</span></div>
         </Cell>
-        <Cell className="t" to="/rules/json">
+        <Cell className="t" to="/rules/json" data-tour="rules-json">
           <div className="cb"><span className="ttl">See the rules as JSON</span><span className="sub">The rules in your household policy, and the PPD policy your devices receive</span></div>
         </Cell>
       </Group>
 
       <SectionHeader>Start over</SectionHeader>
-      <Group>
+      <Group tour="rules-startover">
         <Cell className="t" to="/rules/update">
           <div className="cb"><span className="ttl">Answer the questions again</span><span className="sub">Your rules are rebuilt from your new answers{added ? `, replacing the ${plural(added, 'rule')} you added and your changes` : ', replacing your changes'}.</span></div>
         </Cell>
@@ -290,7 +290,7 @@ function Policy() {
 
       <div className="spacer" />
       {isNew ? (
-        <ActionBar><button className="btn" onClick={() => nav('/', { replace: true })}>Looks good</button></ActionBar>
+        <ActionBar aboveTabs><button className="btn" data-tour="rules-done" onClick={() => nav('/', { replace: true })}>Looks good</button></ActionBar>
       ) : (
         <div className="sf" style={{ textAlign: 'center', padding: '16px 32px 4px' }}><Link to="/dev" className="link" style={{ fontSize: 13 }}>Test tools</Link></div>
       )}

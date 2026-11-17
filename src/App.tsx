@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { HashRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { HouseholdProvider, useHousehold } from './state/data'
 import { BottomNav, ErrorBox, Loading, SideRail } from './components/ui'
@@ -21,6 +22,7 @@ import SystemStatus from './screens/SystemStatus'
 import DemoDevices from './screens/DemoDevices'
 import DeviceConsole from './screens/DeviceConsole'
 import PrivacyViewer from './screens/PrivacyViewer'
+import { TourProvider, useTour } from './tour/Tour'
 
 /** Until the household has answered the questions, the only screens are the questions, how they were made and the test tools. */
 function OnboardingGate() {
@@ -68,10 +70,23 @@ function RulesSplit({ mode }: { mode: 'list' | 'detail' }) {
   return <Split mode={mode} list={<Rules />} detail={mode === 'detail' ? <RuleEditor /> : null} placeholder="Pick a rule to see or change it." />
 }
 
+/** `#/tour` starts the guided setup from a clean first launch (a link for the presenter's device). */
+function StartTour() {
+  const { start } = useTour()
+  const once = useRef(false)
+  useEffect(() => {
+    if (once.current) return
+    once.current = true
+    void start()
+  }, [start])
+  return <Loading text="Starting the guided setup…" />
+}
+
 export default function App() {
   return (
     <HashRouter>
       <HouseholdProvider>
+        <TourProvider>
         <div className="app">
           <Routes>
             <Route element={<Shell />}>
@@ -99,10 +114,12 @@ export default function App() {
                 <Route path="device/:id/flow/:flowId" element={<FlowDetail />} />
                 <Route path="dev" element={<Dev />} />
               </Route>
+              <Route path="tour" element={<StartTour />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>
         </div>
+        </TourProvider>
       </HouseholdProvider>
     </HashRouter>
   )

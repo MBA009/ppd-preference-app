@@ -37,6 +37,9 @@ export function AppBar({ title, subtitle, back, right, brand }: { title: string;
   )
 }
 
+/** Nav items the guided setup points at, in the bottom tabs (phones) and the side rail (desktop). */
+const NAV_TOUR: Record<string, string | undefined> = { '/scan': 'nav-scan', '/rules': 'nav-rules' }
+
 export function BottomNav() {
   const items = [
     { to: '/', icon: 'home', label: 'My Home', end: true },
@@ -46,7 +49,7 @@ export function BottomNav() {
   return (
     <nav className="tabs" aria-label="Main">
       {items.map((i) => (
-        <NavLink key={i.to} to={i.to} end={i.end} className={({ isActive }) => 'tab' + (isActive ? ' on' : '')}>
+        <NavLink key={i.to} to={i.to} end={i.end} className={({ isActive }) => 'tab' + (isActive ? ' on' : '')} data-tour={NAV_TOUR[i.to]}>
           <span className="ti"><Icon name={i.icon} /></span>
           {i.label}
         </NavLink>
@@ -70,7 +73,7 @@ export function SideRail() {
     <nav className="rail" aria-label="Main">
       <div className="rail-brand"><BrandLockup size={32} /></div>
       {items.map((i) => (
-        <NavLink key={i.to} to={i.to} end={i.end} className={({ isActive }) => 'rail-item' + (isActive ? ' on' : '')}>
+        <NavLink key={i.to} to={i.to} end={i.end} className={({ isActive }) => 'rail-item' + (isActive ? ' on' : '')} data-tour={NAV_TOUR[i.to]}>
           <Icon name={i.icon} size={20} />
           <span>{i.label}</span>
         </NavLink>
@@ -82,7 +85,8 @@ export function SideRail() {
 /* ---------- lists ---------- */
 export const SectionHeader = ({ children }: { children: ReactNode }) => <div className="sh">{children}</div>
 export const Footnote = ({ children }: { children: ReactNode }) => <div className="sf">{children}</div>
-export const Group = ({ children, style }: { children: ReactNode; style?: React.CSSProperties }) => <div className="grp" style={style}>{children}</div>
+/** `tour` marks the group for the guided setup's coach marks (tour/Tour.tsx). */
+export const Group = ({ children, style, tour }: { children: ReactNode; style?: React.CSSProperties; tour?: string }) => <div className="grp" style={style} data-tour={tour}>{children}</div>
 
 export function Cell({ to, onClick, className = '', children, chevron = true, ...rest }: {
   to?: string; onClick?: () => void; className?: string; children: ReactNode; chevron?: boolean
@@ -181,7 +185,8 @@ export function VerdictMark({ verdict }: { verdict: Verdict }) {
 }
 
 /* ---------- buttons and form controls ---------- */
-export function ActionBar({ children }: { children: ReactNode }) { return <div className="act">{children}</div> }
+/** `aboveTabs`: on a tab screen, so the bar sits over the phone's bottom tabs instead of under them. */
+export function ActionBar({ children, aboveTabs }: { children: ReactNode; aboveTabs?: boolean }) { return <div className={'act' + (aboveTabs ? ' above-tabs' : '')}>{children}</div> }
 
 export function Switch({ on, onChange, label }: { on: boolean; onChange: (v: boolean) => void; label: string }) {
   return (
