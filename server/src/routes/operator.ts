@@ -74,8 +74,8 @@ export function operatorRoutes(app: FastifyInstance, ctx: AppContext): void {
     checks.push({ id: 'app-gateway', group: 'app', label: 'Connection to the PPD gateway', status: gw.reachable ? 'pass' : 'fail', detail: gw.reachable ? `Reached ${gw.url}.` : `Could not reach the gateway: ${gw.error}.` })
     checks.push({
       id: 'app-auth', group: 'app', label: 'Sign-in',
-      status: ctx.config.appEnv === 'production' ? 'pass' : 'warn',
-      detail: ctx.config.appEnv === 'production' ? 'Cloudflare Access tokens are checked on every request.' : 'Development mode: everyone is treated as the household operator.',
+      status: ctx.config.appEnv === 'production' && ctx.config.auth.mode === 'access' ? 'pass' : 'warn',
+      detail: ctx.config.appEnv !== 'production' ? 'Development mode: everyone is treated as the household operator.' : ctx.config.auth.mode === 'public' ? 'Public mode (AUTH_MODE=public): no sign-in, everyone is the household operator.' : 'Cloudflare Access tokens are checked on every request.',
     })
     checks.push({
       id: 'app-demo-callbacks', group: 'app', label: 'Device telemetry and commands',

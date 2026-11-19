@@ -21,6 +21,7 @@ export class Authenticator {
 
   async identify(headers: Record<string, string | string[] | undefined>): Promise<Identity | null> {
     if (this.config.appEnv === 'development') return { email: 'developer@localhost', role: 'operator' }
+    if (this.config.auth.mode === 'public') return { email: 'guest', role: 'operator' }
     const token = header(headers, 'cf-access-jwt-assertion') ?? cookie(header(headers, 'cookie'), 'CF_Authorization')
     if (!token) return null
     const email = await this.verifyAccessToken(token)

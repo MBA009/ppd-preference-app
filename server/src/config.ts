@@ -15,7 +15,8 @@ export interface Config {
   gateway: GatewayConfig
   /** Shared secret the gateway presents on /internal/* (its PPD_DEMO_APP_API_TOKEN). */
   internalServiceToken: string
-  auth: { teamDomain: string; audience: string; operatorEmails: string[] }
+  /** mode 'public' (AUTH_MODE=public) skips Cloudflare Access: everyone is the household operator. */
+  auth: { mode: 'access' | 'public'; teamDomain: string; audience: string; operatorEmails: string[] }
   /** Show the gateway's router-only checks (DHCP, ARP, Wi-Fi) on System status. Off for the cloud gateway. */
   routerChecks: boolean
   simulator: SimulatorConfig
@@ -79,7 +80,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
       timeoutMs: Number(env.GATEWAY_TIMEOUT_MS ?? 4000),
     },
     internalServiceToken: secret(env, 'INTERNAL_SERVICE_TOKEN'),
-    auth: { teamDomain: (env.CF_ACCESS_TEAM_DOMAIN ?? '').replace(/^https?:\/\//, '').replace(/\/+$/, ''), audience: env.CF_ACCESS_AUD ?? '', operatorEmails: list(env.OPERATOR_EMAILS) },
+    auth: { mode: env.AUTH_MODE === 'public' ? 'public' : 'access', teamDomain: (env.CF_ACCESS_TEAM_DOMAIN ?? '').replace(/^https?:\/\//, '').replace(/\/+$/, ''), audience: env.CF_ACCESS_AUD ?? '', operatorEmails: list(env.OPERATOR_EMAILS) },
     routerChecks: env.ROUTER_CHECKS === '1',
     simulator: {
       enabled: env.SIMULATOR === '1',
@@ -93,10 +94,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   }
 }
 
-/** Refuses to start production without a login method: the household API must never be open. */
+/** Refuses to start production without a login method, unless AUTH_MODE=public opens the app on purpose. */
 export function assertDeployable(config: Config): void {
-  if (config.appEnv === 'production' && (!config.auth.teamDomain || !config.auth.audience)) {
-    throw new Error('APP_ENV=production needs CF_ACCESS_TEAM_DOMAIN and CF_ACCESS_AUD (Cloudflare Access).')
+  if (config.appEnv === 'production' && config.auth.mode === 'access' && (!config.auth.teamDomain || !config.auth.audience)) {
+    throw new Error('APP_ENV=production needs CF_ACCESS_TEAM_DOMAIN and CF_ACCESS_AUD (Cloudflare Access), or AUTH_MODE=public.')
   }
   if (config.appEnv === 'production' && !config.internalServiceToken) {
     throw new Error('APP_ENV=production needs INTERNAL_SERVICE_TOKEN for gateway callbacks.')

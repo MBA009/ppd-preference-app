@@ -406,13 +406,20 @@ describe('gateway devices', () => {
 
 describe('sign-in', () => {
   test('production requires a valid Cloudflare Access token', async () => {
-    const prod: Config = { ...config, appEnv: 'production', auth: { teamDomain: 'team.example', audience: 'aud-1', operatorEmails: [] } }
+    const prod: Config = { ...config, appEnv: 'production', auth: { mode: 'access', teamDomain: 'team.example', audience: 'aud-1', operatorEmails: [] } }
     const auth = new Authenticator(prod)
     const prodApp = buildApp(prod, await loadFixtures(prod.fixturesDir), new HouseholdStore(':memory:'), { auth })
     assert.equal((await prodApp.inject({ method: 'GET', url: '/api/household' })).statusCode, 401)
     assert.equal((await prodApp.inject({ method: 'GET', url: '/api/household', headers: { 'cf-access-jwt-assertion': 'not.a.jwt' } })).statusCode, 401)
     assert.equal((await prodApp.inject({ method: 'GET', url: '/api/health' })).statusCode, 200)
     await prodApp.close()
+  })
+
+  test('AUTH_MODE=public opens production without Cloudflare Access', async () => {
+    const open = loadConfig({ ...process.env, APP_ENV: 'production', AUTH_MODE: 'public', CF_ACCESS_TEAM_DOMAIN: '', CF_ACCESS_AUD: '' })
+    assert.equal(open.auth.mode, 'public')
+    assert.deepEqual(await new Authenticator(open).identify({}), { email: 'guest', role: 'operator' })
+    assert.equal(loadConfig({ ...process.env, APP_ENV: 'production' }).auth.mode, 'access')
   })
 
   test('viewers cannot publish or drive devices', async () => {

@@ -50,6 +50,8 @@ services:
       GATEWAY_CLIENT_KEY_FILE: /run/ppd-tls/operator-key.pem
       GATEWAY_OPERATOR_TOKEN: ${OPERATOR_TOKEN}
       INTERNAL_SERVICE_TOKEN: ${DEMO_TOKEN}
+      # public = no sign-in, anyone with the URL is the operator. access = require Cloudflare Access (set the two below).
+      AUTH_MODE: ${AUTH_MODE:-access}
       CF_ACCESS_TEAM_DOMAIN: ${CF_ACCESS_TEAM_DOMAIN}
       CF_ACCESS_AUD: ${CF_ACCESS_AUD}
       OPERATOR_EMAILS: ${OPERATOR_EMAILS:-}
