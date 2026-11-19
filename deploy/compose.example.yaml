@@ -1,7 +1,7 @@
 # The PPD demo as one Docker Compose application in Coolify (project "PPD Capstone", environment "demo",
 # resource "ppd-demo"). Paste it into a "Docker Compose Empty" resource; docs/deploy-coolify.md has the steps.
 #
-#   ppd.baktisatria.com       Cloudflare (proxied, Access sign-in) -> Coolify proxy :443 -> web -> /api -> app-api
+#   ppd.baktisatria.com       Cloudflare (proxied, open: AUTH_MODE=public) -> Coolify proxy :443 -> web -> /api -> app-api
 #   devices.baktisatria.com   DNS only -> server TCP 8443 (NOT through the Coolify proxy) -> gateway (mutual TLS)
 #
 # Images (GitHub Actions push them to ghcr.io; the server logs in once with a read-only token):
@@ -12,7 +12,7 @@
 #
 # Secrets (Coolify environment variables, never committed):
 #   OPERATOR_TOKEN, REPOSITORY_TOKEN, DEMO_TOKEN   long random strings (openssl rand -hex 32)
-#   CF_ACCESS_TEAM_DOMAIN, CF_ACCESS_AUD           from the Cloudflare Access application for ppd.baktisatria.com
+#   CF_ACCESS_TEAM_DOMAIN, CF_ACCESS_AUD           only with AUTH_MODE=access: from the Cloudflare Access application
 #   OPERATOR_EMAILS                                comma-separated; empty means every signed-in person
 #
 # Certificates: scripts/make-cloud-tls.sh makes them; copy its server/ folder to TLS_DIR on the server
@@ -51,7 +51,7 @@ services:
       GATEWAY_OPERATOR_TOKEN: ${OPERATOR_TOKEN}
       INTERNAL_SERVICE_TOKEN: ${DEMO_TOKEN}
       # public = no sign-in, anyone with the URL is the operator. access = require Cloudflare Access (set the two below).
-      AUTH_MODE: ${AUTH_MODE:-access}
+      AUTH_MODE: ${AUTH_MODE:-public}
       CF_ACCESS_TEAM_DOMAIN: ${CF_ACCESS_TEAM_DOMAIN}
       CF_ACCESS_AUD: ${CF_ACCESS_AUD}
       OPERATOR_EMAILS: ${OPERATOR_EMAILS:-}
