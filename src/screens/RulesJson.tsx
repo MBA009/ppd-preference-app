@@ -12,7 +12,7 @@ export default function RulesJson() {
   const { household, toast } = useHousehold()
   const published = usePublished()
   const [view, setView] = useState<View>('household')
-  if (!household) return <><AppBar title="Rules as JSON" back="/rules" /><Loading /></>
+  if (!household) return <><AppBar title="Technical version" back="/rules" /><Loading /></>
 
   const value = view === 'household'
     ? { answers: household.answers, rules: household.rules }
@@ -33,7 +33,7 @@ export default function RulesJson() {
 
   return (
     <div className="screen">
-      <AppBar title="Rules as JSON" back="/rules" />
+      <AppBar title="Technical version" back="/rules" />
       <div style={{ padding: '0 16px 12px' }}>
         <Segmented full label="Which rules" value={view} onChange={setView}
           options={[{ value: 'household', label: `Household rules (${household.rules.length})` }, { value: 'ppd', label: `Sent to devices (${published.data?.rules.length ?? 0})` }]} />
@@ -41,7 +41,7 @@ export default function RulesJson() {
       <div className="sf" style={{ paddingTop: 0, paddingBottom: 10 }}>
         {view === 'household'
           ? 'What the app stores: your answers to the questions, and your rules.'
-          : published.data ? 'The PPD policy the gateway serves: one rule for each kind of data flow your devices declare.' : 'Nothing has been sent to your devices yet.'}
+          : published.data ? 'The file the home gateway sends your devices: one rule for each thing they say they do with data.' : 'Nothing has been sent to your devices yet.'}
       </div>
       {(view === 'household' || published.data) && <pre className="json">{text}</pre>}
       <Footnote>

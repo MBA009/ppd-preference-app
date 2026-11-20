@@ -2415,7 +2415,7 @@
             "kind": "preset",
             "preset_id": "k4-p2"
           },
-          "title": "Allow: profile and preferences · staying in your home · for advertising"
+          "title": "Allow: habits and preferences · staying in your home · for advertising"
         },
         {
           "id": "k4-p2-r25",
@@ -3282,7 +3282,7 @@
             "kind": "preset",
             "preset_id": "k4-p3"
           },
-          "title": "Never: profile and preferences · leaving your home · for legal obligations · when used"
+          "title": "Never: habits and preferences · leaving your home · for legal obligations · when used"
         },
         {
           "id": "k4-p3-r26",

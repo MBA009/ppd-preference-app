@@ -38,7 +38,7 @@ export async function decodeDeclaration(text: string): Promise<DeclarationCode> 
   const bytes = Uint8Array.from(atob(b64 + '='.repeat((4 - (b64.length % 4)) % 4)), (c) => c.charCodeAt(0))
   const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate'))
   const data = JSON.parse(await new Response(stream).text()) as DeclarationCode
-  if (data?.ppd !== 1 || typeof data.device !== 'string' || !Array.isArray(data.flows)) throw new Error('Not a PPD declaration')
+  if (data?.ppd !== 1 || typeof data.device !== 'string' || !Array.isArray(data.flows)) throw new Error('This isn’t a privacy code the app can read')
   return data
 }
 

@@ -10,24 +10,25 @@ import { conditionText } from '../../shared/conditions'
 import { VERDICT_ORDER, countVerdicts, plural } from '../lib/verdicts'
 import { timeAgo } from '../lib/device'
 import { refineQueue } from '../../shared/onboarding'
+import { ruleSentence } from '../../shared/ruleTitle'
 import Onboarding from './Onboarding'
 import { PublishCard } from '../components/Publish'
 
 /**
- * The household policy page. On first launch it asks the questions; afterwards it lists the household's rules (from
+ * The privacy profile page. On first launch it asks the questions; afterwards it lists the household's rules (from
  * its answers, then its own), grouped by what they do. The preset behind them is internal and never shown.
  */
 export default function Rules() {
   const { household } = useHousehold()
-  if (!household) return <><AppBar title="Household policy" brand /><Loading /></>
+  if (!household) return <><AppBar title="Privacy profile" brand /><Loading /></>
   if (!household.preset_id) return <Onboarding />
   return <Policy />
 }
 
 const GROUPS: { kind: RuleKind; blurb: string; tone: 'red' | 'blue' | 'green'; icon: JSX.Element }[] = [
-  { kind: 'never', tone: 'red', icon: <Icon name="block" size={18} />, blurb: 'A device that does this conflicts with your rules, and is told no. If two rules disagree, your latest change wins.' },
-  { kind: 'limited', tone: 'blue', icon: <ChipGlyph verdict="conditionally_satisfiable" size={16} />, blurb: 'A device that does this is told the condition, and matches with limits.' },
-  { kind: 'allow', tone: 'green', icon: <Icon name="check" size={18} />, blurb: 'A device that does this matches your rules.' },
+  { kind: 'never', tone: 'red', icon: <Icon name="block" size={18} />, blurb: 'Your devices are told not to do these. If two rules disagree, your latest change wins.' },
+  { kind: 'limited', tone: 'blue', icon: <ChipGlyph verdict="conditionally_satisfiable" size={16} />, blurb: 'Allowed only under the condition shown.' },
+  { kind: 'allow', tone: 'green', icon: <Icon name="check" size={18} />, blurb: 'Your devices may do these.' },
 ]
 const GROUP_TITLE: Record<RuleKind, string> = { never: 'Never', limited: 'Allowed with a condition', allow: 'Allowed' }
 
@@ -39,6 +40,7 @@ function Policy() {
   const [confirmReset, setConfirmReset] = useState(false)
   const [open, setOpen] = useState<Partial<Record<RuleKind, boolean>>>({})
   const [showQuiet, setShowQuiet] = useState<Partial<Record<RuleKind, boolean>>>({})
+  const [about, setAbout] = useState(false)
   const rules = useRules()
   const tree = useOnboarding()
   const ids = (household?.devices ?? []).map((d) => d.device_id)
@@ -69,7 +71,7 @@ function Policy() {
   // Flows no rule decides: a rule that covered them was deleted or switched off (Nov 2: no preference yet).
   const gap = useMemo(() => undecidedFlows(rules).length, [rules])
 
-  if (!household) return <><AppBar title="Household policy" brand /><Loading /></>
+  if (!household) return <><AppBar title="Privacy profile" brand /><Loading /></>
 
   const decide = (devices ?? []).reduce((n, d) => n + d.flows.filter((f) => f.evaluation.verdict === 'decision_required').length, 0)
   const fromAnswers = rules.filter((r) => r.origin.kind === 'answer').length
@@ -79,7 +81,7 @@ function Policy() {
   const refineText = !refine
     ? 'Situations households like yours are split on. A good privacy checkup now and then.'
     : refine.undecided
-      ? `${plural(refine.undecided, 'question covers', 'questions cover')} data flows a removed rule left with no rule${decide ? `, ${decide} of them on your devices` : '. None of them are on your devices'}. Then, situations households like yours are split on.`
+      ? `${plural(refine.undecided, 'situation has', 'situations have')} no rule since you removed one${decide ? ', including some of what your devices do' : ''}. After that, situations households like yours are split on.`
       : refine.goodPicture
         ? `We have a good picture of what you want. Check your answers now and then${lastAnswer ? ` (last answer ${timeAgo(lastAnswer)})` : ''}.`
         : `Households like yours are split on ${plural(refine.split, 'more situation')}. Answer as many as you like; your changes stay.`
@@ -92,8 +94,6 @@ function Policy() {
   }
 
 
-  // The group already says Never / Allowed, so a title's own "Never:" or "Allow only if …:" is left out.
-  const shortTitle = (r: Rule) => r.title.replace(/^(Never|Allow(?: only if [^:]*)?):\s*/, '')
   const used = (r: Rule) => impact[r.id]?.decided ?? 0
   const overridden = (r: Rule) => !!impact[r.id]?.later
   const counts = GROUPS.map((g) => ({ kind: g.kind, n: rules.filter((r) => kindOf(r) === g.kind).length })).filter((c) => c.n)
@@ -115,18 +115,19 @@ function Policy() {
     const whollyBeaten = !!i && i.flows > 0 && !i.decided
     const color = KIND[kindOf(r)].color
     const cls = (r.enabled ? '' : 'dim') + (live ? ' inuse' : whollyBeaten && devices ? ' beaten' : ' idle')
-    // What data first, then where it goes and why, instead of one long line.
-    const [what, ...rest] = shortTitle(r).split(' · ')
+    // In sentences: what data and where it goes, then why, then anything narrower. The group already says Never or Allowed.
+    const s = ruleSentence(r)
     return (
       <Cell key={r.id} to={`/rules/${encodeURIComponent(r.id)}`} className={cls} style={live ? { ['--k' as string]: color } : undefined}>
         <div className="cb">
-          <span className="ttl rule-what">{what.charAt(0).toUpperCase() + what.slice(1)}</span>
-          {rest.length > 0 && <span className="sub rule-rest">{rest.join(' · ')}</span>}
+          <span className="ttl rule-what">{s.head}</span>
+          <span className="sub rule-rest">{s.why}</span>
+          {s.more.map((m) => <span key={m} className="sub rule-rest">{m}</span>)}
           {r.condition && <span className="sub">Only if {conditionText(r.condition)}</span>}
-          {devices && live && <span className="use"><i />In use · {plural(i.decided, 'data flow')} on {plural(i.devices, 'device')}</span>}
-          {devices && whollyBeaten && <span className="warn">⚠ Overridden · a later rule decides its {plural(i.flows, 'data flow')}</span>}
-          {devices && live && beaten > 0 && <span className="warn">⚠ Overridden on {plural(beaten, 'more data flow')} by a later rule</span>}
-          {(!devices || !i?.flows) && overridden(r) && <span className="warn">⚠ Partly overridden by a later rule</span>}
+          {devices && live && <span className="use"><i />Used by {i.devices} of your devices</span>}
+          {devices && whollyBeaten && <span className="warn">⚠ Replaced by a newer rule</span>}
+          {devices && live && beaten > 0 && <span className="warn">⚠ Partly replaced by a newer rule</span>}
+          {(!devices || !i?.flows) && overridden(r) && <span className="warn">⚠ Partly replaced by a newer rule</span>}
         </div>
         {!r.enabled && <span className="tr off">Off</span>}
       </Cell>
@@ -137,14 +138,34 @@ function Policy() {
 
   return (
     <div className="screen">
-      <AppBar title="Household policy" brand right={<Link className="ntr" aria-label="Add a rule" to="/rules/new"><Icon name="plus" /></Link>} />
+      <AppBar title="Privacy profile" brand right={<Link className="ntr" aria-label="Add a rule" to="/rules/new"><Icon name="plus" /></Link>} />
+
+      {/* What this page is, for anyone new to it. Folded so it doesn't push the rules down. */}
+      <Group style={{ marginBottom: 8 }}>
+        <button className="cell t" aria-expanded={about} onClick={() => setAbout(!about)}>
+          <Tile tone="blue"><ShieldCheck /></Tile>
+          <div className="cb" style={{ padding: '12px 0' }}>
+            <span className="ttl" style={{ fontWeight: 500 }}>What is a privacy profile?</span>
+            {!about && <span className="sub">The rules your smart devices receive, and how they work</span>}
+          </div>
+          <span className="tr"><ChevronDown up={about} /></span>
+        </button>
+        {about && (
+          <div className="about">
+            <p>Your privacy profile is a set of rules about what smart devices may do with your data. Devices that work with your profile receive these rules automatically.</p>
+            <p><b>Never</b> means devices are told not to do it. <b>Allowed</b> means they may. Each rule says what data, where it goes, and why.</p>
+            <p>Your rules came from your answers. You can change any rule, add your own, or fine-tune your profile with a few more questions.</p>
+            <p>For each device, the app compares what it says it does with your rules.</p>
+          </div>
+        )}
+      </Group>
 
       {isNew && (
         <Group style={{ marginBottom: 12 }}>
           <Cell className="t" chevron={false} style={{ alignItems: 'flex-start' }}>
             <Tile tone="green" style={{ marginTop: 10 }}><ShieldCheck /></Tile>
             <div className="cb" style={{ paddingRight: 16 }}>
-              <span className="ttl" style={{ fontWeight: 500 }}>Your household policy is ready</span>
+              <span className="ttl" style={{ fontWeight: 500 }}>Your privacy profile is ready</span>
               <span className="sub">Your answers gave you {plural(rules.length, 'rule')}{fromAnswers ? `, ${fromAnswers} of them for situations you answered directly` : ''}. Look them over. Tap any rule to change it, switch it off, or add your own.</span>
             </div>
           </Cell>
@@ -160,13 +181,13 @@ function Policy() {
             <Tile tone={decide ? 'orange' : 'blue'} style={{ marginTop: 10 }}><Icon name="status" size={18} /></Tile>
             <div className="cb" style={{ paddingRight: 16 }}>
               <span className="ttl" style={{ fontWeight: 500 }}>
-                {decide ? `${plural(decide, 'flow')} on your devices ${decide === 1 ? 'has' : 'have'} no rule` : `${plural(gap, 'possible data flow has', 'possible data flows have')} no rule`}
+                {decide ? 'Some of what your devices do has no rule' : 'Some situations have no rule'}
               </span>
               <span className="sub">
                 {decide
-                  ? `A rule was deleted or switched off, so ${plural(gap, 'possible data flow has', 'possible data flows have')} no rule, including ${decide === 1 ? 'one' : decide} your devices do. Your devices get no rule for ${decide === 1 ? 'it' : 'them'} until you decide.`
-                  : `A rule was deleted or switched off. None of your devices does ${gap === 1 ? 'this' : 'these'}, so nothing needs deciding now; a device that joins and does ${gap === 1 ? 'it' : 'them'} would get no rule.`}
-                {' '}Tap to decide what should happen.
+                  ? 'You removed or switched off a rule, so your devices get no rule for some of what they do.'
+                  : 'You removed or switched off a rule. None of your devices is affected, but a device that joins later could be.'}
+                {' '}Tap to decide.
               </span>
             </div>
           </Cell>
@@ -178,10 +199,10 @@ function Policy() {
           <div className="ov-top">
             <div>
               <div className="ov-n">{rules.length}</div>
-              <div className="sub">household {rules.length === 1 ? 'rule' : 'rules'}</div>
+              <div className="sub">{rules.length === 1 ? 'rule' : 'rules'} in your profile</div>
             </div>
             {devices && devices.length > 0 && (
-              <div className="ov-use"><b>{inUseTotal}</b> in use by your {plural(devices.length, 'device')}</div>
+              <div className="ov-use"><b>{inUseTotal}</b> used by your devices</div>
             )}
           </div>
           <div className="ov-bar" aria-hidden="true">
@@ -194,7 +215,7 @@ function Policy() {
           </div>
           {devices && devices.length > 0 && (
             <Link className="ov-devices" to="/">
-              <span className="sub">What your {plural(devices.length, 'device')} say they do, against these rules</span>
+              <span className="sub">What your devices say they do, checked against your rules</span>
               <VerdictChips counts={verdicts} order={VERDICT_ORDER} />
             </Link>
           )}
@@ -224,18 +245,18 @@ function Policy() {
                 <div className="cb" style={{ padding: '12px 0' }}>
                   <span className="ttl" style={{ fontWeight: 500, color: k.color }}>{GROUP_TITLE[g.kind]}</span>
                   <span className="sub">
-                    {devices ? (inUse ? `${inUse} in use by your devices` : 'Not in use by your devices yet') : g.blurb}
-                    {beaten > 0 && <span className="warn-t"> · ⚠ {beaten} overridden by later rules</span>}
+                    {devices ? (inUse ? `${inUse} used by your devices` : 'None used by your devices yet') : g.blurb}
+                    {beaten > 0 && <span className="warn-t"> · ⚠ {beaten} replaced by newer rules</span>}
                   </span>
                 </div>
                 <span className="tr"><span className="cnt">{list.length}</span><ChevronDown up={isOpen} /></span>
               </button>
-              {isOpen && devices && inUse > 0 && subhead('In use by your devices')}
+              {isOpen && devices && inUse > 0 && subhead('Used by your devices')}
               {isOpen && list.filter((r) => used(r) > 0).map(row)}
               {isOpen && unused.filter(overridden).map(row)}
               {isOpen && fold && (
                 <Expander open={!!showQuiet[g.kind]} onToggle={() => setShowQuiet((s) => ({ ...s, [g.kind]: !s[g.kind] }))}>
-                  {showQuiet[g.kind] ? 'Hide rules not in use' : `Show ${plural(quiet.length, 'rule')} not in use`}
+                  {showQuiet[g.kind] ? 'Hide rules your devices don’t use' : `Show ${plural(quiet.length, 'rule')} your devices don’t use`}
                 </Expander>
               )}
               {isOpen && (!fold || showQuiet[g.kind]) && quiet.map(row)}
@@ -257,7 +278,7 @@ function Policy() {
       <Group>
         <Cell className="t" to="/rules/refine" data-tour="rules-refine">
           <Tile tone="blue"><ShieldCheck /></Tile>
-          <div className="cb"><span className="ttl" style={{ color: '#0066CC', fontWeight: 500 }}>Help me refine my settings</span><span className="sub">{refineText}</span></div>
+          <div className="cb"><span className="ttl" style={{ color: '#0066CC', fontWeight: 500 }}>Fine-tune your profile</span><span className="sub">{refineText}</span></div>
         </Cell>
         <Cell className="t" to="/rules/new" data-tour="rules-add">
           <Tile tone="blue"><Icon name="plus" size={18} /></Tile>
@@ -268,10 +289,10 @@ function Policy() {
       <SectionHeader>Learn more</SectionHeader>
       <Group>
         <Cell className="t" to="/rules/sources">
-          <div className="cb"><span className="ttl">How the questions were made</span><span className="sub">Synthetic households from published studies</span></div>
+          <div className="cb"><span className="ttl">How the questions were made</span><span className="sub">Based on published research, tested on simulated households</span></div>
         </Cell>
         <Cell className="t" to="/rules/json" data-tour="rules-json">
-          <div className="cb"><span className="ttl">See the rules as JSON</span><span className="sub">The rules in your household policy, and the PPD policy your devices receive</span></div>
+          <div className="cb"><span className="ttl">See the technical version</span><span className="sub">Your rules in a technical format, and the exact file your devices receive</span></div>
         </Cell>
       </Group>
 

@@ -79,7 +79,7 @@ export function promptFor(q: OnboardingQuestion, ownedClasses: string[]): string
 /** The kind of data, in the words of a question. */
 const DATA_WORDS: Record<string, string> = {
   'ppd:identifierData': 'your name and contact information',
-  'ppd:profileData': 'a profile of your habits and preferences',
+  'ppd:profileData': 'what it has learned about your habits and preferences',
   'ppd:sensorData': 'sensor readings',
   'ppd:contentData': 'video or audio',
   'ppd:locationData': 'your location',

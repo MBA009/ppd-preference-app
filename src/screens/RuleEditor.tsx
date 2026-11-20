@@ -5,7 +5,7 @@ import { ActionBar, AppBar, Cell, Footnote, Group, Loading, Pill, SectionHeader,
 import { useDevices, useHousehold } from '../state/data'
 import { decisionKey, ruleCovers, rulesOverlap, undecidedFlows } from '../policy/scope'
 import { FIELDS } from '../../shared/taxonomy'
-import { ruleTitle } from '../../shared/ruleTitle'
+import { ruleSentence, ruleTitle } from '../../shared/ruleTitle'
 import { ACTION_CHOICES, CONDITION_CHOICES, DATA_CHOICES, KEPT_FOREVER, PURPOSE_CHOICES, SOURCE_CHOICES, WHO_CHOICES, isBoundary, isOn, kindOf, toggle, type Choice, type RuleKind } from '../policy/choices'
 import { plural } from '../lib/verdicts'
 import { PLACES, jurisdictionCondition, jurisdictionOf, type JurisdictionScope } from '../../shared/conditions'
@@ -20,7 +20,7 @@ export default function RuleEditor() {
     return (
       <div className="screen">
         <AppBar title="Rule" back="/rules" />
-        <div className="empty">That rule is gone. <Link to="/rules" className="link">Back to your household policy</Link></div>
+        <div className="empty">That rule is gone. <Link to="/rules" className="link">Back to your privacy profile</Link></div>
       </div>
     )
   }
@@ -37,9 +37,9 @@ const PLACE_SCOPES: { scope: JurisdictionScope; label: string; hint: string }[] 
 ]
 
 const KINDS: { kind: RuleKind; label: string; sub: string }[] = [
-  { kind: 'never', label: 'Never', sub: 'A device that does this conflicts with your rules, and is told no.' },
-  { kind: 'limited', label: 'Allow only if…', sub: 'Allowed under a condition the device is told, such as not keeping the data.' },
-  { kind: 'allow', label: 'Allow', sub: 'A device that does this matches your rules.' },
+  { kind: 'never', label: 'Never', sub: 'Your devices are told not to do this.' },
+  { kind: 'limited', label: 'Allow only if…', sub: 'Allowed only under a condition, such as not keeping the data.' },
+  { kind: 'allow', label: 'Allow', sub: 'Your devices may do this.' },
 ]
 
 function Editor({ rule }: { rule: Rule | undefined }) {
@@ -84,7 +84,7 @@ function Editor({ rule }: { rule: Rule | undefined }) {
   const overrides = (household?.rules ?? []).filter((r) => r.id !== rule?.id && r.enabled && !empty && decisionKey(r) !== decisionKey(draft) && rulesOverlap(draft, r))
   const sharedFlows = (r: Rule) => (devices ?? []).reduce((n, d) => n + d.flows.filter((f) => ruleCovers({ ...draft, enabled: true }, f.taxonomy) && ruleCovers(r, f.taxonomy)).length, 0)
 
-  // What taking this rule away (deleting it, or switching it off) leaves with no rule at all: the household policy then
+  // What taking this rule away (deleting it, or switching it off) leaves with no rule at all: the privacy profile then
   // sends devices nothing for those flows, and the household has to decide them (Nov 2: no preference yet).
   const gap = useMemo(() => {
     if (!rule?.enabled) return null
@@ -99,7 +99,7 @@ function Editor({ rule }: { rule: Rule | undefined }) {
     <div className="note" role="status" style={{ margin: '12px 16px 0' }}>
       <b>{what} leaves {plural(gap.flows, 'data flow')} with no rule{gap.onDevices ? `, ${gap.onDevices} of them on your devices` : ''}.</b>{' '}
       No other rule covers them, so your devices get no rule for them until you decide{gap.onDevices ? ', and they show as Needs your decision' : ''}.
-      You can decide them afterwards from your household policy page. To change what happens instead of removing it, edit the rule and save.
+      You can decide them afterwards from your privacy profile page. To change what happens instead of removing it, edit the rule and save.
     </div>
   )
 
@@ -150,7 +150,7 @@ function Editor({ rule }: { rule: Rule | undefined }) {
       <AppBar title={rule ? 'Edit rule' : 'New rule'} back="/rules" />
       <div className="rname" aria-live="polite">
         <span className="sub">This rule</span>
-        <span className="ttl">{empty ? 'Pick what it covers below' : name}</span>
+        <span className="ttl">{empty ? 'Pick what it covers below' : ruleSentence(draft).sentence}</span>
       </div>
 
       <SectionHeader>What should happen</SectionHeader>
@@ -234,7 +234,7 @@ function Editor({ rule }: { rule: Rule | undefined }) {
           <ul className="olap">
             {overrides.map((r) => {
               const n = sharedFlows(r)
-              return <li key={r.id}><Link to={`/rules/${encodeURIComponent(r.id)}`}>{r.title}</Link>{devices && <span> · {n ? `${plural(n, 'data flow')} on your devices` : 'none of your devices yet'}</span>}</li>
+              return <li key={r.id}><Link to={`/rules/${encodeURIComponent(r.id)}`}>{ruleSentence(r).sentence}</Link>{devices && <span> · {n ? `${plural(n, 'data flow')} on your devices` : 'none of your devices yet'}</span>}</li>
             })}
           </ul>
           {overrides.length === 1 ? 'That rule still decides' : 'Those rules still decide'} everything else {overrides.length === 1 ? 'it covers' : 'they cover'}. Changing {overrides.length === 1 ? 'it' : 'one of them'} later makes {overrides.length === 1 ? 'it' : 'that one'} the latest again.

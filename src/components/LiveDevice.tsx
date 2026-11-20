@@ -83,7 +83,7 @@ export function LifecycleSteps({ live }: { live: LiveState }) {
 const PUBLICATION: Record<LiveState['publication'], string> = {
   current: 'Has your latest rules',
   waiting: 'Waiting for the device to pick up your latest rules',
-  not_published: 'No household policy is being served yet',
+  not_published: 'No privacy profile is being served yet',
 }
 
 /** Which policy instance the gateway delivered, and the device's receipt for it. */
@@ -97,7 +97,7 @@ export function PolicyReceipt({ live }: { live: LiveState }) {
         <Kv k="Status" v={PUBLICATION[live.publication]} />
         {p ? (
           <>
-            <Kv k="Household policy" v={p.base_policy_id} mono />
+            <Kv k="Privacy profile" v={p.base_policy_id} mono />
             {p.applied_policy_id && <Kv k="Device exception" v={p.applied_policy_id} mono />}
             <Kv k="Policy instance" v={shortId(p.policy_id)} mono />
             <Kv k="Delivered" v={when(p.retrieved_at)} />
@@ -133,7 +133,7 @@ const purposeList = (r: LiveState['runtime']) => r.conflicting_purposes.map((p) 
 
 /**
  * A loud warning near the top of the device page when the device's runtime-status report (a CableLabs gateway
- * demo extension, not PPD) says it ignores the household policy or sent data the policy denies. Lists the
+ * demo extension, not PPD) says it ignores the privacy profile or sent data the policy denies. Lists the
  * device's flows with that purpose that the policy says no to.
  */
 export function RuntimeWarning({ device, live }: { device: Device; live: LiveState }) {
@@ -147,11 +147,11 @@ export function RuntimeWarning({ device, live }: { device: Device; live: LiveSta
         <Cell className="t" chevron={false} style={{ alignItems: 'flex-start' }}>
           <Tile tone="red" style={{ marginTop: 10 }}><ChipGlyph verdict="unsatisfiable" size={17} /></Tile>
           <div className="cb" style={{ paddingRight: 16 }}>
-            <span className="ttl" style={{ fontWeight: 600, color: 'var(--bad)' }}>{r.conflict_active ? 'Sent data your household policy denies' : 'Ignores your household policy'}</span>
+            <span className="ttl" style={{ fontWeight: 600, color: 'var(--bad)' }}>{r.conflict_active ? 'Sent data your privacy profile denies' : 'Ignores your privacy profile'}</span>
             <span className="sub">
               {r.conflict_active
                 ? `The device reports it sent data for ${purposeList(r).toLowerCase() || 'a purpose'} anyway.`
-                : 'The device reports it will send data even where your household policy says no.'}
+                : 'The device reports it will send data even where your privacy profile says no.'}
             </span>
           </div>
         </Cell>

@@ -21,7 +21,7 @@ export default function Library() {
   const connected = matching.filter((d) => d.kind === 'real' || d.kind === 'simulated')
   const shown = matching.filter((d) => d.kind !== 'real' && d.kind !== 'simulated')
   const inHome = (d: DeviceSummary) => household.devices.some((h) => h.device_id === d.id)
-  // The library is for checking devices against your household policy: devices that support PPD open in the privacy
+  // The library is for checking devices against your privacy profile: devices that support PPD open in the privacy
   // viewer; the others have no declaration to draw, so they open the device check.
   const open = (d: DeviceSummary) => (supportsPpd(d) ? `/viewer/${encodeURIComponent(d.id)}` : `/preview/${encodeURIComponent(d.id)}`)
 
@@ -87,13 +87,13 @@ export default function Library() {
 
       {ppd.length > 0 && (
         <>
-          <SectionHeader>Supports PPD · {ppd.length}</SectionHeader>
+          <SectionHeader>Works with your profile · {ppd.length}</SectionHeader>
           <div className="grp">{ppd.map(row)}</div>
-          <Footnote>These devices say what they do with your data. Open one to see where its data goes, compared with your household policy.</Footnote>
+          <Footnote>These devices say what they do with your data. Open one to see where its data goes, compared with your privacy profile.</Footnote>
           <div className="grp" style={{ marginTop: 8 }}>
             <a className="cell" href="qr/index.html" target="_blank" rel="noreferrer">
               <div className="cb" style={{ padding: '12px 0' }}>
-                <span className="ttl" style={{ color: 'var(--primary)' }}>PPD QR codes for these devices</span>
+                <span className="ttl" style={{ color: 'var(--primary)' }}>Privacy codes for these devices</span>
                 <span className="sub">Printable codes. Scan one to open it in the privacy viewer.</span>
               </div>
             </a>
@@ -102,13 +102,13 @@ export default function Library() {
       )}
       {other.length > 0 && (
         <>
-          <SectionHeader>Doesn’t support PPD · {other.length}</SectionHeader>
+          <SectionHeader>Doesn’t work with your profile · {other.length}</SectionHeader>
           <div className="grp">{other.map(row)}</div>
           <Footnote>These devices can’t receive your rules or say what they do with your data. What you see comes from our team’s reading of the maker’s public privacy statements.</Footnote>
         </>
       )}
       {shown.length === 0 && <div className="empty">No match for “{q}”.</div>}
-      <Footnote>Not listed? Scan the box, or wait for the device to register itself if it supports PPD.</Footnote>
+      <Footnote>Not listed? Scan the box, or wait for the device to join by itself if it works with your profile.</Footnote>
       <div className="spacer" />
     </div>
   )

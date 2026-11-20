@@ -70,7 +70,7 @@ function ViewerBody({ device: d, back, scanned = false }: { device: Device; back
   const worst = (a: Flow, b: Flow) => VERDICT_ORDER.indexOf(a.evaluation.verdict) - VERDICT_ORDER.indexOf(b.evaluation.verdict)
   const groups = [...new Set(shown.map(whoOf))].map((who) => ({ who, flows: shown.filter((f) => whoOf(f) === who).sort(worst) }))
   const split = contextSplit(d)
-  const origin = 'What the device declares, compared with your household policy on this phone'
+  const origin = 'What the device declares, compared with your privacy profile on this phone'
 
   return (
     <div className="screen">
@@ -87,7 +87,7 @@ function ViewerBody({ device: d, back, scanned = false }: { device: Device; back
       </Group>
 
       {!supportsPpd(d) ? (
-        <div className="empty">{d.short_name} doesn’t support PPD, so it hasn’t declared its data flows. The privacy viewer shows devices that do.</div>
+        <div className="empty">{d.short_name} doesn’t work with privacy profiles, so it hasn’t said what it does with your data. The privacy viewer shows devices that do.</div>
       ) : declaredNothing(d) || d.flows.length === 0 ? (
         <div className="empty">{d.short_name} hasn’t said what it does with your data, so there is nothing to draw.</div>
       ) : (
@@ -104,7 +104,7 @@ function ViewerBody({ device: d, back, scanned = false }: { device: Device; back
             <DataflowDiagram device={d} pick={pick} onPick={setPick} />
             <DataflowLegend device={d} pick={pick} onPick={setPick} />
           </div>
-          <Footnote>{origin}. Each band is one or more data flows; its width is how many, its colour how they compare with your household policy. Tap a kind of data, a place it goes, or a verdict to see only those flows.</Footnote>
+          <Footnote>{origin}. Each band is one or more data flows; its width is how many, its colour how they compare with your privacy profile. Tap a kind of data, a place it goes, or a verdict to see only those flows.</Footnote>
 
           <SectionHeader>
             {pick ? (

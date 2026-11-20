@@ -6,8 +6,8 @@ import { timeAgo } from '../lib/device'
 
 
 /**
- * Whether the household policy has reached the devices. app-api compiles the household's rules into one PPD policy
- * of atomic allow/deny policy rules, one per core dataflow the household policy answers (up to 6,272), the same for
+ * Whether the privacy profile has reached the devices. app-api compiles the household's rules into one PPD policy
+ * of atomic allow/deny policy rules, one per core dataflow the privacy profile answers (up to 6,272), the same for
  * every device, and sends it on its own whenever the rules change; the gateway serves it, and devices fetch and
  * confirm it. The full policy is on the JSON page.
  */
@@ -21,7 +21,7 @@ export function PublishCard() {
       <Group style={{ marginBottom: 12 }}>
         <Cell className="t" chevron={false} to="/status">
           <Tile tone="grey"><Icon name="publish" size={18} /></Tile>
-          <div className="cb"><span className="ttl">Your devices can’t get your household policy right now</span><span className="sub">{preview.error.message}</span></div>
+          <div className="cb"><span className="ttl">Your devices can’t get your privacy profile right now</span><span className="sub">{preview.error.message}</span></div>
         </Cell>
       </Group>
     )
@@ -34,9 +34,9 @@ export function PublishCard() {
   const error = p.sync?.last_error
   const pending = changes > 0 && p.devices > 0
 
-  const title = !p.devices ? 'No connected devices yet' : pending ? 'Sending your household policy to your devices…' : 'Your devices have your latest household policy'
+  const title = !p.devices ? 'No connected devices yet' : pending ? 'Sending your privacy profile to your devices…' : 'Your devices have your latest privacy profile'
   const sub = !p.devices
-    ? 'When a device that supports PPD joins your home, it gets your rules automatically.'
+    ? 'When a device that works with your profile joins your home, it gets your rules automatically.'
     : pending
       ? error ? `Not sent yet: ${error} Trying again.` : `${plural(changes, 'change')}, going out within a few seconds.`
       : `${plural(p.devices, 'device')}${sent ? ` · sent automatically ${timeAgo(sent.at)}` : ''}. New devices get them on their own.`

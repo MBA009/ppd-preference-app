@@ -229,6 +229,10 @@ button.cell:active, a.cell:active { background: #f1f3f6; }
 .cell.idle .ttl { color: var(--text-2); }
 .use { display: inline-flex; align-self: flex-start; align-items: center; gap: 6px; margin-top: 4px; font-size: 13px; line-height: 18px; font-weight: 500; color: var(--heading); }
 .use i { width: 7px; height: 7px; border-radius: 50%; background: var(--k); }
+.about { padding: 0 16px 14px 66px; }
+.about p { margin: 0 0 8px; font-size: 14px; line-height: 20px; color: var(--text-2); }
+.about p:last-child { margin-bottom: 0; }
+.about b { color: var(--text); font-weight: 600; }
 .rule-what { font-size: 15px; line-height: 20px; font-weight: 500; }
 .cell.idle .rule-what { font-weight: 400; }
 .rule-rest { font-size: 13px; line-height: 18px; margin-top: 1px; }

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { evaluateFlow } from '../../shared/engine'
 import { answerQuestion, deleteRule, finishOnboarding, normalizeHousehold, retirePreset, upsertRule } from '../../shared/household'
-import { ruleTitle } from '../../shared/ruleTitle'
+import { ruleSentence, ruleTitle } from '../../shared/ruleTitle'
 import { CORE_FLOWS, decidingRule, decisionKey, gapScopes, ruleCovers, rulesOverlap, undecidedFlows } from '../../shared/scope'
 import { conditionConstraints, declaresCondition, jurisdictionCondition, jurisdictionOf } from '../../shared/conditions'
 import { followUps, promptFor, questionText, questionsLeft, refineQueue, rulesFromAnswers, stageOnePath, walk } from '../../shared/onboarding'
@@ -316,6 +316,18 @@ test('a rule is always named from what it does: the presets\' own names, and not
   const h = upsertRule({ devices: [], saved: [], answers: null, preset_id: 'x', rules: [], profile: null }, typed)
   assert.equal(h.rules[0].title, 'Never: location')
   assert.equal(normalizeHousehold({ ...h, rules: [typed] }).rules[0].title, 'Never: location', 'stored names are regenerated on load')
+})
+
+test('a rule reads as plain sentences: what data and where, then why, then anything narrower', () => {
+  const home = ruleSentence({ effect: 'allow', condition: null, scope: { handling_context: ['ppd:householdContext'], purpose: ['ppd:coreFunctionality', 'ppd:communicationsAndNotifications', 'ppd:security', 'ppd:diagnosticsAndMaintenance', 'ppd:analyticsAndImprovement', 'ppd:legalCompliance'] } })
+  assert.equal(home.head, 'Any data kept in your home')
+  assert.equal(home.why, 'For any reason except advertising or personalizing what you see')
+  assert.equal(home.sentence, 'Allow any data kept in your home, for any reason except advertising or personalizing what you see.')
+  const most = ruleSentence({ effect: 'dont_allow', condition: null, scope: { data_type: ['ppd:contentData', 'ppd:locationData', 'ppd:identifierData', 'ppd:profileData', 'ppd:usageData'], handling_context: ['ppd:vendorContext', 'ppd:thirdPartyContext', 'ppd:publicAudience'], action: ['ppd:collection', 'ppd:transfer', 'ppd:inference'] } })
+  assert.equal(most.head, 'Most kinds of data sent outside your home')
+  assert.deepEqual(most.more, ['Not device and network details or sensor readings', 'Doesn’t cover the company using data it already has, without passing it on. Another rule decides that'])
+  assert.ok(most.sentence.startsWith('Never allow most kinds of data'))
+  for (const p of presets) for (const r of p.rules) assert.ok(!/undefined/.test(ruleSentence(r).sentence), r.title)
 })
 
 test('overlapping rules: found when every field shares a term, and whether they decide differently', () => {

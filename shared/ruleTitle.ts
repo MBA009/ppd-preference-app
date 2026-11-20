@@ -9,7 +9,7 @@ import { conditionShort } from './conditions'
  */
 
 const PLAIN: Record<string, string> = {
-  'ppd:identifierData': 'account and identity details', 'ppd:profileData': 'profile and preferences',
+  'ppd:identifierData': 'account and identity details', 'ppd:profileData': 'habits and preferences',
   'ppd:sensorData': 'sensor readings', 'ppd:contentData': 'video, photos and sound', 'ppd:locationData': 'location',
   'ppd:deviceAndNetworkData': 'device and network details', 'ppd:usageData': 'how you use your devices',
   'ppd:coreFunctionality': 'making features work', 'ppd:personalization': 'personalizing what you see',
@@ -49,6 +49,60 @@ export function ruleTitle(rule: Pick<Rule, 'effect' | 'condition' | 'scope'>): s
   const parts = ORDER.map((f) => termsText(f, rule.scope[f]?.length ? rule.scope[f]! : Object.keys(CORE_TERMS[f]))).filter(Boolean)
   if (rule.scope.constraints?.includes('retention=ppd:indefinite')) parts.push('if the device keeps it forever')
   return `${lead}: ${parts.length ? parts.join(' · ') : 'everything else'}`
+}
+
+/** Where data goes, as a phrase that follows the data ("any data that stays in your home"). */
+const WHERE: Record<string, string> = {
+  'ppd:householdContext': 'kept in your home', 'ppd:vendorContext': 'sent to the device maker',
+  'ppd:thirdPartyContext': 'shared with other companies', 'ppd:publicAudience': 'made public',
+}
+/** What happens to the data, as things a device does with it. */
+const DOING: Record<string, string> = {
+  'ppd:collection': 'collecting the data in the first place', 'ppd:use': 'the company using data it already has, without passing it on',
+  'ppd:transfer': 'passing the data on to someone else', 'ppd:inference': 'working out new information from the data',
+}
+
+/** "a, b or c" (or "a, b and c" for what's left out). */
+const list = (items: string[], last: 'or' | 'and') => items.length < 2 ? items.join('') : `${items.slice(0, -1).join(', ')} ${last} ${items.at(-1)}`
+const upper = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+
+/**
+ * A rule in sentences, for reading rather than for its name: what data and where it goes, then why, then anything
+ * narrower. "Allow: staying in your home · for anything except advertising" reads as "Any data that stays in your
+ * home" / "For any reason except advertising". The rule's name (ruleTitle) is unchanged.
+ */
+export function ruleSentence(rule: Pick<Rule, 'effect' | 'condition' | 'scope'>): { head: string; why: string; more: string[]; sentence: string } {
+  const all = (f: Field) => Object.keys(CORE_TERMS[f])
+  const pick = (f: Field) => (rule.scope[f]?.length ? rule.scope[f]! : all(f))
+  const split = (f: Field) => { const terms = pick(f); return { terms, missing: all(f).filter((t) => !terms.includes(t)), every: terms.length === all(f).length } }
+
+  const more: string[] = []
+  const data = split('data_type')
+  // Leaving out one kind reads fine in the heading; leaving out several gets a line of its own.
+  const most = !data.every && data.missing.length < data.terms.length
+  const what = data.every ? 'any data' : most ? (data.missing.length === 1 ? `any data except ${plain(data.missing)[0]}` : 'most kinds of data') : list(plain(data.terms), 'or')
+  if (most && data.missing.length > 1) more.push(`Not ${list(plain(data.missing), 'or')}`)
+  const where = split('handling_context')
+  const place = where.every ? ''
+    : where.missing.length === 1 && where.missing[0] === 'ppd:householdContext' ? 'sent outside your home'
+      : list(where.terms.map((t) => WHERE[t]), 'or')
+  const head = upper([what, place].filter(Boolean).join(' '))
+
+  const purpose = split('purpose')
+  const why = purpose.every ? 'For any reason' : purpose.missing.length < purpose.terms.length ? `For any reason except ${list(plain(purpose.missing), 'or')}` : `For ${list(plain(purpose.terms), 'or')}`
+
+  const action = split('action')
+  // Every flow is decided by exactly one rule, so what this rule leaves out, another rule decides: say so.
+  if (!action.every) more.push(action.missing.length < action.terms.length
+    ? `Doesn’t cover ${list(action.missing.map((t) => DOING[t]), 'or')}. Another rule decides that`
+    : `Only covers ${list(action.terms.map((t) => DOING[t]), 'or')}. Other rules decide the rest`)
+  const source = split('source')
+  if (!source.every) more.push(source.missing.length < source.terms.length ? `Doesn’t cover data ${list(plain(source.missing), 'or')}` : `Only covers data ${list(plain(source.terms), 'or')}`)
+  if (rule.scope.constraints?.includes('retention=ppd:indefinite')) more.push('Only if the device keeps it forever')
+
+  const lead = rule.effect === 'dont_allow' ? 'Never allow' : rule.condition ? `Allow only if ${conditionShort(rule.condition)}:` : 'Allow'
+  const sentence = `${lead} ${head.charAt(0).toLowerCase() + head.slice(1)}, ${why.charAt(0).toLowerCase() + why.slice(1)}${more.length ? `. ${more.join('. ')}` : ''}.`
+  return { head, why, more, sentence }
 }
 
 /** A rule's name is always generated from what it does; any stored title is replaced. */

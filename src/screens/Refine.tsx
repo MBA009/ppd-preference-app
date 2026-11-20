@@ -26,8 +26,8 @@ export default function Refine() {
   const tree = useOnboarding()
   const library = useLibrary()
   const { household } = useHousehold()
-  if (tree.error) return <><AppBar title="Refine your settings" back="/rules" /><ErrorBox error={tree.error} /></>
-  if (!tree.data || !household || (!library.data && !library.error)) return <><AppBar title="Refine your settings" back="/rules" /><Loading /></>
+  if (tree.error) return <><AppBar title="Fine-tune your profile" back="/rules" /><ErrorBox error={tree.error} /></>
+  if (!tree.data || !household || (!library.data && !library.error)) return <><AppBar title="Fine-tune your profile" back="/rules" /><Loading /></>
   return <Queue tree={tree.data} household={household} owned={ownedClasses(household, library.data ?? [])} />
 }
 
@@ -55,7 +55,7 @@ function Queue({ tree, household, owned }: { tree: Tree; household: Household; o
     return (
       <Notice
         tone="blue" icon={<ShieldCheck />} title="Take a break?"
-        text={`You've answered ${plural(session.length, 'question')}. Your answers are saved and your rules already use them. Come back to "Help me refine my settings" any time to carry on.`}
+        text={`You've answered ${plural(session.length, 'question')}. Your answers are saved and your rules already use them. Come back to "Fine-tune your profile" any time to carry on.`}
         stop="Take a break" go="Keep going" onStop={done} onGo={() => setPause(null)}
       />
     )
@@ -100,7 +100,7 @@ function Queue({ tree, household, owned }: { tree: Tree; household: Household; o
   return (
     <div className="screen">
       <AppBar
-        title="Refine your settings" back="/rules"
+        title="Fine-tune your profile" back="/rules"
         subtitle={queue.goodPicture ? `${plural(session.length, 'answer')} so far · good picture` : `${plural(remaining, 'situation')} left to settle`}
       />
       {!queue.goodPicture && (
@@ -147,12 +147,12 @@ function Start({ tree, household, onStart }: { tree: Tree; household: Household;
     : `${where}${queue.split ? `Households like yours are split on ${plural(queue.split, 'situation')}. We ask about them one at a time, the least certain first.` : ''}`
   return (
     <div className="screen">
-      <AppBar title="Refine your settings" back="/rules" />
+      <AppBar title="Fine-tune your profile" back="/rules" />
       <Group>
         <Cell className="t" chevron={false} style={{ alignItems: 'flex-start' }}>
           <Tile tone={queue.goodPicture ? 'green' : 'blue'} style={{ marginTop: 10 }}><ShieldCheck /></Tile>
           <div className="cb" style={{ paddingRight: 16 }}>
-            <span className="ttl" style={{ fontWeight: 500 }}>Help me refine my settings</span>
+            <span className="ttl" style={{ fontWeight: 500 }}>Fine-tune your profile</span>
             <span className="sub">{status}</span>
           </div>
         </Cell>
@@ -175,7 +175,7 @@ function Notice({ tone, icon, title, text, stop, go, onStop, onGo }: {
 }) {
   return (
     <div className="screen">
-      <AppBar title="Refine your settings" back="/rules" />
+      <AppBar title="Fine-tune your profile" back="/rules" />
       <Group>
         <Cell className="t" chevron={false} style={{ alignItems: 'flex-start' }}>
           <Tile tone={tone} style={{ marginTop: 10 }}>{icon}</Tile>

@@ -79,7 +79,7 @@ export default function Settle() {
             <Tile tone="green" style={{ marginTop: 10 }}><Icon name="check" size={20} /></Tile>
             <div className="cb" style={{ paddingRight: 16 }}>
               <span className="ttl" style={{ fontWeight: 500 }}>Every data flow has a rule</span>
-              <span className="sub">Your household policy decides every kind of data flow again, so your devices get a rule for each.</span>
+              <span className="sub">Your privacy profile decides every kind of data flow again, so your devices get a rule for each.</span>
             </div>
           </Cell>
         </Group>

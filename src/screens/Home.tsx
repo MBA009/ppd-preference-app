@@ -76,7 +76,7 @@ export default function Home() {
     reconnect.length > 0 && {
       key: 'reconnect', tone: reconnect.some(reported) ? 'red' : 'orange', icon: 'status', to: to(reconnect),
       title: `${names(reconnect)} ${reconnect.length === 1 ? 'needs' : 'need'} to reconnect`,
-      sub: `${reconnect.length === 1 ? 'It' : 'They'} can’t get your household policy until ${reconnect.length === 1 ? 'it joins' : 'they join'} again.${earlier(reconnect)}`,
+      sub: `${reconnect.length === 1 ? 'It' : 'They'} can’t get your privacy profile until ${reconnect.length === 1 ? 'it joins' : 'they join'} again.${earlier(reconnect)}`,
     },
     !!joined && {
       key: 'joined', tone: 'blue', icon: 'plus', to: `/device/${encodeURIComponent(joined.id)}/joined`,
@@ -111,8 +111,8 @@ export default function Home() {
       <div data-tour="home-devices">
       {connected.length === 0 && (
         <>
-          <SectionHeader>Connected through PPD · 0</SectionHeader>
-          <Group><div className="empty">No device has connected yet. Devices that support PPD join by themselves when they connect to your network.</div></Group>
+          <SectionHeader>Connected devices · 0</SectionHeader>
+          <Group><div className="empty">No device has connected yet. Devices that work with your profile join by themselves when they connect to your network.</div></Group>
         </>
       )}
 
@@ -120,7 +120,7 @@ export default function Home() {
         <>
           <SectionHeader>Need attention · {attentionDevices.length}</SectionHeader>
           <Group>{attentionDevices.map((d) => <DeviceRow key={d.id} device={d} />)}</Group>
-          <Footnote>These devices connected through PPD but don’t hold your current rules: they haven’t confirmed them yet, stopped renewing, or need to reconnect. A device that has left for good can be forgotten from its page.</Footnote>
+          <Footnote>These devices are connected but don’t have your latest rules: they haven’t confirmed them yet, stopped checking in, or need to reconnect. A device that has left for good can be forgotten from its page.</Footnote>
         </>
       )}
 
@@ -134,13 +134,13 @@ export default function Home() {
 
       {overview?.gateway.reachable && (
         <div data-tour="home-unmanaged">
-          <SectionHeader>On your network, no PPD · {unmanaged?.length ?? 0}</SectionHeader>
+          <SectionHeader>Doesn’t work with your profile · {unmanaged?.length ?? 0}</SectionHeader>
           {unmanaged && unmanaged.length > 0 ? (
             <Group>{unmanaged.map((u) => <UnmanagedRow key={u.id} device={u} />)}</Group>
           ) : (
-            <Group><div className="empty" style={{ padding: 20 }}>Your home gateway hasn’t seen any device that doesn’t support PPD.</div></Group>
+            <Group><div className="empty" style={{ padding: 20 }}>Your home gateway hasn’t seen any device that doesn’t work with your profile.</div></Group>
           )}
-          <Footnote>These devices are on your home network but don’t support PPD, so your household policy can’t reach them.</Footnote>
+          <Footnote>These devices are on your home network, but they can’t receive your privacy profile.</Footnote>
         </div>
       )}
 
@@ -158,11 +158,11 @@ export default function Home() {
           <Tile tone="blue"><Icon name="search" size={18} /></Tile>
           <div className="cb">
             <span className="ttl" style={{ color: '#0066CC' }}>Check a device before you buy it</span>
-            <span className="sub">See how what it says it does fits your household policy. Scan its privacy code, or look it up in our research library.</span>
+            <span className="sub">See how what it says it does fits your privacy profile. Scan its privacy code, or look it up in our research library.</span>
           </div>
         </Cell>
       </Group>
-      <Footnote>This checks what the device declares, not what it will actually do. You don’t need to add devices you own: devices that support PPD join and get your household policy by themselves when they connect to your network.</Footnote>
+      <Footnote>This checks what the device declares, not what it will actually do. You don’t need to add devices you own: devices that work with your profile join and get it by themselves when they connect to your network.</Footnote>
       <div className="spacer" />
     </div>
   )
@@ -201,7 +201,7 @@ function UnmanagedRow({ device: u }: { device: UnmanagedDevice }) {
       <div className="cb">
         <span className="ttl">{u.hostname ?? 'Unnamed device'}{u.simulated && <span className="tag sm">Simulated</span>}</span>
         <span className="sub">{[u.ip_address, guess || null].filter(Boolean).join(' · ')}</span>
-        <span className="sub" style={{ fontSize: 13 }}>{u.research_match ? `Looks like ${u.research_match.short_name} · see what it does` : 'Doesn’t support PPD · doesn’t get your rules'}</span>
+        <span className="sub" style={{ fontSize: 13 }}>{u.research_match ? `Looks like ${u.research_match.short_name} · see what it does` : 'Can’t receive your rules'}</span>
       </div>
     </>
   )
@@ -224,7 +224,7 @@ function Readiness({ overview: o }: { overview: Overview }) {
   const stats: [string, number, string | undefined][] = [
     ['On your network', c.known, undefined],
     ['Have your rules', c.have_rules, 'ok'],
-    ['Don’t support PPD', c.unmanaged, undefined],
+    ['Don’t work with your profile', c.unmanaged, undefined],
     ['Need attention', c.need_attention, c.need_attention ? 'dec' : undefined],
   ]
   return (

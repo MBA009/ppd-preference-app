@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import type { Device, Flow, Rule } from '../api'
-import { ActionBar, AppBar, Cell, ErrorBox, Footnote, Group, Loading, Tile } from '../components/ui'
-import { ruleTitle } from '../../shared/ruleTitle'
-import { ChipGlyph } from '../components/icons'
+import { ActionBar, AppBar, Cell, ErrorBox, Footnote, Group, Loading, SectionHeader, Tile } from '../components/ui'
+import { ruleSentence, ruleTitle } from '../../shared/ruleTitle'
+import { ChipGlyph, Icon } from '../components/icons'
+import { kindOf, type RuleKind } from '../policy/choices'
 import { useDevice, useHousehold } from '../state/data'
 import { VERDICTS } from '../lib/verdicts'
 import { nounOf } from '../components/DeviceReport'
@@ -31,13 +32,25 @@ export default function FlowDetail() {
   const flow = d?.flows.find((f) => f.id === flowId)
   if (!d || !household) return <><AppBar title="Flow" back={true} /><Loading /></>
   if (!flow) return <><AppBar title="Flow" back={`/device/${d.id}`} /><ErrorBox error={new Error('That flow is not in this device’s declaration.')} /></>
-  return <Detail key={flow.id} device={d} flow={flow} />
+  const rule = household.rules.find((r) => r.id === flow.evaluation.rule_id) ?? null
+  return <Detail key={flow.id} device={d} flow={flow} rule={rule} />
 }
 
-function Detail({ device, flow }: { device: Device; flow: Flow }) {
+/** How each kind of rule looks on its card, as in the groups on the profile page. */
+const KIND_LOOK: Record<RuleKind, { label: string; tone: 'red' | 'blue' | 'green'; icon: JSX.Element }> = {
+  never: { label: 'Never', tone: 'red', icon: <Icon name="block" size={18} /> },
+  limited: { label: 'Allowed with a condition', tone: 'blue', icon: <ChipGlyph verdict="conditionally_satisfiable" size={16} /> },
+  allow: { label: 'Allowed', tone: 'green', icon: <Icon name="check" size={18} /> },
+}
+
+function Detail({ device, flow, rule }: { device: Device; flow: Flow; rule: Rule | null }) {
   const back = useBack(device.id)
   const verdict = flow.evaluation.verdict
   const meta = VERDICTS[verdict]
+  // The rule is shown on its own card just below, so the reason doesn't quote its long name.
+  const reason = rule ? flow.evaluation.reason.replace(/Your rule “[^”]*”/, 'Your rule') : flow.evaluation.reason
+  const decided = rule && ruleSentence(rule)
+  const look = rule && KIND_LOOK[kindOf(rule)]
   useEffect(() => { window.scrollTo(0, 0) }, [flow.id])
 
   const f = flow.display
@@ -53,10 +66,27 @@ function Detail({ device, flow }: { device: Device; flow: Flow }) {
           <Tile tone={meta.tile} style={{ marginTop: 10 }}><ChipGlyph verdict={verdict} size={17} /></Tile>
           <div className="cb" style={{ paddingRight: 16 }}>
             <span className="ttl" style={{ fontWeight: 500 }}>{meta.label}</span>
-            <span className="sub">{flow.evaluation.reason}</span>
+            <span className="sub">{reason}</span>
           </div>
         </Cell>
       </Group>
+
+      {rule && decided && look && (
+        <>
+          <SectionHeader>The rule that decides this</SectionHeader>
+          <Group>
+            <Cell className="t" to={`/rules/${encodeURIComponent(rule.id)}`} style={{ alignItems: 'flex-start' }} aria-label={`Open the rule: ${decided.sentence}`}>
+              <Tile tone={look.tone} style={{ marginTop: 12 }}>{look.icon}</Tile>
+              <div className="cb" style={{ padding: '12px 0' }}>
+                <span className="sub" style={{ fontSize: 13, fontWeight: 500 }}>{look.label}</span>
+                <span className="ttl rule-what">{decided.head}</span>
+                <span className="sub rule-rest">{decided.why}</span>
+                {decided.more.map((m) => <span key={m} className="sub rule-rest">{m}</span>)}
+              </div>
+            </Cell>
+          </Group>
+        </>
+      )}
 
       <div className="sh" style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
         <span>What this flow does</span>
@@ -77,20 +107,17 @@ function Detail({ device, flow }: { device: Device; flow: Flow }) {
       </Group>
 
       {verdict === 'unsatisfiable' && (
-        <Footnote>Your rules say no to this, and devices that get your rules are told so. To allow it, change your rules.</Footnote>
+        <Footnote>Your rules say no to this, and devices that get your rules are told so. {rule ? 'To allow it, tap the rule above and change it.' : 'To allow it, change your rules.'}</Footnote>
       )}
       {verdict === 'conditionally_satisfiable' && flow.evaluation.rule_id && (
         <Footnote>Devices that get your rules receive this condition with the rule.</Footnote>
       )}
       {verdict === 'decision_required' && <Decide device={device} flow={flow} />}
       {verdict === 'indeterminate' && (
-        <Footnote>Indeterminate: this flow uses terms outside the PPD core taxonomy, so it can’t be compared with your rules. We assume nothing about it and there is nothing for you to do. Your household policy still applies to the device.</Footnote>
+        <Footnote>Indeterminate: this flow uses terms the app doesn’t recognise, so it can’t be compared with your rules. We assume nothing about it and there is nothing for you to do. Your privacy profile still applies to the device.</Footnote>
       )}
       {flow.evidence === 'needs_source' && (
         <Footnote>We found this flow in our research but haven’t found where the maker says it yet, so treat it as likely rather than confirmed.</Footnote>
-      )}
-      {flow.evaluation.rule_id && (
-        <Footnote>This comes from one of your household rules. <Link to={`/rules/${encodeURIComponent(flow.evaluation.rule_id)}`} className="link">View the rule</Link></Footnote>
       )}
       <div className="spacer" />
     </div>

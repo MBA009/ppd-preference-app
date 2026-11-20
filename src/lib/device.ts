@@ -34,7 +34,7 @@ export const hasRules = (d: Device) => d.live?.association.status === 'associate
 
 /** Why a connected device can't be forgotten yet, or null when it can (it has gone stale and left the network). */
 export function forgetBlocker(d: Device): string | null {
-  if (!d.live) return 'Only devices that connected through PPD can be forgotten.'
+  if (!d.live) return 'Only connected devices can be forgotten.'
   if (d.live.network.observed) return 'It is still on your home network. Unplug it first.'
   if (d.live.association.status === 'associated') return 'It still has your rules. You can forget it once it goes stale.'
   return null
@@ -51,8 +51,8 @@ export type DeviceStateKey = 'advisory' | 'no_declaration' | 'confirmed' | 'wait
 export const DEVICE_STATE: Record<DeviceStateKey, { label: string; meaning: string; plain?: string }> = {
   advisory: { label: 'Advisory only', meaning: 'The device doesn’t register with your home gateway. What you see comes from our library.' },
   no_declaration: {
-    label: 'Registered, no declaration', meaning: 'The device joined and fetched your household policy, but declared nothing.',
-    plain: 'It has your household policy, but it hasn’t said what it does with your data, so there’s nothing to check against your rules.',
+    label: 'Registered, no declaration', meaning: 'The device joined and fetched your privacy profile, but declared nothing.',
+    plain: 'It has your privacy profile, but it hasn’t said what it does with your data, so there’s nothing to check against your rules.',
   },
   confirmed: { label: 'Rules confirmed', meaning: 'The device confirmed it received your latest rules and renewed in time.' },
   waiting: { label: 'Waiting for renewal', meaning: 'Your rules changed and the device hasn’t fetched them yet.' },

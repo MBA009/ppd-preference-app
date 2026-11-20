@@ -44,7 +44,7 @@ export function BottomNav() {
   const items = [
     { to: '/', icon: 'home', label: 'My Home', end: true },
     { to: '/scan', icon: 'scan', label: 'Scan', end: false },
-    { to: '/rules', icon: 'rules', label: 'Policy', end: false },
+    { to: '/rules', icon: 'rules', label: 'Profile', end: false },
   ] as const
   return (
     <nav className="tabs" aria-label="Main">
@@ -64,7 +64,7 @@ export function SideRail() {
   const items = [
     { to: '/', icon: 'home', label: 'My Home', end: true },
     { to: '/scan', icon: 'scan', label: 'Scan', end: false },
-    { to: '/rules', icon: 'rules', label: 'Household policy', end: false },
+    { to: '/rules', icon: 'rules', label: 'Privacy profile', end: false },
     { to: '/library', icon: 'plus', label: 'Device library', end: false },
     { to: '/status', icon: 'status', label: 'System status', end: false },
     ...(me?.simulator ? [{ to: '/demo-devices', icon: 'bulb', label: 'Demo devices', end: false }] : []),
@@ -186,7 +186,7 @@ export function VerdictMark({ verdict }: { verdict: Verdict }) {
 
 /* ---------- buttons and form controls ---------- */
 /** `aboveTabs`: on a tab screen, so the bar sits over the phone's bottom tabs instead of under them. */
-export function ActionBar({ children, aboveTabs }: { children: ReactNode; aboveTabs?: boolean }) { return <div className={'act' + (aboveTabs ? ' above-tabs' : '')}>{children}</div> }
+export function ActionBar({ children, aboveTabs, tour }: { children: ReactNode; aboveTabs?: boolean; tour?: string }) { return <div className={'act' + (aboveTabs ? ' above-tabs' : '')} data-tour={tour}>{children}</div> }
 
 export function Switch({ on, onChange, label }: { on: boolean; onChange: (v: boolean) => void; label: string }) {
   return (

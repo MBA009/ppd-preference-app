@@ -10,7 +10,7 @@ export const nounOf = (d: DeviceSummary) => NOUN[d.icon] ?? 'the device'
 
 export const flowPath = (deviceId: string, flowId: string) => `/device/${encodeURIComponent(deviceId)}/flow/${encodeURIComponent(flowId)}`
 
-/** Whether the device can receive the household policy at all: the first thing to know about it. */
+/** Whether the device can receive the privacy profile at all: the first thing to know about it. */
 export function PpdStatus({ device, viewer }: { device: DeviceSummary | Device; viewer?: boolean }) {
   // The privacy viewer shows what a device declares, as read from its PPD QR code. It is not about the home network,
   // so it states only that the device supports PPD: no connection status, no caveats.
@@ -18,27 +18,27 @@ export function PpdStatus({ device, viewer }: { device: DeviceSummary | Device; 
     <div className="ppd yes">
       <ShieldCheck size={20} />
       <div>
-        <b>Supports PPD</b>
+        <b>Works with privacy profiles</b>
         <span>{declaredNothing(device) || device.flow_count === 0
-          ? 'This device supports PPD but hasn’t declared what it does with your data.'
-          : 'This device supports PPD and declares what it does with your data.'}</span>
+          ? 'This device works with privacy profiles, but hasn’t said what it does with your data.'
+          : 'This device works with privacy profiles, and says what it does with your data.'}</span>
       </div>
     </div>
   )
   const example = isPpdExample(device)
   const yes = isConnected(device) || example
   // With the gateway's live view, the state card under this says how the device stands, so this only says it can get
-  // the household policy.
+  // the privacy profile.
   const live = 'live' in device && !!device.live
   return (
     <div className={'ppd ' + (yes ? 'yes' : 'no')}>
       {yes ? <ShieldCheck size={20} /> : <NoDeclarationIcon />}
       <div>
-        <b>{example ? 'Supports PPD · example' : yes ? 'Supports PPD' : 'Doesn’t support PPD'}</b>
+        <b>{example ? 'Works with your profile · example' : yes ? 'Works with your profile' : 'Doesn’t work with your profile'}</b>
         <span>
           {example
-            ? 'An example of a device that supports PPD: it declares what it does with your data. Our team wrote the declaration from research.'
-            : yes ? (live ? 'It gets your household policy.' : DEVICE_STATE[deviceState(device)].meaning) : 'It can’t receive your household policy. What you see here comes from our research.'}
+            ? 'An example of a device that works with your profile: it says what it does with your data. Our team wrote this from research.'
+            : yes ? (live ? 'It receives your privacy profile.' : DEVICE_STATE[deviceState(device)].meaning) : 'It can’t receive your privacy profile. What you see here comes from our research.'}
         </span>
       </div>
     </div>
@@ -59,7 +59,7 @@ export function ProvenanceCard({ device, sub, stacked }: {
           <div className="cb">
             <span className="ttl"><Hint text={DEVICE_STATE.no_declaration.plain!}>Registered, no declaration</Hint></span>
             <span className="sub">
-              {sub ? `${sub}. ` : ''}{device.short_name} fetched your household policy but hasn’t said what it does with your data.
+              {sub ? `${sub}. ` : ''}{device.short_name} fetched your privacy profile but hasn’t said what it does with your data.
             </span>
           </div>
         </Cell>
@@ -67,7 +67,7 @@ export function ProvenanceCard({ device, sub, stacked }: {
     )
   }
   // Not "your 42 rules": how many rules the household has says nothing about this device.
-  const checked = `${device.flows.length} ${device.flows.length === 1 ? 'flow' : 'flows'} checked against your household policy`
+  const checked = `${device.flows.length} ${device.flows.length === 1 ? 'flow' : 'flows'} checked against your privacy profile`
   const declared = device.source === 'declared'
   const example = declared && device.kind === 'research'
   return (

@@ -26,7 +26,7 @@ export default function DeviceDetail() {
   const operator = me?.role === 'operator'
 
   const disassociate = async () => {
-    if (!window.confirm(`Ask ${d.short_name} to reconnect? It will receive and confirm your household policy again.`)) return
+    if (!window.confirm(`Ask ${d.short_name} to reconnect? It will receive and confirm your privacy profile again.`)) return
     try {
       await api.disassociate(d.id)
       toast('The device will reconnect.')
@@ -83,7 +83,7 @@ export default function DeviceDetail() {
           {/* Protocol details for the curious: the state card and any runtime warning above already say what matters. */}
           <div className="gap" />
           <Group>
-            <Expander open={details} onToggle={() => setDetails(!details)} sub="Policy receipt, how it joined, runtime status, identity and network">
+            <Expander open={details} onToggle={() => setDetails(!details)} sub="Receipt for your rules, how it joined, runtime status, identity and network">
               {details ? 'Hide technical details' : 'Technical details'}
             </Expander>
           </Group>
@@ -106,7 +106,7 @@ export default function DeviceDetail() {
               <div className="cell kv"><span className="ttl">Renews by</span><span className="v">{new Date(decl.renew_by).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</span></div>
               <div className="cell kv"><span className="ttl">Statements</span><span className="v">{decl.statements}</span></div>
             </Group>
-            <div className="sf">“Confirmed” means the device said it received your household policy.</div>
+            <div className="sf">“Confirmed” means the device said it received your privacy profile.</div>
           </>
         )
       )}

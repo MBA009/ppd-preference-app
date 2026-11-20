@@ -14,7 +14,7 @@ export const FIELDS: Field[] = ['data_type', 'purpose', 'action', 'source', 'han
 export const CORE_TERMS: Record<Field, Record<string, string>> = {
   data_type: {
     'ppd:identifierData': 'Names, accounts or device IDs',
-    'ppd:profileData': 'Profile and preferences',
+    'ppd:profileData': 'Habits and preferences',
     'ppd:sensorData': 'What sensors notice',
     'ppd:contentData': 'Video, photos and sound',
     'ppd:locationData': 'Where you are',

@@ -27,8 +27,8 @@ export default function Onboarding({ mode = 'first' }: { mode?: Mode }) {
   const library = useLibrary()
   const { household } = useHousehold()
   const error = tree.error ?? presets.error
-  if (error) return <><AppBar title="Household policy" /><ErrorBox error={error} /></>
-  if (!tree.data || !presets.data || !household || (!library.data && !library.error)) return <><AppBar title="Household policy" /><Loading /></>
+  if (error) return <><AppBar title="Privacy profile" /><ErrorBox error={error} /></>
+  if (!tree.data || !presets.data || !household || (!library.data && !library.error)) return <><AppBar title="Privacy profile" /><Loading /></>
   return <Walk tree={tree.data} presets={presets.data} mode={mode} owned={ownedClasses(household, library.data ?? [])} />
 }
 
@@ -42,6 +42,7 @@ export function ownedClasses(household: Household, library: DeviceSummary[]): st
 }
 
 const INTRO = '__intro'   // the stage 2 introduction, in the back stack like a question
+const SKIP = '__skip'     // the household skipped the follow-ups: straight to its rules, also in the back stack
 
 /**
  * A run in progress lives in the browser history: every step is an entry holding the answers so far, so the phone's
@@ -75,7 +76,10 @@ function Walk({ tree, presets, mode, owned }: { tree: Tree; presets: HouseholdPr
   if (!started) return <Start tree={tree} mode={mode} onStart={() => go({}, [])} />
 
   const step = walk(tree, answers)
-  const asked = order.filter((q) => q !== INTRO).length
+  const asked = order.filter((q) => q !== INTRO && q !== SKIP).length
+  const skipped = order.includes(SKIP)
+  // Optional follow-ups, off for now. To turn them on, restore this and the three commented-out "Skip" parts below.
+  // const skip = () => go(answers, [...order, SKIP])
   const question = (qid: string, stage: 1 | 2, total: number) => {
     const q = tree.questions[qid]
     const chosen = pick ?? before[qid] ?? null
@@ -88,7 +92,7 @@ function Walk({ tree, presets, mode, owned }: { tree: Tree; presets: HouseholdPr
     const { text, example } = questionText(q, owned)
     return (
       <div className="screen">
-        <AppBar title={stage === 1 ? 'Household policy' : 'The details'} subtitle={`Question ${n} of up to ${total}`} back={back} />
+        <AppBar title={stage === 1 ? 'Privacy profile' : 'The details'} subtitle={`Question ${n} of up to ${total}`} back={back} />
         <div className="progress" data-tour="q-progress" role="progressbar" aria-valuemin={1} aria-valuemax={total} aria-valuenow={n}><i style={{ width: `${(n / total) * 100}%` }} /></div>
         <div className="q">
           <h2>{text}</h2>
@@ -110,6 +114,10 @@ function Walk({ tree, presets, mode, owned }: { tree: Tree; presets: HouseholdPr
           {stage === 2 ? 'Households like yours are split on this, so we ask instead of guessing. ' : ''}
           <Link to="/rules/sources">How the questions were made</Link>
         </Footnote>
+        {/* Skip, off for now:
+        {stage === 2 && (
+          <div className="sf"><button className="link" onClick={skip}>Skip the rest of these questions</button></div>
+        )} */}
         <div className="spacer" />
         <ActionBar>
           <button className="btn2" onClick={back}>Back</button>
@@ -126,7 +134,7 @@ function Walk({ tree, presets, mode, owned }: { tree: Tree; presets: HouseholdPr
   const leaf = step.leaf
   const pending = followUps(tree, leaf, answers)
   const stage2Total = stageOnePath(tree, answers).length + pending.length
-  if (pending.length && !order.includes(INTRO)) {
+  if (pending.length && !order.includes(INTRO) && !skipped) {
     return (
       <div className="screen">
         <AppBar title="The details" back={back} />
@@ -135,11 +143,16 @@ function Walk({ tree, presets, mode, owned }: { tree: Tree; presets: HouseholdPr
             <Tile tone="blue" style={{ marginTop: 10 }}><ShieldCheck /></Tile>
             <div className="cb" style={{ paddingRight: 16 }}>
               <span className="ttl" style={{ fontWeight: 500 }}>{tree.follow_up_intro.title}</span>
-              <span className="sub">{tree.follow_up_intro.text} {plural(pending.length, 'more question')}.</span>
+              <span className="sub">{tree.follow_up_intro.text} {plural(pending.length, 'more question')}.{/* Skip, off for now: They’re optional: you can skip them and answer them later. */}</span>
             </div>
           </Cell>
         </Group>
         <div className="spacer" />
+        {/* Skip, off for now. With it on, both buttons count as the tour's "go on", so skipping doesn't stop the guided setup:
+        <ActionBar tour="details-continue">
+          <button className="btn2" onClick={skip}>Skip</button>
+          <button className="btn" onClick={() => go(answers, [...order, INTRO])}>Continue</button>
+        </ActionBar> */}
         <ActionBar>
           <button className="btn2" onClick={back}>Back</button>
           <button className="btn" data-tour="details-continue" onClick={() => go(answers, [...order, INTRO])}>Continue</button>
@@ -147,12 +160,12 @@ function Walk({ tree, presets, mode, owned }: { tree: Tree; presets: HouseholdPr
       </div>
     )
   }
-  const next = pending.find((q) => !(q in answers))
+  const next = skipped ? undefined : pending.find((q) => !(q in answers))
   if (next) return question(next, 2, stage2Total)
 
   // Done: the household's rules, from the preset with the answers written in.
   const preset = presets.find((p) => p.id === leaf.preset)
-  if (!preset) return <><AppBar title="Your household policy" back={back} /><ErrorBox error={new Error(`The questions led to a preset this app does not have (${leaf.preset}).`)} /></>
+  if (!preset) return <><AppBar title="Your privacy profile" back={back} /><ErrorBox error={new Error(`The questions led to a preset this app does not have (${leaf.preset}).`)} /></>
   const rules = rulesFromAnswers(preset, situationAnswers(tree, answers), tree.questions)
   const fromAnswers = rules.filter((r) => r.origin.kind === 'answer').length
   const replacing = mode !== 'first' && !!household?.rules.length
@@ -167,12 +180,12 @@ function Walk({ tree, presets, mode, owned }: { tree: Tree; presets: HouseholdPr
   }
   return (
     <div className="screen">
-      <AppBar title="Your household policy" back={back} />
+      <AppBar title="Your privacy profile" back={back} />
       <Group>
         <Cell className="t" chevron={false} style={{ alignItems: 'flex-start' }}>
           <Tile tone="green" style={{ marginTop: 10 }}><ShieldCheck /></Tile>
           <div className="cb" style={{ paddingRight: 16 }}>
-            <span className="ttl" style={{ fontWeight: 500 }}>Your household policy is ready</span>
+            <span className="ttl" style={{ fontWeight: 500 }}>Your privacy profile is ready</span>
             <span className="sub">
               {plural(rules.length, 'rule')} from your answers, {fromAnswers ? `${fromAnswers} of them for situations you told us about directly` : 'matching households that answered like you'}.
               Every device in your home receives them, and you can change any rule afterwards.
@@ -180,6 +193,7 @@ function Walk({ tree, presets, mode, owned }: { tree: Tree; presets: HouseholdPr
           </div>
         </Cell>
       </Group>
+      {skipped && <Footnote>You skipped some questions. You can answer them any time in “Fine-tune your profile”.</Footnote>}
       {replacing && <Footnote>This replaces your current rules, including changes you made and rules you added.</Footnote>}
       <div className="spacer" />
       <ActionBar>
@@ -200,7 +214,7 @@ function Start({ tree, mode, onStart }: { tree: Tree; mode: Mode; onStart: () =>
   }[mode]
   return (
     <div className="screen">
-      <AppBar title="Household policy" back={mode === 'first' ? undefined : '/rules'} />
+      <AppBar title="Privacy profile" back={mode === 'first' ? undefined : '/rules'} />
       {mode === 'first' && (
         <div className="welcome">
           <div className="whead">

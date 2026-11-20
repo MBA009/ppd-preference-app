@@ -60,7 +60,7 @@ export const useDevices = (ids: string[], poll = false) => {
   return useAsync<Device[]>(() => Promise.all(ids.map((i) => api.getDevice(i))), [ids.join('|'), key], poll ? LIVE_POLL_MS : undefined)
 }
 
-/** The household policy the gateway serves now, and what publishing the current rules would send. */
+/** The privacy profile the gateway serves now, and what publishing the current rules would send. */
 export const usePublished = () => useAsync<Policy | null>(() => api.getPublishedPolicy(), [], LIVE_POLL_MS * 2)
 export const usePreview = (pollMs?: number) => {
   const key = useRulesKey()
