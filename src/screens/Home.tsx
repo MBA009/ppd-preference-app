@@ -1,9 +1,9 @@
 import { AppBar, Cell, DeviceTile, Footnote, Group, SectionHeader, StateChip, Tile, VerdictChip, VerdictChips, Loading, ErrorBox } from '../components/ui'
-import { Icon } from '../components/icons'
+import { DeviceGlyph, Icon } from '../components/icons'
 import { useDevices, useHousehold, useOverview, useUnmanaged } from '../state/data'
 import { countVerdicts, plural } from '../lib/verdicts'
 import { declaredNothing, hasRules, isConnected, timeAgo } from '../lib/device'
-import type { Device, Overview, UnmanagedDevice } from '../api'
+import type { Device, DeviceIcon, Overview, UnmanagedDevice } from '../api'
 import { flowPath } from '../components/DeviceReport'
 
 type Notice = { key: string; tone: 'red' | 'orange' | 'blue'; icon: 'status' | 'plus' | 'publish'; title: string; sub: string; to?: string }
@@ -194,11 +194,26 @@ function DeviceRow({ device: d }: { device: Device }) {
   )
 }
 
+/** Best-guess device icon for a device the router sees but that declares nothing, from its names. */
+const ICON_HINTS: [DeviceIcon, RegExp][] = [
+  ['tv', /\b(tv|oled|qled|television|roku|chromecast|fire ?tv|apple ?tv|bravia)/i],
+  ['camera', /(camera|\bcam\b|doorbell|\bring\b)/i],
+  ['lock', /\block\b|august|yale|schlage/i],
+  ['thermostat', /(thermostat|ecobee|\bnest\b)/i],
+  ['bulb', /(bulb|light|lamp|\bhue\b|lifx)/i],
+  ['plug', /(plug|outlet|socket|switch)/i],
+]
+function guessIcon(u: UnmanagedDevice): DeviceIcon | null {
+  const text = [u.likely_type, u.hostname, u.research_match?.short_name].filter(Boolean).join(' ')
+  return ICON_HINTS.find(([, re]) => re.test(text))?.[0] ?? null
+}
+
 function UnmanagedRow({ device: u }: { device: UnmanagedDevice }) {
+  const icon = guessIcon(u)
   const guess = [u.likely_vendor, u.likely_type].filter(Boolean).join(' ')
   const inner = (
     <>
-      <Tile tone="grey" size="device"><Icon name="status" size={20} /></Tile>
+      <Tile tone="grey" size="device">{icon ? <DeviceGlyph icon={icon} size={22} /> : <Icon name="status" size={20} />}</Tile>
       <div className="cb">
         <span className="ttl">{u.hostname ?? 'Unnamed device'}{u.simulated && <span className="tag sm">Simulated</span>}</span>
         <span className="sub">{[u.ip_address, guess || null].filter(Boolean).join(' · ')}</span>
