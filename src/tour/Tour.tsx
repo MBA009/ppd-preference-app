@@ -33,7 +33,7 @@ type Mark = {
 }
 
 const MARKS: Mark[] = [
-  { id: 'welcome', path: '/rules', target: 'start-card', group: 'welcome', title: 'Welcome to your home’s privacy', body: 'Answer a few questions about your household. Your answers become your privacy profile: a set of rules your smart devices receive.' },
+  { id: 'welcome', path: '/rules', target: 'start-card', group: 'welcome', title: 'Your home’s privacy preferences', body: 'Answer a few questions about your household. Your answers become your privacy profile: a set of rules your smart devices receive.' },
   { id: 'start', path: '/rules', target: 'start-button', group: 'welcome', title: 'Let’s begin', body: 'There are no wrong answers, and you can change any rule later.', click: 'Tap Start' },
 
   { id: 'progress', path: '/rules', target: 'q-progress', group: 'question', title: 'One situation per screen', body: 'The bar shows how far along you are. Most households are done in under two minutes.' },
