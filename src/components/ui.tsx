@@ -144,7 +144,7 @@ export function Hint({ text, children }: { text: string; children: ReactNode }) 
   useEffect(() => () => window.clearTimeout(timer.current), [])
   return (
     <span
-      ref={ref} className="hint" tabIndex={0} aria-describedby={pos ? id : undefined}
+      ref={ref} className="term-hint" tabIndex={0} aria-describedby={pos ? id : undefined}
       onPointerEnter={(e) => { if (e.pointerType === 'mouse') show() }}
       onPointerLeave={(e) => { if (e.pointerType === 'mouse') hide() }}
       onPointerDown={(e) => {

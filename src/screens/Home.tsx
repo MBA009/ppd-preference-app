@@ -1,8 +1,8 @@
-import { AppBar, Cell, DeviceTile, Footnote, Group, SectionHeader, StateChip, Hint, Tile, VerdictChip, VerdictChips, Loading, ErrorBox } from '../components/ui'
+import { AppBar, Cell, DeviceTile, Footnote, Group, SectionHeader, StateChip, Tile, VerdictChip, VerdictChips, Loading, ErrorBox } from '../components/ui'
 import { Icon } from '../components/icons'
 import { useDevices, useHousehold, useOverview, useUnmanaged } from '../state/data'
 import { countVerdicts, plural } from '../lib/verdicts'
-import { DEVICE_STATE, declaredNothing, hasRules, isConnected, timeAgo } from '../lib/device'
+import { declaredNothing, hasRules, isConnected, timeAgo } from '../lib/device'
 import type { Device, Overview, UnmanagedDevice } from '../api'
 import { flowPath } from '../components/DeviceReport'
 
@@ -179,15 +179,16 @@ function DeviceRow({ device: d }: { device: Device }) {
         <span className="st">
           <StateChip device={d} />
         </span>
-        <span className="ln">
-          {declaredNothing(d) ? (
-            <span className="sub" style={{ fontSize: 13 }}><Hint text={DEVICE_STATE.no_declaration.plain!}>No per-flow verdicts: it declared nothing</Hint></span>
-          ) : attention || counts.decision_required ? (
-            <VerdictChips counts={counts} order={['unsatisfiable', 'decision_required']} />
-          ) : (
-            <VerdictChip verdict="compatible" n={(counts.compatible ?? 0) + (counts.conditionally_satisfiable ?? 0)} />
-          )}
-        </span>
+        {/* A device that declared nothing has nothing to compare: its status chip (with its plain-language hint) says so. */}
+        {!declaredNothing(d) && (
+          <span className="ln">
+            {attention || counts.decision_required ? (
+              <VerdictChips counts={counts} order={['unsatisfiable', 'decision_required']} />
+            ) : (
+              <VerdictChip verdict="compatible" n={(counts.compatible ?? 0) + (counts.conditionally_satisfiable ?? 0)} />
+            )}
+          </span>
+        )}
       </div>
     </Cell>
   )

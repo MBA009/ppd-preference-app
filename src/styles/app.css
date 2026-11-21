@@ -191,13 +191,6 @@ button.cell:active, a.cell:active { background: #f1f3f6; }
 .cam .c4 { right: 56px; bottom: 56px; border-bottom-width: 4px; border-right-width: 4px; border-bottom-right-radius: 12px; }
 .cam .msg { position: absolute; left: 24px; right: 24px; top: 50%; transform: translateY(-50%); text-align: center; font-size: 15px; line-height: 20px; color: #c7cad0; }
 .cam .msg .btn { margin: 12px auto 0; flex: none; width: auto; min-height: 40px; }
-.cam .dlg-back { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(20, 24, 31, 0.5); }
-.dlg { width: 100%; max-width: 400px; border-radius: 20px; background: var(--surface); padding: 20px 20px 16px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3); }
-.dlg h2 { margin: 0; font-size: 20px; line-height: 26px; font-weight: 500; }
-.dlg-body { margin-top: 10px; font-size: 15px; line-height: 21px; color: var(--text-2); }
-.dlg-body p { margin: 0 0 8px; }
-.dlg-body p:last-child { margin-bottom: 0; }
-.dlg-foot { display: flex; gap: 12px; margin-top: 18px; }
 .dlg-back { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(20, 24, 31, 0.5); }
 .dlg { width: 100%; max-width: 400px; border-radius: 20px; background: var(--surface); padding: 20px 20px 16px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3); }
 .dlg h2 { margin: 0; font-size: 20px; line-height: 26px; font-weight: 500; }
@@ -205,7 +198,7 @@ button.cell:active, a.cell:active { background: #f1f3f6; }
 .dlg-body p { margin: 0 0 8px; }
 .dlg-body p:last-child { margin-bottom: 0; }
 .dlg-foot { display: flex; gap: 12px; margin-top: 18px; }
-.hint { position: absolute; left: 16px; right: 16px; bottom: 12px; text-align: center; font-size: 13px; line-height: 18px; color: #fff; background: rgba(0, 0, 0, 0.55); border-radius: 10px; padding: 6px 10px; }
+.cam .hint { position: absolute; left: 16px; right: 16px; bottom: 12px; text-align: center; font-size: 13px; line-height: 18px; color: #fff; background: rgba(0, 0, 0, 0.55); border-radius: 10px; padding: 6px 10px; }
 
 /* inline notice */
 .note { margin: 12px 16px 0; padding: 10px 14px; border-radius: 12px; background: #ffe8cc; color: #7a3a00; font-size: 14px; line-height: 20px; }
@@ -372,8 +365,8 @@ button.cell:active, a.cell:active { background: #f1f3f6; }
 
 /* Six device states (design board): bordered chips. */
 .state { display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 9px 0 7px; border-radius: 7px; border: 1px solid; font-size: 13px; line-height: 16px; font-weight: 500; white-space: nowrap; flex: none; }
-.hint { text-decoration: underline dotted 1px; text-underline-offset: 3px; cursor: help; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
-.hint .state { text-decoration: none; }
+.term-hint { text-decoration: underline dotted 1px; text-underline-offset: 3px; cursor: help; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
+.term-hint .state { text-decoration: none; }
 .hint-pop {
   position: fixed; z-index: 30; width: max-content; max-width: min(280px, calc(100vw - 16px)); padding: 8px 12px; border-radius: 10px;
   background: #2b2f36; color: #fff; font-size: 13px; line-height: 18px; font-weight: 400; text-align: left; white-space: normal;
