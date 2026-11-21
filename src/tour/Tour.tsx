@@ -42,7 +42,7 @@ const MARKS: Mark[] = [
 
   // Between the first set of questions (the decision tree) and the follow-ups. Households whose answers leave nothing
   // to follow up skip this screen, and the tour skips this mark.
-  { id: 'details', path: '/rules', target: 'details-continue', group: 'details', title: 'Nice work, keep going', body: 'That’s the first set done. A few more questions now, about situations households like yours disagree on.', click: 'Tap Continue' },
+  { id: 'details', path: '/rules', target: 'details-continue', group: 'details', title: 'Nice work, keep going', body: 'That’s the first set done. A few more questions now, to help us understand you better. You can stop whenever you like.', click: 'Tap Continue or I’m done for now' },
 
   { id: 'finish', path: '/rules', target: 'finish', group: 'finish', title: 'Your profile is ready', body: (c) => c.sim ? 'Save it, and we’ll switch on a few demo devices so you can watch them receive your rules.' : 'Save it to start using it.', click: 'Tap the button to save' },
 
@@ -50,8 +50,8 @@ const MARKS: Mark[] = [
   { id: 'joining', path: '/rules', target: 'rules-done', group: 'policy', title: '', body: (c) => c.sim ? `We just switched on ${c.devices || 'a few'} demo devices. They’re joining your home network now. Let’s go and watch.` : 'The demo simulator is off, so no demo devices join. Start app-api with SIMULATOR=1 to see them.', click: 'Tap Looks good' },
 
   { id: 'readiness', path: '/', target: 'home-readiness', group: 'home', title: 'Privacy readiness', body: 'How many devices are on your network, and how many are using your latest rules. The numbers change as devices join.' },
-  { id: 'devices', path: '/', target: 'home-devices', group: 'home', title: 'Devices that work with your profile', body: 'They find your home gateway, receive your privacy profile and confirm it, all on their own. Tap one to see what it does with your data.' },
-  { id: 'unmanaged', path: '/', target: 'home-unmanaged', group: 'home', title: 'Devices that don’t work with your profile', body: 'Devices like this TV can’t receive your rules. We show what our research knows about them instead.' },
+  { id: 'devices', path: '/', target: 'home-devices', group: 'home', title: 'Devices that acknowledged your privacy preferences', body: 'They find your home gateway, receive your privacy profile and confirm it, all on their own. Tap one to see what it does with your data.' },
+  { id: 'unmanaged', path: '/', target: 'home-unmanaged', group: 'home', title: 'Devices unaware of your privacy preferences', body: 'Devices like this TV still work, but they can’t receive your rules. We show what our research knows about them instead.' },
   { id: 'scan', path: '/', target: 'nav-scan', group: 'home', title: 'Check before you buy', body: 'Scan a device’s privacy code in the store to see how it fits your rules.' },
   { id: 'policy', path: '/', target: 'nav-rules', group: 'home', title: 'Your profile, any time', body: 'Change a rule, add your own, or answer a few more questions to fine-tune it. Let’s have a look.', click: 'Tap Profile' },
 
@@ -59,10 +59,10 @@ const MARKS: Mark[] = [
   { id: 'p-overview', path: '/rules', target: 'rules-overview', group: 'policy-page', title: 'Your rules at a glance', body: 'How many rules you have, and how many say Never or Allowed. Below that: what your devices say they do, checked against your rules.' },
   { id: 'p-publish', path: '/rules', target: 'rules-publish', group: 'policy-page', title: 'Sent automatically', body: 'There’s no send button. When you change a rule, your devices get your updated profile within seconds, and this card shows how that’s going.' },
   { id: 'p-group', path: '/rules', target: 'rules-group', group: 'policy-page', title: 'Rules by what they do', body: 'Open Never or Allowed to see its rules. Rules your devices use come first. Tap any rule to change it or switch it off.' },
-  { id: 'p-refine', path: '/rules', target: 'rules-refine', group: 'policy-page', title: 'Fine-tune with a few questions', body: 'More situations households like yours are split on. Answer as many or as few as you like; your own changes stay.' },
+  { id: 'p-refine', path: '/rules', target: 'rules-refine', group: 'policy-page', title: 'Fine-tune with a few questions', body: 'More situations households like yours have different views on. Answer as many or as few as you like; your own changes stay.' },
   { id: 'p-add', path: '/rules', target: 'rules-add', group: 'policy-page', title: 'Add your own rule', body: 'For anything the questions didn’t cover. If two rules disagree, your latest change wins.' },
   { id: 'p-json', path: '/rules', target: 'rules-json', group: 'policy-page', title: 'See exactly what’s sent', body: 'Your rules in a technical format (JSON), and the exact file your devices receive.' },
-  { id: 'p-startover', path: '/rules', target: 'rules-startover', group: 'policy-page', title: 'Start over', body: 'Answer the questions again to rebuild your rules, or reset everything. Devices that are connected stay connected.' },
+  { id: 'p-startover', path: '/rules', target: 'rules-startover', group: 'policy-page', title: 'Start over', body: 'Answer the questions again to rebuild your rules, or reset everything. Connected devices stay connected, but will no longer be aware of your previous preferences.' },
 ]
 // The "joining" mark's title depends on whether devices are coming.
 const titleOf = (m: Mark, c: Ctx) => (m.id === 'joining' ? (c.sim ? 'Demo devices are joining' : 'Your profile is saved') : m.title)

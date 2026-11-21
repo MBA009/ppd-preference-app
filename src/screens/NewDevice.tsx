@@ -63,9 +63,9 @@ export default function NewDevice() {
       )}
       {decisions.length > 0 && (
         <>
-          <SectionHeader>Needs your decision · {decisions.length}</SectionHeader>
+          <SectionHeader>No recommendation · {decisions.length}</SectionHeader>
           <Group>{decisions.map((f) => <FlowRow key={f.id} device={d} flow={f} />)}</Group>
-          <Footnote>None of your rules settles these, so the device gets no rule for them. Open one to answer with a new rule.</Footnote>
+          <Footnote>Your profile has no recommendation for these, so the device gets no rule for them. Open one to decide.</Footnote>
         </>
       )}
       {others > 0 && (

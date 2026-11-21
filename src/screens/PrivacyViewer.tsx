@@ -87,7 +87,7 @@ function ViewerBody({ device: d, back, scanned = false }: { device: Device; back
       </Group>
 
       {!supportsPpd(d) ? (
-        <div className="empty">{d.short_name} doesn’t work with privacy profiles, so it hasn’t said what it does with your data. The privacy viewer shows devices that do.</div>
+        <div className="empty">{d.short_name} can’t receive privacy preferences, so it hasn’t said what it does with your data. The privacy viewer shows devices that do.</div>
       ) : declaredNothing(d) || d.flows.length === 0 ? (
         <div className="empty">{d.short_name} hasn’t said what it does with your data, so there is nothing to draw.</div>
       ) : (

@@ -146,7 +146,7 @@ function Decide({ device, flow }: { device: Device; flow: Flow }) {
   }
   return (
     <>
-      <Footnote>None of your rules settles this, so your devices get no rule for it and decide it themselves. Your answer is saved as a new rule for this kind of data flow, on every device.</Footnote>
+      <Footnote>Your profile has no recommendation for this, so your devices get no rule for it and decide it themselves. Your answer is saved as a new rule for this kind of data flow, on every device.</Footnote>
       <ActionBar>
         <button className="btn2" disabled={busy} onClick={() => answer('dont_allow')}>Never</button>
         <button className="btn" disabled={busy} onClick={() => answer('allow')}>Allow</button>

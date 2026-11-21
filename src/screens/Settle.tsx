@@ -54,7 +54,7 @@ export default function Settle() {
     return [...out.values()].sort((a, b) => b.devices.length - a.devices.length)
   }, [rules, devices])
 
-  if (!household) return <><AppBar title="Data flows with no rule" back="/rules" /><Loading /></>
+  if (!household) return <><AppBar title="No recommendation" back="/rules" /><Loading /></>
 
   const answer = async (g: Gap, effect: Rule['effect']) => {
     setBusy(g.key)
@@ -73,7 +73,7 @@ export default function Settle() {
   if (!gaps.length) {
     return (
       <div className="screen">
-        <AppBar title="Data flows with no rule" back="/rules" />
+        <AppBar title="No recommendation" back="/rules" />
         <Group>
           <Cell className="t" chevron={false} style={{ alignItems: 'flex-start' }}>
             <Tile tone="green" style={{ marginTop: 10 }}><Icon name="check" size={20} /></Tile>
@@ -89,13 +89,11 @@ export default function Settle() {
     )
   }
 
-  const total = gaps.reduce((n, g) => n + g.flows.length, 0)
   return (
     <div className="screen">
-      <AppBar title="Data flows with no rule" back="/rules" />
+      <AppBar title="No recommendation" back="/rules" />
       <div className="sf">
-        A rule was deleted or switched off, so {plural(total, 'data flow has', 'data flows have')} no rule and your devices get no rule
-        for {total === 1 ? 'it' : 'them'}. Decide each situation below: your answer is saved as one rule for all of it.
+        You removed or switched off a rule, so it’s now unclear what you want for these situations. Decide each one below: your answer is saved as one rule for all of it.
       </div>
       {gaps.map((g) => <GapCard key={g.key} gap={g} busy={busy === g.key} onAnswer={(e) => answer(g, e)} />)}
       <Footnote>

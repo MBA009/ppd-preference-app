@@ -20,8 +20,8 @@ export function PpdStatus({ device, viewer }: { device: DeviceSummary | Device; 
       <div>
         <b>Works with privacy profiles</b>
         <span>{declaredNothing(device) || device.flow_count === 0
-          ? 'This device works with privacy profiles, but hasn’t said what it does with your data.'
-          : 'This device works with privacy profiles, and says what it does with your data.'}</span>
+          ? 'This device can receive privacy preferences, but hasn’t said what it does with your data.'
+          : 'This device can receive privacy preferences, and says what it does with your data.'}</span>
       </div>
     </div>
   )
@@ -34,11 +34,11 @@ export function PpdStatus({ device, viewer }: { device: DeviceSummary | Device; 
     <div className={'ppd ' + (yes ? 'yes' : 'no')}>
       {yes ? <ShieldCheck size={20} /> : <NoDeclarationIcon />}
       <div>
-        <b>{example ? 'Works with your profile · example' : yes ? 'Works with your profile' : 'Doesn’t work with your profile'}</b>
+        <b>{example ? 'Can receive your privacy preferences · example' : yes ? 'Can receive your privacy preferences' : 'Unaware of your privacy preferences'}</b>
         <span>
           {example
-            ? 'An example of a device that works with your profile: it says what it does with your data. Our team wrote this from research.'
-            : yes ? (live ? 'It receives your privacy profile.' : DEVICE_STATE[deviceState(device)].meaning) : 'It can’t receive your privacy profile. What you see here comes from our research.'}
+            ? 'An example of a device that can receive your privacy preferences: it says what it does with your data. Our team wrote this from research.'
+            : yes ? (live ? 'It receives your privacy profile.' : DEVICE_STATE[deviceState(device)].meaning) : 'It still works, but it can’t receive or signal your privacy preferences. What you see here comes from our research.'}
         </span>
       </div>
     </div>
@@ -129,9 +129,9 @@ export function AttentionList({ device, limit = 5, heading = 'Conflicts with you
     <>
       {decisions.length > 0 && (
         <>
-          <SectionHeader>Needs your decision · {decisions.length}</SectionHeader>
+          <SectionHeader>No recommendation · {decisions.length}</SectionHeader>
           <Group>{decisions.map((f) => <FlowRow key={f.id} device={device} flow={f} />)}</Group>
-          <div className="sf">None of your rules settles these, so your devices get no rule for them. Open one to answer with a new rule.</div>
+          <div className="sf">Your profile has no recommendation for these, so your devices get no rule for them. Open one to decide.</div>
         </>
       )}
       {attention.length > 0 ? (

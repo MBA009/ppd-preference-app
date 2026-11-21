@@ -63,8 +63,8 @@ export default function Home() {
     ...undecided.map(({ d, flows }): Notice => ({
       key: `undecided-${d.id}`, tone: 'orange', icon: 'status',
       to: flows.length === 1 ? flowPath(d.id, flows[0].id) : `/device/${encodeURIComponent(d.id)}`,
-      title: flows.length === 1 ? `${d.short_name}: “${flows[0].title}” has no rule` : `${d.short_name}: ${flows.length} data flows have no rule`,
-      sub: `A rule that covered ${flows.length === 1 ? 'it' : 'them'} was deleted or switched off, so ${d.short_name} gets no rule for ${flows.length === 1 ? 'it' : 'them'}. Tap to decide what should happen.`,
+      title: flows.length === 1 ? `${d.short_name}: no recommendation for “${flows[0].title}”` : `${d.short_name}: no recommendation for ${flows.length} things it does`,
+      sub: `You removed or switched off a rule, so it’s now unclear what you want here. Tap to decide.`,
     })),
     stale.length > 0 && {
       key: 'stale', tone: stale.some(reported) ? 'red' : 'orange', icon: 'status', to: to(stale),
@@ -112,7 +112,7 @@ export default function Home() {
       {connected.length === 0 && (
         <>
           <SectionHeader>Connected devices · 0</SectionHeader>
-          <Group><div className="empty">No device has connected yet. Devices that work with your profile join by themselves when they connect to your network.</div></Group>
+          <Group><div className="empty">No device has connected yet. Devices that can receive your privacy preferences join by themselves when they connect to your network.</div></Group>
         </>
       )}
 
@@ -126,7 +126,7 @@ export default function Home() {
 
       {withRules.length > 0 && (
         <>
-          <SectionHeader>Have your rules · {withRules.length}</SectionHeader>
+          <SectionHeader>Acknowledged your privacy preferences · {withRules.length}</SectionHeader>
           <Group>{withRules.map((d) => <DeviceRow key={d.id} device={d} />)}</Group>
         </>
       )}
@@ -134,13 +134,13 @@ export default function Home() {
 
       {overview?.gateway.reachable && (
         <div data-tour="home-unmanaged">
-          <SectionHeader>Doesn’t work with your profile · {unmanaged?.length ?? 0}</SectionHeader>
+          <SectionHeader>Unaware of your privacy preferences · {unmanaged?.length ?? 0}</SectionHeader>
           {unmanaged && unmanaged.length > 0 ? (
             <Group>{unmanaged.map((u) => <UnmanagedRow key={u.id} device={u} />)}</Group>
           ) : (
-            <Group><div className="empty" style={{ padding: 20 }}>Your home gateway hasn’t seen any device that doesn’t work with your profile.</div></Group>
+            <Group><div className="empty" style={{ padding: 20 }}>Your home gateway hasn’t seen any device that’s unaware of your privacy preferences.</div></Group>
           )}
-          <Footnote>These devices are on your home network, but they can’t receive your privacy profile.</Footnote>
+          <Footnote>These devices still work, but they can’t receive or signal your privacy preferences.</Footnote>
         </div>
       )}
 
@@ -162,7 +162,7 @@ export default function Home() {
           </div>
         </Cell>
       </Group>
-      <Footnote>This checks what the device declares, not what it will actually do. You don’t need to add devices you own: devices that work with your profile join and get it by themselves when they connect to your network.</Footnote>
+      <Footnote>This checks what the device declares, not what it will actually do. You don’t need to add devices you own: devices that can receive your privacy preferences join and get them by themselves when they connect to your network.</Footnote>
       <div className="spacer" />
     </div>
   )
@@ -201,7 +201,7 @@ function UnmanagedRow({ device: u }: { device: UnmanagedDevice }) {
       <div className="cb">
         <span className="ttl">{u.hostname ?? 'Unnamed device'}{u.simulated && <span className="tag sm">Simulated</span>}</span>
         <span className="sub">{[u.ip_address, guess || null].filter(Boolean).join(' · ')}</span>
-        <span className="sub" style={{ fontSize: 13 }}>{u.research_match ? `Looks like ${u.research_match.short_name} · see what it does` : 'Can’t receive your rules'}</span>
+        <span className="sub" style={{ fontSize: 13 }}>{u.research_match ? `Looks like ${u.research_match.short_name} · see what it does` : 'Works, but unaware of your privacy preferences'}</span>
       </div>
     </>
   )
@@ -223,8 +223,8 @@ function Readiness({ overview: o }: { overview: Overview }) {
   }
   const stats: [string, number, string | undefined][] = [
     ['On your network', c.known, undefined],
-    ['Have your rules', c.have_rules, 'ok'],
-    ['Don’t work with your profile', c.unmanaged, undefined],
+    ['Acknowledged your preferences', c.have_rules, 'ok'],
+    ['Unaware of your preferences', c.unmanaged, undefined],
     ['Need attention', c.need_attention, c.need_attention ? 'dec' : undefined],
   ]
   return (

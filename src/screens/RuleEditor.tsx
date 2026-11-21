@@ -98,7 +98,7 @@ function Editor({ rule }: { rule: Rule | undefined }) {
   const gapText = (what: string) => gap && (
     <div className="note" role="status" style={{ margin: '12px 16px 0' }}>
       <b>{what} leaves {plural(gap.flows, 'data flow')} with no rule{gap.onDevices ? `, ${gap.onDevices} of them on your devices` : ''}.</b>{' '}
-      No other rule covers them, so your devices get no rule for them until you decide{gap.onDevices ? ', and they show as Needs your decision' : ''}.
+      No other rule covers them, so your devices get no rule for them until you decide{gap.onDevices ? ', and they show as No recommendation' : ''}.
       You can decide them afterwards from your privacy profile page. To change what happens instead of removing it, edit the rule and save.
     </div>
   )
@@ -230,7 +230,7 @@ function Editor({ rule }: { rule: Rule | undefined }) {
       </div>
       {enabled && overrides.length > 0 && (
         <div className="note" role="status" style={{ margin: '12px 16px 0' }}>
-          <b>This rule will win where it overlaps {overrides.length === 1 ? 'a rule that says' : `${overrides.length} rules that say`} otherwise.</b> Where rules disagree, your latest change wins, and saving makes this one the latest:
+          <b>Where rules disagree, your latest change wins.</b> Saving this rule makes it win over:
           <ul className="olap">
             {overrides.map((r) => {
               const n = sharedFlows(r)

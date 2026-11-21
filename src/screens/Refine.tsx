@@ -4,10 +4,11 @@ import type { Household, Onboarding as Tree } from '../api'
 import { ActionBar, AppBar, Cell, ErrorBox, Footnote, Group, Loading, Tile } from '../components/ui'
 import { Icon, ShieldCheck } from '../components/icons'
 import { useHousehold, useLibrary, useOnboarding } from '../state/data'
-import { questionText, refineQueue, writeAnswer, type RefineItem } from '../../shared/onboarding'
+import { refineQueue, writeAnswer, type RefineItem } from '../../shared/onboarding'
 import { plural } from '../lib/verdicts'
 import { timeAgo } from '../lib/device'
 import { ownedClasses } from './Onboarding'
+import { QuestionView } from '../components/Question'
 
 /**
  * "Help me refine my settings" (Nov 2 meeting): an open-ended queue instead of a fixed list of follow-ups.
@@ -83,7 +84,6 @@ function Queue({ tree, household, owned }: { tree: Tree; household: Household; o
   const previous = household.answers?.[next.question] ?? null
   const chosen = pick ?? (next.reason === 'checkup' ? previous : null)
   const remaining = queue.undecided + queue.split
-  const { text, example } = questionText(q, owned)
 
   const answer = async () => {
     if (!chosen) return
@@ -108,23 +108,8 @@ function Queue({ tree, household, owned }: { tree: Tree; household: Household; o
           <i style={{ width: `${(session.length / Math.max(1, session.length + remaining)) * 100}%` }} />
         </div>
       )}
-      <div className="q">
-        <h2>{text}</h2>
-        {example && <p className="eg">For example, {example}.</p>}
-      </div>
-      <div style={{ height: 12, flex: 'none' }} />
-      <Group>
-        <div role="radiogroup" aria-label={text}>
-          {q.options.map((o) => (
-            <button key={o.id} className="cell" role="radio" aria-checked={chosen === o.id} onClick={() => setPick(o.id)}>
-              <span className={'rd' + (chosen === o.id ? ' on' : '')} />
-              <div className="cb" style={{ padding: '13px 0' }}><span className="ttl">{o.label}</span></div>
-              <span className="tr" />
-            </button>
-          ))}
-        </div>
-      </Group>
-      <Footnote>{reasonText(next, household)} <Link to="/rules/sources">How the questions were made</Link></Footnote>
+      <QuestionView q={q} owned={owned} chosen={chosen} onPick={setPick} />
+      <Footnote>{reasonText(next, household)} <Link to="/rules/sources">Why we selected these questions</Link></Footnote>
       <div className="spacer" />
       <ActionBar>
         <button className="btn2" onClick={done}>Stop for now</button>
@@ -140,11 +125,11 @@ function Start({ tree, household, onStart }: { tree: Tree; household: Household;
   const queue = refineQueue(tree, household)
   const checked = Object.values(household.answered_at ?? {}).sort().pop()
   const where = queue.undecided
-    ? `${plural(queue.undecided, 'situation has', 'situations have')} no rule since you removed one, so we'll ask about ${queue.undecided === 1 ? 'it' : 'those'} first. `
+    ? `${plural(queue.undecided, 'situation has', 'situations have')} no recommendation since you removed a rule, so we'll ask about ${queue.undecided === 1 ? 'it' : 'those'} first. `
     : ''
   const status = queue.goodPicture
     ? 'We have a good picture of what you want: households like yours agree on every situation left. You can still go through more, or check your earlier answers.'
-    : `${where}${queue.split ? `Households like yours are split on ${plural(queue.split, 'situation')}. We ask about them one at a time, the least certain first.` : ''}`
+    : `${where}${queue.split ? `Households like yours have different views on ${plural(queue.split, 'situation')}. We ask about them one at a time, the least certain first.` : ''}`
   return (
     <div className="screen">
       <AppBar title="Fine-tune your profile" back="/rules" />
@@ -197,7 +182,7 @@ function Notice({ tone, icon, title, text, stop, go, onStop, onGo }: {
 const reasonText = (item: RefineItem, h: Household): string => {
   switch (item.reason) {
     case 'undecided': return 'No rule decides this since you removed one, so your devices get no rule for it.'
-    case 'split': return 'Households like yours are split on this, so we ask instead of guessing.'
+    case 'split': return 'Households like yours have different views on this.'
     case 'likely': return 'Most households like yours agree on this. Tell us if you don’t.'
     case 'checkup': {
       const at = h.answered_at?.[item.question]

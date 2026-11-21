@@ -104,7 +104,7 @@ export default function DemoDevices() {
 
           <SectionHeader>On the network without PPD</SectionHeader>
           <Group>{network.map(card)}</Group>
-          <Footnote>Appears under “Doesn’t work with your profile” in My Home. It never receives your rules.</Footnote>
+          <Footnote>Appears under “Unaware of your privacy preferences” in My Home. It never receives your rules.</Footnote>
         </>
       ) : (
         <Footnote>The demo simulator is off. Start app-api with SIMULATOR=1 to add simulated devices.</Footnote>

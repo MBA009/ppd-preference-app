@@ -87,7 +87,7 @@ export default function Library() {
 
       {ppd.length > 0 && (
         <>
-          <SectionHeader>Works with your profile · {ppd.length}</SectionHeader>
+          <SectionHeader>Can receive your privacy preferences · {ppd.length}</SectionHeader>
           <div className="grp">{ppd.map(row)}</div>
           <Footnote>These devices say what they do with your data. Open one to see where its data goes, compared with your privacy profile.</Footnote>
           <div className="grp" style={{ marginTop: 8 }}>
@@ -102,13 +102,13 @@ export default function Library() {
       )}
       {other.length > 0 && (
         <>
-          <SectionHeader>Doesn’t work with your profile · {other.length}</SectionHeader>
+          <SectionHeader>Unaware of your privacy preferences · {other.length}</SectionHeader>
           <div className="grp">{other.map(row)}</div>
           <Footnote>These devices can’t receive your rules or say what they do with your data. What you see comes from our team’s reading of the maker’s public privacy statements.</Footnote>
         </>
       )}
       {shown.length === 0 && <div className="empty">No match for “{q}”.</div>}
-      <Footnote>Not listed? Scan the box, or wait for the device to join by itself if it works with your profile.</Footnote>
+      <Footnote>Not listed? Scan the box, or wait for the device to join by itself if it can receive your privacy preferences.</Footnote>
       <div className="spacer" />
     </div>
   )

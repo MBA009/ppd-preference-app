@@ -78,13 +78,13 @@ function Policy() {
   const added = rules.filter((r) => r.origin.kind === 'custom').length
   const refine = tree.data ? refineQueue(tree.data, household) : null
   const lastAnswer = Object.values(household.answered_at ?? {}).sort().pop()
-  const refineText = !refine
-    ? 'Situations households like yours are split on. A good privacy checkup now and then.'
+  const refineText: React.ReactNode = !refine
+    ? 'Situations households like yours have different views on. A good privacy checkup now and then.'
     : refine.undecided
-      ? `${plural(refine.undecided, 'situation has', 'situations have')} no rule since you removed one${decide ? ', including some of what your devices do' : ''}. After that, situations households like yours are split on.`
+      ? `${plural(refine.undecided, 'situation has', 'situations have')} no recommendation since you removed a rule${decide ? ', including some of what your devices do' : ''}. After that, situations households like yours have different views on.`
       : refine.goodPicture
         ? `We have a good picture of what you want. Check your answers now and then${lastAnswer ? ` (last answer ${timeAgo(lastAnswer)})` : ''}.`
-        : `Households like yours are split on ${plural(refine.split, 'more situation')}. Answer as many as you like; your changes stay.`
+        : <>Households like yours have different views on <b>{refine.split}</b> more {refine.split === 1 ? 'situation' : 'situations'}. Answer as many as you like; your changes stay.</>
 
   const reset = async () => {
     if (!confirmReset) { setConfirmReset(true); return }
@@ -96,7 +96,8 @@ function Policy() {
 
   const used = (r: Rule) => impact[r.id]?.decided ?? 0
   const overridden = (r: Rule) => !!impact[r.id]?.later
-  const counts = GROUPS.map((g) => ({ kind: g.kind, n: rules.filter((r) => kindOf(r) === g.kind).length })).filter((c) => c.n)
+  // Every kind is counted, even at 0, so it's clear what kinds of rule there are.
+  const counts = GROUPS.map((g) => ({ kind: g.kind, n: rules.filter((r) => kindOf(r) === g.kind).length }))
   const inUseTotal = rules.filter((r) => used(r) > 0).length
   // What the rules mean for the devices in the home, over every flow they say they have.
   const verdicts: ReturnType<typeof countVerdicts> = {}
@@ -152,7 +153,7 @@ function Policy() {
         </button>
         {about && (
           <div className="about">
-            <p>Your privacy profile is a set of rules about what smart devices may do with your data. Devices that work with your profile receive these rules automatically.</p>
+            <p>Your privacy profile is a set of rules about what smart devices may do with your data. Devices that can receive your privacy preferences get these rules automatically.</p>
             <p><b>Never</b> means devices are told not to do it. <b>Allowed</b> means they may. Each rule says what data, where it goes, and why.</p>
             <p>Your rules came from your answers. You can change any rule, add your own, or fine-tune your profile with a few more questions.</p>
             <p>For each device, the app compares what it says it does with your rules.</p>
@@ -178,16 +179,15 @@ function Policy() {
       {gap > 0 && (
         <Group style={{ marginBottom: 12 }}>
           <Cell className="t" to="/rules/settle" style={{ alignItems: 'flex-start' }}>
-            <Tile tone={decide ? 'orange' : 'blue'} style={{ marginTop: 10 }}><Icon name="status" size={18} /></Tile>
+            <Tile tone={decide ? 'orange' : 'green'} style={{ marginTop: 10 }}>{decide ? <Icon name="status" size={18} /> : <Icon name="check" size={18} />}</Tile>
             <div className="cb" style={{ paddingRight: 16 }}>
               <span className="ttl" style={{ fontWeight: 500 }}>
-                {decide ? 'Some of what your devices do has no rule' : 'Some situations have no rule'}
+                {decide ? 'It’s now unclear what you want for some of what your devices do' : 'Everything is working'}
               </span>
               <span className="sub">
                 {decide
-                  ? 'You removed or switched off a rule, so your devices get no rule for some of what they do.'
-                  : 'You removed or switched off a rule. None of your devices is affected, but a device that joins later could be.'}
-                {' '}Tap to decide.
+                  ? 'You removed or switched off a rule. Tap to decide.'
+                  : 'Some situations no longer have a rule because you removed one. They only matter for devices you might buy later, so no action is needed.'}
               </span>
             </div>
           </Cell>
@@ -206,7 +206,7 @@ function Policy() {
             )}
           </div>
           <div className="ov-bar" aria-hidden="true">
-            {counts.map((c) => <i key={c.kind} style={{ flex: c.n, background: KIND[c.kind].color }} />)}
+            {counts.filter((c) => c.n).map((c) => <i key={c.kind} style={{ flex: c.n, background: KIND[c.kind].color }} />)}
           </div>
           <div className="ov-legend">
             {counts.map((c) => (
@@ -289,7 +289,7 @@ function Policy() {
       <SectionHeader>Learn more</SectionHeader>
       <Group>
         <Cell className="t" to="/rules/sources">
-          <div className="cb"><span className="ttl">How the questions were made</span><span className="sub">Based on published research, tested on simulated households</span></div>
+          <div className="cb"><span className="ttl">Why we selected these questions</span><span className="sub">Based on published research, tested on simulated households</span></div>
         </Cell>
         <Cell className="t" to="/rules/json" data-tour="rules-json">
           <div className="cb"><span className="ttl">See the technical version</span><span className="sub">Your rules in a technical format, and the exact file your devices receive</span></div>
@@ -299,12 +299,12 @@ function Policy() {
       <SectionHeader>Start over</SectionHeader>
       <Group tour="rules-startover">
         <Cell className="t" to="/rules/update">
-          <div className="cb"><span className="ttl">Answer the questions again</span><span className="sub">Your rules are rebuilt from your new answers{added ? `, replacing the ${plural(added, 'rule')} you added and your changes` : ', replacing your changes'}.</span></div>
+          <div className="cb"><span className="ttl">Answer the questions again</span><span className="sub">Your rules are rebuilt from your new answers, and your devices get the new ones in place of the old{added ? `, replacing the ${plural(added, 'rule')} you added and your changes` : ', replacing your changes'}.</span></div>
         </Cell>
         <Cell className="t" chevron={false} onClick={reset}>
           <div className="cb" style={{ paddingRight: 16 }}>
             <span className="ttl" style={{ color: '#B3261E' }}>{confirmReset ? 'Tap again to reset everything' : 'Reset everything'}</span>
-            <span className="sub">Clears your answers and rules, including rules you added, and starts again with the questions. Connected devices stay.</span>
+            <span className="sub">Clears your answers and rules, including rules you added, and starts again with the questions. Connected devices stay connected, but will no longer be aware of your previous preferences.</span>
           </div>
         </Cell>
       </Group>

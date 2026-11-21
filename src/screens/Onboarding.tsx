@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import type { Answers, DeviceSummary, Household, HouseholdPreset, Onboarding as Tree } from '../api'
-import { ActionBar, AppBar, Cell, ErrorBox, Footnote, Group, Loading, Tile } from '../components/ui'
+import { ActionBar, AppBar, Cell, Dialog, ErrorBox, Footnote, Group, Loading, Tile } from '../components/ui'
 import { ShieldCheck } from '../components/icons'
 import { BRAND, BrandTile, Wordmark } from '../components/Brand'
 import { useHousehold, useHouseholdPresets, useLibrary, useOnboarding } from '../state/data'
-import { CATEGORY_CLASS, followUps, questionText, rulesFromAnswers, situationAnswers, stageOnePath, walk } from '../../shared/onboarding'
+import { CATEGORY_CLASS, followUps, rulesFromAnswers, situationAnswers, stageOnePath, walk } from '../../shared/onboarding'
 import { plural } from '../lib/verdicts'
 import { useTour } from '../tour/Tour'
+import { QuestionView } from '../components/Question'
 
 /**
  * The questionnaire, one situation per screen, at most `total_questions_cap` in all:
@@ -65,6 +66,7 @@ function Walk({ tree, presets, mode, owned }: { tree: Tree; presets: HouseholdPr
   const order = run?.order ?? []
   const pick = run?.pick ?? null
   const [saving, setSaving] = useState(false)
+  const [ask, setAsk] = useState<'done' | 'rules' | null>(null)
 
   const here = { pathname, search }
   const go = (next: Answers, nextOrder: string[]) => nav(here, { state: { version: tree.version, answers: next, order: nextOrder, pick: null } satisfies Run })
@@ -78,8 +80,14 @@ function Walk({ tree, presets, mode, owned }: { tree: Tree; presets: HouseholdPr
   const step = walk(tree, answers)
   const asked = order.filter((q) => q !== INTRO && q !== SKIP).length
   const skipped = order.includes(SKIP)
-  // Optional follow-ups, off for now. To turn them on, restore this and the three commented-out "Skip" parts below.
-  // const skip = () => go(answers, [...order, SKIP])
+  // The follow-ups are optional: "I'm done for now" asks first, then goes straight to the household's rules.
+  const skip = () => { setAsk(null); go(answers, [...order, SKIP]) }
+  const doneDialog = ask === 'done' && (
+    <Dialog title="Done answering for now?" cancel="Keep answering" confirm="Done for now" onCancel={() => setAsk(null)} onConfirm={skip}>
+      <p>Your rules will use the answers you’ve given so far.</p>
+      <p>You can finish the rest of the questions any time in “Fine-tune your profile”.</p>
+    </Dialog>
+  )
   const question = (qid: string, stage: 1 | 2, total: number) => {
     const q = tree.questions[qid]
     const chosen = pick ?? before[qid] ?? null
@@ -89,35 +97,19 @@ function Walk({ tree, presets, mode, owned }: { tree: Tree; presets: HouseholdPr
       setPick(chosen)   // Back to this question offers the answer given
       go({ ...answers, [qid]: chosen }, [...order, qid])
     }
-    const { text, example } = questionText(q, owned)
     return (
       <div className="screen">
         <AppBar title={stage === 1 ? 'Privacy profile' : 'The details'} subtitle={`Question ${n} of up to ${total}`} back={back} />
         <div className="progress" data-tour="q-progress" role="progressbar" aria-valuemin={1} aria-valuemax={total} aria-valuenow={n}><i style={{ width: `${(n / total) * 100}%` }} /></div>
-        <div className="q">
-          <h2>{text}</h2>
-          {example && <p className="eg">For example, {example}.</p>}
-        </div>
-        <div style={{ height: 12, flex: 'none' }} />
-        <Group tour="q-options">
-          <div role="radiogroup" aria-label={text}>
-            {q.options.map((o) => (
-              <button key={o.id} className="cell" role="radio" aria-checked={chosen === o.id} onClick={() => setPick(o.id)}>
-                <span className={'rd' + (chosen === o.id ? ' on' : '')} />
-                <div className="cb" style={{ padding: '13px 0' }}><span className="ttl">{o.label}</span></div>
-                <span className="tr" />
-              </button>
-            ))}
-          </div>
-        </Group>
+        <QuestionView q={q} owned={owned} chosen={chosen} onPick={setPick} tour="q-options" />
         <Footnote>
-          {stage === 2 ? 'Households like yours are split on this, so we ask instead of guessing. ' : ''}
-          <Link to="/rules/sources">How the questions were made</Link>
+          {stage === 2 ? 'Households like yours have different views on this. ' : ''}
+          <Link to="/rules/sources">Why we selected these questions</Link>
         </Footnote>
-        {/* Skip, off for now:
         {stage === 2 && (
-          <div className="sf"><button className="link" onClick={skip}>Skip the rest of these questions</button></div>
-        )} */}
+          <div className="sf"><button className="link" onClick={() => setAsk('done')}>I’m done answering questions for now</button></div>
+        )}
+        {doneDialog}
         <div className="spacer" />
         <ActionBar>
           <button className="btn2" onClick={back}>Back</button>
@@ -142,21 +134,18 @@ function Walk({ tree, presets, mode, owned }: { tree: Tree; presets: HouseholdPr
           <Cell className="t" chevron={false} style={{ alignItems: 'flex-start' }}>
             <Tile tone="blue" style={{ marginTop: 10 }}><ShieldCheck /></Tile>
             <div className="cb" style={{ paddingRight: 16 }}>
-              <span className="ttl" style={{ fontWeight: 500 }}>{tree.follow_up_intro.title}</span>
-              <span className="sub">{tree.follow_up_intro.text} {plural(pending.length, 'more question')}.{/* Skip, off for now: They’re optional: you can skip them and answer them later. */}</span>
+              <span className="ttl" style={{ fontWeight: 500 }}>To help us understand you better</span>
+              <span className="sub">Households like yours have different views on these situations. {plural(pending.length, 'more question')}, or stop whenever you like.</span>
             </div>
           </Cell>
         </Group>
         <div className="spacer" />
-        {/* Skip, off for now. With it on, both buttons count as the tour's "go on", so skipping doesn't stop the guided setup:
+        {/* Both buttons count as the tour's "go on", so stopping here doesn't break the guided setup. */}
         <ActionBar tour="details-continue">
-          <button className="btn2" onClick={skip}>Skip</button>
+          <button className="btn2" onClick={() => setAsk('done')}>I’m done for now</button>
           <button className="btn" onClick={() => go(answers, [...order, INTRO])}>Continue</button>
-        </ActionBar> */}
-        <ActionBar>
-          <button className="btn2" onClick={back}>Back</button>
-          <button className="btn" data-tour="details-continue" onClick={() => go(answers, [...order, INTRO])}>Continue</button>
         </ActionBar>
+        {doneDialog}
       </div>
     )
   }
@@ -193,13 +182,19 @@ function Walk({ tree, presets, mode, owned }: { tree: Tree; presets: HouseholdPr
           </div>
         </Cell>
       </Group>
-      {skipped && <Footnote>You skipped some questions. You can answer them any time in “Fine-tune your profile”.</Footnote>}
+      {skipped && <Footnote>You stopped before the last questions. You can answer them any time in “Fine-tune your profile”.</Footnote>}
       {replacing && <Footnote>This replaces your current rules, including changes you made and rules you added.</Footnote>}
       <div className="spacer" />
       <ActionBar>
         <button className="btn2" onClick={back}>Back</button>
-        <button className="btn" data-tour="finish" disabled={saving} onClick={finish}>{replacing ? 'Replace my rules' : 'Set up my rules'}</button>
+        <button className="btn" data-tour="finish" disabled={saving} onClick={() => setAsk('rules')}>{replacing ? 'Replace my rules' : 'Adjust my rules'}</button>
       </ActionBar>
+      {ask === 'rules' && (
+        <Dialog title="Your recommended rules" cancel="Go back" confirm="See my rules" onCancel={() => setAsk(null)} onConfirm={() => { setAsk(null); void finish() }}>
+          <p>We analyzed your answers and set the rules most likely to cover what matters most to you.</p>
+          <p>These are recommendations. There may be more to look at, and you can change any rule at any time.</p>
+        </Dialog>
+      )}
     </div>
   )
 }
@@ -240,7 +235,7 @@ function Start({ tree, mode, onStart }: { tree: Tree; mode: Mode; onStart: () =>
         </Cell>
       </Group>
       <Footnote>
-        <Link to="/rules/sources">How the questions were made</Link>
+        <Link to="/rules/sources">Why we selected these questions</Link>
         {mode === 'first' && !tour.active && <> · <a href="#" onClick={(e) => { e.preventDefault(); void tour.start({ reset: false }) }}>Take the guided tour</a></>}
       </Footnote>
       <div className="spacer" />

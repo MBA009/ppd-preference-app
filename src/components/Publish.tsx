@@ -36,7 +36,7 @@ export function PublishCard() {
 
   const title = !p.devices ? 'No connected devices yet' : pending ? 'Sending your privacy profile to your devices…' : 'Your devices have your latest privacy profile'
   const sub = !p.devices
-    ? 'When a device that works with your profile joins your home, it gets your rules automatically.'
+    ? 'When a device that can receive your privacy preferences joins your home, it gets your rules automatically.'
     : pending
       ? error ? `Not sent yet: ${error} Trying again.` : `${plural(changes, 'change')}, going out within a few seconds.`
       : `${plural(p.devices, 'device')}${sent ? ` · sent automatically ${timeAgo(sent.at)}` : ''}. New devices get them on their own.`

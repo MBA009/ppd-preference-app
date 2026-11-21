@@ -23,7 +23,7 @@ const BACKGROUND: Source[] = [
 
 const STEPS = [
   { title: 'Build synthetic households', text: 'Thousands of synthetic households, built from published studies of how people feel about smart-home data, each decided every combination of data, purpose, action, source and where the data goes.' },
-  { title: 'Group households that decide alike', text: 'A decision tree learned which few situations tell the groups apart, and for each group which situations its households are split on.' },
+  { title: 'Group households that decide alike', text: 'A decision tree learned which few situations tell the groups apart, and for each group which situations its households have different views on.' },
   { title: 'Place you with households like yours', text: 'Your answers place you in a group, and every answer you give is written into your rules.' },
 ]
 
@@ -52,8 +52,8 @@ function SourceRow({ source: x }: { source: Source }) {
 /** How the questions and the rules behind them were made, and from what. */
 export default function Sources() {
   const { data: tree, error } = useOnboarding()
-  if (error) return <><AppBar title="How the questions were made" back={true} /><ErrorBox error={error} /></>
-  if (!tree) return <><AppBar title="How the questions were made" back={true} /><Loading /></>
+  if (error) return <><AppBar title="Why we selected these questions" back={true} /><ErrorBox error={error} /></>
+  if (!tree) return <><AppBar title="Why we selected these questions" back={true} /><Loading /></>
   const s = tree.source
   const all = (s.match_all_items_cv ?? {}) as Match
   const stats = [
@@ -64,7 +64,7 @@ export default function Sources() {
   ]
   return (
     <div className="screen">
-      <AppBar title="How the questions were made" back={true} />
+      <AppBar title="Why we selected these questions" back={true} />
 
       <SectionHeader>How it works</SectionHeader>
       <Group>

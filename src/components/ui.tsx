@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import type { Device, DeviceSummary, Verdict } from '../api'
 import { VERDICTS } from '../lib/verdicts'
@@ -186,6 +187,33 @@ export function VerdictMark({ verdict }: { verdict: Verdict }) {
 
 /* ---------- buttons and form controls ---------- */
 /** `aboveTabs`: on a tab screen, so the bar sits over the phone's bottom tabs instead of under them. */
+/** A pop-up that asks before going on: Escape or the first button cancels. */
+export function Dialog({ title, children, cancel, confirm, onCancel, onConfirm }: {
+  title: string; children: ReactNode; cancel: string; confirm: string; onCancel: () => void; onConfirm: () => void
+}) {
+  const id = useId()
+  const ok = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    ok.current?.focus()
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onCancel])
+  return createPortal(
+    <div className="dlg-back" onClick={(e) => { if (e.target === e.currentTarget) onCancel() }}>
+      <div className="dlg" role="dialog" aria-modal="true" aria-labelledby={`${id}-t`}>
+        <h2 id={`${id}-t`}>{title}</h2>
+        <div className="dlg-body">{children}</div>
+        <div className="dlg-foot">
+          <button className="btn2" onClick={onCancel}>{cancel}</button>
+          <button className="btn" ref={ok} onClick={onConfirm}>{confirm}</button>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  )
+}
+
 export function ActionBar({ children, aboveTabs, tour }: { children: ReactNode; aboveTabs?: boolean; tour?: string }) { return <div className={'act' + (aboveTabs ? ' above-tabs' : '')} data-tour={tour}>{children}</div> }
 
 export function Switch({ on, onChange, label }: { on: boolean; onChange: (v: boolean) => void; label: string }) {

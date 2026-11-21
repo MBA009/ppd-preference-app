@@ -47,7 +47,7 @@ export function evaluateFlow(flow: Flow, rules: Rule[]): Flow['evaluation'] {
     return { verdict: 'conditionally_satisfiable', rule_id: rule.id, reason: `Your rule “${rule.title}” allows this only if ${conditionText(c)}.${said}` }
   }
   if (rule) return { verdict: 'compatible', rule_id: rule.id, reason: `Your rule “${rule.title}” allows this.${declared(keys)}` }
-  return { verdict: 'decision_required', rule_id: null, reason: `None of your rules settles this, so your devices get no rule for it.${declared(keys)}` }
+  return { verdict: 'decision_required', rule_id: null, reason: `Your profile has no recommendation for this, so your devices get no rule for it.${declared(keys)}` }
 }
 
 const SEVERITY: Record<Verdict, number> = { unsatisfiable: 0, decision_required: 1, indeterminate: 2, conditionally_satisfiable: 3, compatible: 4 }
