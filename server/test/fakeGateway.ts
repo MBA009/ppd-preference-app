@@ -80,7 +80,7 @@ export class FakeGateway {
     }
     if (path === '/ppd/v1/status/devices') return this.send(res, 200, this.devices)
     if (path === '/ppd/v1/status/summary') {
-      return this.send(res, 200, { default_policy_id: this.policy.policy_id, default_policy_updated_at: '2026-10-21T00:00:00Z', association_freshness_interval: '15m0s', known_devices: this.devices.length, registered_devices: this.devices.length, associated_devices: this.devices.filter((d) => d.association_status === 'associated').length })
+      return this.send(res, 200, { default_policy_id: this.policy.policy_id, default_policy_updated_at: '2026-10-21T00:00:00Z', association_freshness_interval: '15m0s', known_devices: this.devices.length, registered_devices: this.devices.length, associated_devices: this.devices.filter((d) => d.association_status === 'associated').length, network_observed_devices: this.devices.filter((d) => d.network_observed).length, unmanaged_devices: this.devices.filter((d) => d.network_observed && d.known_to_gateway === false).length })
     }
     if (path === '/ppd/v1/service-health/checks') {
       return this.send(res, 200, { checks: [

@@ -48,9 +48,10 @@ export function operatorRoutes(app: FastifyInstance, ctx: AppContext): void {
           stale: n(s.stale_association_devices), broken: n(s.broken_association_devices), policy_conflict: n(s.policy_conflict_devices),
           overrides: n(s.override_devices), authenticated: n(s.authenticated_devices), compatibility_mode: n(s.compatibility_mode_devices),
           network_observed: n(s.network_observed_devices), unmanaged: n(s.unmanaged_devices),
-          // The CableLabs dashboard's "Need attention": known devices that don't hold the rules (not associated, or a
-          // runtime conflict), each counted once.
-          need_attention: Math.max(n(s.known_devices) - holding, 0),
+          // PPD devices that don't hold the rules (not associated, or a runtime conflict), each counted once. Unlike
+          // the CableLabs dashboard, unmanaged devices are left out: they have their own "Unaware" count, so the
+          // tiles add up to "On your network".
+          need_attention: Math.max(n(s.known_devices) - n(s.unmanaged_devices) - holding, 0),
           have_rules: holding,
         },
         household_policy: { policy_id: s.default_policy_id ?? null, updated_at: s.default_policy_updated_at ?? null, published_by_app: !!s.default_policy_id && ctx.store.publishedByApp(s.default_policy_id) },

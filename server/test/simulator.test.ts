@@ -76,8 +76,10 @@ describe('network view and CableLabs cards', () => {
     // Known counts the bulb and the network-only device; only the bulb is associated.
     assert.equal(o.counts.known, 2)
     assert.equal(o.counts.associated, 1)
-    assert.equal(o.counts.need_attention, 1)
-    assert.equal(typeof o.counts.unmanaged, 'number')
+    // The network-only device is "unaware", not "needs attention": the tiles add up to what is on the network.
+    assert.equal(o.counts.unmanaged, 1)
+    assert.equal(o.counts.need_attention, 0)
+    assert.equal(o.counts.have_rules + o.counts.unmanaged + o.counts.need_attention, o.counts.known)
   })
 
   test('forget refuses a device that is associated or on the network, then removes it everywhere', async () => {
